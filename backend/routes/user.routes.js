@@ -1,11 +1,9 @@
-import express from "express";
-import { getUsers, deleteUser } from "../controllers/user.controller.js";
-import { authMiddleware } from "../middleware/auth.middleware.js";
+import { Router } from "express";
+import { getUsers, createUser } from "../controllers/user.controller.js";
 
-const router = express.Router();
+const router = Router();
 
-// 🔒 PROTECTED ROUTES
-router.get("/", authMiddleware, getUsers);
-router.delete("/:id", authMiddleware, deleteUser);
+router.get("/", getUsers);
+router.post("/", createUser);
 
 export default router;
