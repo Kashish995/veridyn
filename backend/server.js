@@ -6,6 +6,8 @@ import cors from "cors";
 import userRoutes from "./routes/user.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 import healthRoutes from "./routes/health.routes.js";
+import studyTaskRoutes from "./routes/studyTask.routes.js";
+
 
 dotenv.config();
 
@@ -26,6 +28,8 @@ app.use(express.json());
 app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/health", healthRoutes);
+app.use("/api/study-tasks", studyTaskRoutes);
+
 
 /* Root test */
 app.get("/", (req, res) => {

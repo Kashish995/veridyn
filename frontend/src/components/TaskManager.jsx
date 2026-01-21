@@ -13,14 +13,19 @@ function TaskManager() {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
 
-  useEffect(() => {
-    loadTasks();
-  }, []);
+ useEffect(() => {
+  loadStudyTasks();
+}, []);
 
-  const loadTasks = async () => {
-    const data = await getTasksByUser(USER_ID);
+const loadStudyTasks = async () => {
+  try {
+    const data = await getStudyTasksByUser(USER_ID);
     setTasks(data);
-  };
+  } catch (err) {
+    console.error(err.message);
+  }
+};
+
 
   const handleAddTask = async () => {
     if (!title.trim()) return;

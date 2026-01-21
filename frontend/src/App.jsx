@@ -1,7 +1,8 @@
-import TaskManager from "./components/TaskManager";
+import StudyPlanner from "./pages/StudyPlanner";
+
 
 function App() {
-  return <TaskManager />;
+  return <StudyPlanner />;
 }
 
 export default App;
