@@ -1,77 +1,125 @@
-// frontend/src/components/StudyPlanner.jsx
 import { useEffect, useState } from "react";
 import {
   getStudyTasksByUser,
   createStudyTask,
-  updateStudyTaskStatus,
+  updateStudyTask,
   deleteStudyTask,
 } from "../api/studyTaskApi";
 import StudyTaskCard from "../components/StudyTaskCard";
 
-const USER_ID = "6963fd04456b9d41a7336a6a"; // temp, same as TaskManager
+const USER_ID = "test-user-123"; // temporary, intentional
 
-export default function StudyPlanner() {
+const StudyPlanner = () => {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [priority, setPriority] = useState("MEDIUM");
+  const [deadline, setDeadline] = useState("");
+
+  // Fetch tasks
+  const fetchTasks = async () => {
+    try {
+      const data = await getStudyTasksByUser(USER_ID);
+      setTasks(data);
+    } catch (error) {
+      console.error("Error fetching tasks:", error);
+    }
+  };
 
   useEffect(() => {
-    loadTasks();
+    fetchTasks();
   }, []);
 
-  async function loadTasks() {
-    const data = await getStudyTasksByUser(USER_ID);
-    setTasks(data);
-  }
-
-  async function handleAddTask() {
+  // Add task
+  const handleAddTask = async () => {
     if (!title.trim()) return;
-    await createStudyTask(USER_ID, title);
-    setTitle("");
-    loadTasks();
-  }
 
-  async function handleComplete(taskId) {
-    await updateStudyTaskStatus(taskId, "completed");
-    loadTasks();
-  }
+    try {
+      await createStudyTask({
+        title,
+        priority,
+        deadline: deadline || null,
+        userId: USER_ID,
+      });
 
-  async function handleDelete(taskId) {
-    await deleteStudyTask(taskId);
-    loadTasks();
-  }
+      setTitle("");
+      setPriority("MEDIUM");
+      setDeadline("");
+      fetchTasks();
+    } catch (error) {
+      console.error("Error creating task:", error);
+    }
+  };
 
-  // 🔥 PHASE 2 CORE LOGIC (THIS IS STEP 2)
-  const total = tasks.length;
-  const completed = tasks.filter(t => t.status === "completed").length;
-  const pending = total - completed;
+  // Toggle completion
+  const handleToggleComplete = async (id, isCompleted) => {
+    try {
+      await updateStudyTask(id, { isCompleted: !isCompleted });
+      fetchTasks();
+    } catch (error) {
+      console.error("Error updating task:", error);
+    }
+  };
+
+  // Delete task
+  const handleDelete = async (id) => {
+    try {
+      await deleteStudyTask(id);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting task:", error);
+    }
+  };
+
+  const completedCount = tasks.filter((task) => task.isCompleted).length;
 
   return (
-    <div className="study-planner">
+    <div>
       <h2>Study Planner</h2>
 
-      <div className="progress">
-        Completed: {completed} / {total}
-      </div>
+      <p>
+        Completed: {completedCount} / {tasks.length}
+      </p>
 
-      <div className="add-task">
+      {/* Add Task */}
+      <div>
         <input
+          type="text"
+          placeholder="Enter study task"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
-          placeholder="Add study task..."
         />
-        <button onClick={handleAddTask}>Add</button>
+
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+        >
+          <option value="HIGH">High</option>
+          <option value="MEDIUM">Medium</option>
+          <option value="LOW">Low</option>
+        </select>
+
+        <input
+          type="date"
+          value={deadline}
+          onChange={(e) => setDeadline(e.target.value)}
+        />
+
+        <button onClick={handleAddTask}>Add Task</button>
       </div>
 
-      {tasks.length === 0 && <p>No study tasks yet.</p>}
-
-      {tasks.map(task => (
-        <StudyTaskCard
-          key={task._id}
-          task={task}
-          onComplete={handleComplete}
-          onDelete={handleDelete}
-        />
-      ))}
+      {/* Task List */}
+      <div>
+        {tasks.map((task) => (
+          <StudyTaskCard
+            key={task._id}
+            task={task}
+            onToggleComplete={handleToggleComplete}
+            onDelete={handleDelete}
+          />
+        ))}
+      </div>
     </div>
   );
-}
+};
+
+export default StudyPlanner;

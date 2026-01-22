@@ -3,34 +3,34 @@ import mongoose from "mongoose";
 const studyTaskSchema = new mongoose.Schema(
   {
     userId: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "User",
+      type: String,
       required: true,
     },
+
     title: {
       type: String,
       required: true,
+      trim: true,
     },
-    subject: {
-      type: String,
-      required: true,
+
+    isCompleted: {
+      type: Boolean,
+      default: false,
     },
-    deadline: {
-      type: Date,
-      required: true,
-    },
+
     priority: {
       type: String,
-      enum: ["low", "medium", "high"],
-      default: "medium",
+      enum: ["HIGH", "MEDIUM", "LOW"],
+      default: "MEDIUM",
     },
-    status: {
-      type: String,
-      enum: ["pending", "completed"],
-      default: "pending",
+
+    deadline: {
+      type: Date,
+      default: null,
     },
   },
   { timestamps: true }
 );
 
-export default mongoose.model("StudyTask", studyTaskSchema);
+const StudyTask = mongoose.model("StudyTask", studyTaskSchema);
+export default StudyTask;
