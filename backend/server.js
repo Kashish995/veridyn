@@ -8,20 +8,17 @@ import taskRoutes from "./routes/task.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import studyTaskRoutes from "./routes/studyTask.routes.js";
 
-
 dotenv.config();
 
 const app = express();
 
-/* 🔥 CORS — MUST BE FIRST */
+/* Middleware */
 app.use(
   cors({
     origin: "*",
     methods: ["GET", "POST", "PATCH", "DELETE"],
   })
 );
-
-/* Middleware */
 app.use(express.json());
 
 /* Routes */
@@ -30,20 +27,22 @@ app.use("/api/tasks", taskRoutes);
 app.use("/api/health", healthRoutes);
 app.use("/api/study-tasks", studyTaskRoutes);
 
-
 /* Root test */
 app.get("/", (req, res) => {
   res.send("API RUNNING");
 });
 
-/* DB + Server */
+const PORT = 5000;
+
+/* 🔥 CONNECT DB FIRST, THEN START SERVER ONCE */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
     console.log("MongoDB connected");
-    app.listen(5000, () =>
-      console.log("Server running on port 5000")
-    );
+    app.listen(PORT, () => {
+      console.log(`Server running on port ${PORT}`);
+    });
   })
-  .catch((err) => console.error(err));
-
+  .catch((err) => {
+    console.error("MongoDB connection error:", err);
+  });

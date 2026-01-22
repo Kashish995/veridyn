@@ -66,3 +66,35 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+.task-card {
+  border: 1px solid #ccc;
+  padding: 8px;
+  margin-bottom: 8px;
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.task-card.overdue {
+  border-color: red;
+  background-color: #ffe5e5;
+}
+
+.task-card.high {
+  border-color: orange;
+  background-color: #fff1dc;
+}
+
+.task-card.medium {
+  border-color: goldenrod;
+}
+
+.task-card.low {
+  border-color: green;
+  background-color: #e6ffe6;
+}
+
+.task-card.completed {
+  opacity: 0.5;
+  text-decoration: line-through;
+}
