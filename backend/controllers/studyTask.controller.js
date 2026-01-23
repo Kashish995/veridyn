@@ -1,60 +1,88 @@
 import StudyTask from "../models/StudyTask.js";
 
-// CREATE STUDY TASK
-export const createStudyTask = async (req, res) => {
-  try {
-    const { title, deadline, priority, userId } = req.body;
-
-    if (!title || !userId) {
-      return res.status(400).json({ message: "userId and title are required" });
-    }
-
-    const studyTask = await StudyTask.create({
-      userId,
-      title,
-      deadline,
-      priority,
-    });
-
-    res.status(201).json(studyTask);
-  } catch (error) {
-    res.status(400).json({ message: error.message });
-  }
-};
-
-// GET STUDY TASKS BY USER
-export const getStudyTasksByUser = async (req, res) => {
+export const getStudyTasks = async (req, res) => {
   try {
     const { userId } = req.params;
+    const tasks = await StudyTask.find({ userId });
+
     const now = new Date();
 
-    const tasks = await StudyTask.find({ userId }).lean();
+    const enrichedTasks = tasks.map((task) => {
+      const isOverdue =
+        task.deadline &&
+        !task.completed &&
+        new Date(task.deadline) < now;
 
-    const priorityRank = {
-      HIGH: 1,
-      MEDIUM: 2,
-      LOW: 3,
-    };
-
-    const sortedTasks = tasks.sort((a, b) => {
-      // completed always last
-      if (a.isCompleted !== b.isCompleted) {
-        return a.isCompleted ? 1 : -1;
-      }
-
-      const aOverdue = a.deadline && a.deadline < now;
-      const bOverdue = b.deadline && b.deadline < now;
-
-      if (aOverdue !== bOverdue) {
-        return aOverdue ? -1 : 1;
-      }
-
-      return priorityRank[a.priority] - priorityRank[b.priority];
+      return {
+        ...task.toObject(),
+        isOverdue,
+      };
     });
 
-    res.status(200).json(sortedTasks);
-  } catch (err) {
-    res.status(500).json({ message: "Failed to fetch tasks" });
+    const priorityRank = { HIGH: 1, MEDIUM: 2, LOW: 3 };
+
+    enrichedTasks.sort((a, b) => {
+      if (a.isOverdue && !b.isOverdue) return -1;
+      if (!a.isOverdue && b.isOverdue) return 1;
+
+      if (priorityRank[a.priority] !== priorityRank[b.priority]) {
+        return priorityRank[a.priority] - priorityRank[b.priority];
+      }
+
+      if (a.deadline && b.deadline) {
+        return new Date(a.deadline) - new Date(b.deadline);
+      }
+
+      if (a.deadline) return -1;
+      if (b.deadline) return 1;
+
+      return 0;
+    });
+
+    res.status(200).json(enrichedTasks);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to fetch tasks", error });
   }
 };
 
+export const createStudyTask = async (req, res) => {
+  try {
+    const { userId, title, priority, deadline } = req.body;
+
+    const task = await StudyTask.create({
+      userId,
+      title,
+      priority,
+      deadline,
+    });
+
+    res.status(201).json(task);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to create task", error });
+  }
+};
+
+export const updateStudyTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const updates = req.body;
+
+    const task = await StudyTask.findByIdAndUpdate(id, updates, {
+      new: true,
+    });
+
+    res.status(200).json(task);
+  } catch (error) {
+    res.status(500).json({ message: "Failed to update task", error });
+  }
+};
+
+export const deleteStudyTask = async (req, res) => {
+  try {
+    const { id } = req.params;
+    await StudyTask.findByIdAndDelete(id);
+    res.status(204).send();
+  } catch (error) {
+    res.status(500).json({ message: "Failed to delete task", error });
+  }
+};
