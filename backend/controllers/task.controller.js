@@ -1,58 +1,51 @@
 import Task from "../models/Task.js";
+import { smartReschedule } from "./smartReschedule.js";
 
+// existing controller
 export const createTask = async (req, res) => {
-  try {
-    const task = await Task.create(req.body);
-    res.status(201).json(task);
-  } catch (err) {
-    res.status(400).json({ message: err.message });
-  }
+  const task = await Task.create(req.body);
+  res.json(task);
 };
 
 export const getTasksByUser = async (req, res) => {
-  const { userId } = req.params;
-  const tasks = await Task.find({ userId });
+  const tasks = await Task.find({ userId: req.params.userId });
   res.json(tasks);
 };
 
-export const updateTaskStatus = async (req, res) => {
+// ✅ NEW CONTROLLER for Option A
+export const getTasksByDate = async (req, res) => {
   try {
-    const { taskId } = req.params;
-    const { status } = req.body;
+    const { userId, date } = req.params;
 
-    // validate status
-    if (!["pending", "completed"].includes(status)) {
-      return res.status(400).json({ message: "Invalid status value" });
-    }
+    await smartReschedule(userId, new Date(date));
 
-    const updatedTask = await Task.findByIdAndUpdate(
-      taskId,
-      { status },
-      { new: true }
-    );
+    const start = new Date(date);
+    const end = new Date(date);
+    end.setHours(23, 59, 59, 999);
 
-    if (!updatedTask) {
-      return res.status(404).json({ message: "Task not found" });
-    }
+    const tasks = await Task.find({
+      userId,
+      dueDate: { $gte: start, $lte: end }
+    });
 
-    res.json(updatedTask);
-  } catch (error) {
-    res.status(500).json({ message: error.message });
+    res.json(tasks);
+  } catch (err) {
+    console.error("getTasksByDate error:", err);
+    res.status(500).json({ message: "Failed to fetch tasks by date" });
   }
 };
 
+
+export const updateTaskStatus = async (req, res) => {
+  const task = await Task.findByIdAndUpdate(
+    req.params.taskId,
+    req.body,
+    { new: true }
+  );
+  res.json(task);
+};
+
 export const deleteTask = async (req, res) => {
-  try {
-    const { taskId } = req.params;
-
-    const deletedTask = await Task.findByIdAndDelete(taskId);
-
-    if (!deletedTask) {
-      return res.status(404).json({ message: "Task not found" });
-    }
-
-    res.json({ message: "Task deleted successfully" });
-  } catch (error) {
-    res.status(500).json({ message: error.message });
-  }
+  await Task.findByIdAndDelete(req.params.taskId);
+  res.json({ message: "Task deleted" });
 };

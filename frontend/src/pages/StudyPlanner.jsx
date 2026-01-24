@@ -1,162 +1,174 @@
 import { useEffect, useState } from "react";
-import {
-  getStudyTasksByUser,
-  createStudyTask,
-  updateStudyTask,
-  deleteStudyTask,
-} from "../api/studyTaskApi";
-import StudyTaskCard from "../components/StudyTaskCard";
-
-const USER_ID = "test-user-123";
-
-const EFFORT_POINTS = {
-  SMALL: 1,
-  MEDIUM: 2,
-  HEAVY: 3,
-};
+import axios from "axios";
 
 const StudyPlanner = () => {
+  const userId = localStorage.getItem("userId");
+
   const [tasks, setTasks] = useState([]);
+  const [selectedDate, setSelectedDate] = useState(
+    new Date().toISOString().split("T")[0]
+  );
+
   const [title, setTitle] = useState("");
-  const [priority, setPriority] = useState("MEDIUM");
-  const [deadline, setDeadline] = useState("");
-  const [effort, setEffort] = useState("SMALL");
-  const [todayEffortLoad, setTodayEffortLoad] = useState(0);
+  const [description, setDescription] = useState("");
+  const [priority, setPriority] = useState("medium");
+  const [estimatedTime, setEstimatedTime] = useState(60);
 
-
-  /* ---------------- FETCH TASKS ---------------- */
-  const fetchTasks = async () => {
-    try {
-      const data = await getStudyTasksByUser(USER_ID);
-      setTasks(data.tasks);
-      setTodayEffortLoad(data.todayEffortLoad);
-
-    } catch (err) {
-      console.error("Error fetching tasks:", err);
-    }
-  };
-
+  // ✅ FETCH TASKS
   useEffect(() => {
-    fetchTasks();
-  }, []);
+    const fetchTasks = async () => {
+      try {
+        const res = await axios.get(
+          `http://localhost:5000/tasks/user/${userId}/${selectedDate}`
+        );
+        setTasks(res.data);
+      } catch (err) {
+        console.error("Error fetching tasks:", err);
+      }
+    };
 
-  /* ---------------- CREATE TASK ---------------- */
+    if (userId) fetchTasks();
+  }, [userId, selectedDate]);
+
+  // ✅ CREATE TASK
   const handleAddTask = async () => {
-    if (!title.trim()) return;
+    if (!title || !estimatedTime) return alert("Fill all fields");
 
     try {
-      await createStudyTask({
+      await axios.post("http://localhost:5000/tasks", {
         title,
+        description,
         priority,
-        effort,
-        deadline: deadline || null,
-        userId: USER_ID,
+        estimatedTime,
+        dueDate: selectedDate,
+        userId
       });
 
       setTitle("");
-      setPriority("MEDIUM");
-      setEffort("SMALL");
-      setDeadline("");
+      setDescription("");
+      setEstimatedTime(60);
 
-      fetchTasks();
+      const res = await axios.get(
+        `http://localhost:5000/tasks/user/${userId}/${selectedDate}`
+      );
+      setTasks(res.data);
     } catch (err) {
-      console.error("Failed to create task:", err);
+      console.error("Error creating task:", err);
     }
   };
 
-  /* ---------------- UPDATE TASK ---------------- */
-  const handleToggleComplete = async (id, completed) => {
-    try {
-      await updateStudyTask(id, { completed: !completed });
-      fetchTasks();
-    } catch (err) {
-      console.error("Failed to update task:", err);
-    }
+  // ✅ UPDATE STATUS
+  const toggleStatus = async (taskId, status) => {
+    const newStatus = status === "completed" ? "pending" : "completed";
+
+    await axios.patch(`http://localhost:5000/tasks/${taskId}`, {
+      status: newStatus
+    });
+
+    const res = await axios.get(
+      `http://localhost:5000/tasks/user/${userId}/${selectedDate}`
+    );
+    setTasks(res.data);
   };
 
-  /* ---------------- DELETE TASK ---------------- */
-  const handleDelete = async (id) => {
-    try {
-      await deleteStudyTask(id);
-      fetchTasks();
-    } catch (err) {
-      console.error("Failed to delete task:", err);
-    }
+  // ✅ DELETE TASK
+  const deleteTask = async (taskId) => {
+    await axios.delete(`http://localhost:5000/tasks/${taskId}`);
+
+    const res = await axios.get(
+      `http://localhost:5000/tasks/user/${userId}/${selectedDate}`
+    );
+    setTasks(res.data);
   };
 
-  /* ---------------- LOAD CALC ---------------- */
- 
-  const completedCount = tasks.filter((t) => t.completed).length;
-
-  /* ---------------- UI ---------------- */
   return (
     <div style={{ padding: "20px" }}>
-      <h2>Study Planner</h2>
+      <h2>📚 Study Planner</h2>
 
-      <p>
-        Completed: {completedCount} / {tasks.length}
-      </p>
+      <input
+        type="date"
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+      />
 
+      <hr />
 
-
-      {/* -------- Phase 3: Workload Awareness -------- */}
-      {todayEffortLoad >= 8 && (
-        <p style={{ color: "red", fontWeight: "bold" }}>
-          🚨 Heavy workload today ({todayEffortLoad} effort points).  
-          You should postpone or break tasks down.
-        </p>
-      )}
-
-      {todayEffortLoad >= 5 && todayEffortLoad < 8 && (
-        <p style={{ color: "orange", fontWeight: "bold" }}>
-          ⚠ Moderate workload today ({todayEffortLoad} effort points).
-        </p>
-      )}
-
-      {todayEffortLoad < 5 && todayEffortLoad > 0 && (
-        <p style={{ color: "green", fontWeight: "bold" }}>
-          ✅ Light workload today ({todayEffortLoad} effort points).
-        </p>
-      )}
-
-
-      <div style={{ marginBottom: "16px" }}>
+      <div>
         <input
           type="text"
-          placeholder="Enter study task"
+          placeholder="Task title"
           value={title}
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-          <option value="HIGH">High</option>
-          <option value="MEDIUM">Medium</option>
-          <option value="LOW">Low</option>
-        </select>
+        <input
+          type="text"
+          placeholder="Description"
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+        />
 
-        <select value={effort} onChange={(e) => setEffort(e.target.value)}>
-          <option value="SMALL">Small effort</option>
-          <option value="MEDIUM">Medium effort</option>
-          <option value="HEAVY">Heavy effort</option>
+        <select
+          value={priority}
+          onChange={(e) => setPriority(e.target.value)}
+        >
+          <option value="low">Low</option>
+          <option value="medium">Medium</option>
+          <option value="high">High</option>
         </select>
 
         <input
-          type="date"
-          value={deadline}
-          onChange={(e) => setDeadline(e.target.value)}
+          type="number"
+          placeholder="Time (minutes)"
+          value={estimatedTime}
+          onChange={(e) => setEstimatedTime(e.target.value)}
         />
 
         <button onClick={handleAddTask}>Add Task</button>
       </div>
 
-      {tasks.map((task) => (
-        <StudyTaskCard
-          key={task._id}
-          task={task}
-          onToggleComplete={handleToggleComplete}
-          onDelete={handleDelete}
-        />
-      ))}
+      <hr />
+
+      <div>
+        {tasks.length === 0 && <p>No tasks for this day.</p>}
+
+        {Array.isArray(tasks) &&
+          tasks.map((task) => (
+            <div
+              key={task._id}
+              style={{
+                border: "1px solid #ccc",
+                padding: "10px",
+                marginBottom: "10px"
+              }}
+            >
+              <h4>{task.title}</h4>
+              <p>{task.description}</p>
+
+              <p>Priority: {task.priority}</p>
+              <p>Time: {task.estimatedTime} min</p>
+              <p>Status: {task.status}</p>
+
+              {task.suggestedForTomorrow && (
+                <p style={{ color: "orange" }}>
+                  ⚠ Suggested for tomorrow
+                </p>
+              )}
+
+              {task.splitFrom && (
+                <p style={{ color: "purple" }}>
+                  📦 Split from heavy task
+                </p>
+              )}
+
+              <button onClick={() => toggleStatus(task._id, task.status)}>
+                Mark {task.status === "completed" ? "Pending" : "Completed"}
+              </button>
+
+              <button onClick={() => deleteTask(task._id)}>Delete</button>
+            </div>
+          ))}
+      </div>
     </div>
   );
 };

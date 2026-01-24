@@ -19,17 +19,42 @@ const taskSchema = new mongoose.Schema(
       default: "pending",
     },
 
+    priority: {
+      type: String,
+      enum: ["low", "medium", "high"],
+      default: "medium",
+    },
+
+    dueDate: {
+      type: Date,
+      required: true,
+    },
+
+    estimatedTime: {
+      type: Number, // in minutes
+      required: true,
+    },
+
+    suggestedForTomorrow: {
+      type: Boolean,
+      default: false,
+    },
+
+    splitFrom: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "Task",
+      default: null,
+    },
+
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
     },
   },
-  {
-    timestamps: true,
-  }
+  { timestamps: true }
 );
 
 const Task = mongoose.model("Task", taskSchema);
-
 export default Task;
+
