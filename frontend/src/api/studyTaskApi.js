@@ -1,29 +1,24 @@
 import axios from "axios";
 
-const API = axios.create({
-  baseURL: "http://localhost:5000",
-});
+const BASE_URL = "http://localhost:5000/api/study-tasks";
 
-// GET tasks
 export const getStudyTasksByUser = async (userId) => {
-  const res = await API.get(`/api/study-tasks/user/${userId}`);
+  const res = await axios.get(`${BASE_URL}/${userId}`);
   return res.data;
 };
 
-// CREATE task  🔥 THIS WAS WRONG BEFORE
 export const createStudyTask = async (taskData) => {
-  const res = await API.post(`/api/study-tasks`, taskData);
+  const res = await axios.post(BASE_URL, taskData);
   return res.data;
 };
 
-// UPDATE task
-export const updateStudyTask = async (id, updateData) => {
-  const res = await API.patch(`/api/study-tasks/${id}`, updateData);
+export const updateStudyTask = async (id, updates) => {
+  const res = await axios.patch(`${BASE_URL}/${id}`, updates);
   return res.data;
 };
 
-// DELETE task
 export const deleteStudyTask = async (id) => {
-  const res = await API.delete(`/api/study-tasks/${id}`);
+  const res = await axios.delete(`${BASE_URL}/${id}`);
   return res.data;
 };
+

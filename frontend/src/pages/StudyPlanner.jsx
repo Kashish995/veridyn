@@ -15,23 +15,22 @@ const EFFORT_POINTS = {
   HEAVY: 3,
 };
 
-const [priority, setPriority] = useState("MEDIUM");
-const [deadline, setDeadline] = useState("");
-
-
 const StudyPlanner = () => {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [priority, setPriority] = useState("MEDIUM");
   const [deadline, setDeadline] = useState("");
   const [effort, setEffort] = useState("SMALL");
+  const [todayEffortLoad, setTodayEffortLoad] = useState(0);
+
 
   /* ---------------- FETCH TASKS ---------------- */
-
   const fetchTasks = async () => {
     try {
       const data = await getStudyTasksByUser(USER_ID);
-      setTasks(data);
+      setTasks(data.tasks);
+      setTodayEffortLoad(data.todayEffortLoad);
+
     } catch (err) {
       console.error("Error fetching tasks:", err);
     }
@@ -42,7 +41,6 @@ const StudyPlanner = () => {
   }, []);
 
   /* ---------------- CREATE TASK ---------------- */
-
   const handleAddTask = async () => {
     if (!title.trim()) return;
 
@@ -60,23 +58,16 @@ const StudyPlanner = () => {
       setEffort("SMALL");
       setDeadline("");
 
-      await fetchTasks();
+      fetchTasks();
     } catch (err) {
       console.error("Failed to create task:", err);
     }
   };
 
   /* ---------------- UPDATE TASK ---------------- */
-
-  const handleToggleComplete = async (id, isCompleted) => {
+  const handleToggleComplete = async (id, completed) => {
     try {
-     await createStudyTask({
-        userId,
-        title,
-        priority,
-        deadline: deadline || null,
-      });
-
+      await updateStudyTask(id, { completed: !completed });
       fetchTasks();
     } catch (err) {
       console.error("Failed to update task:", err);
@@ -84,7 +75,6 @@ const StudyPlanner = () => {
   };
 
   /* ---------------- DELETE TASK ---------------- */
-
   const handleDelete = async (id) => {
     try {
       await deleteStudyTask(id);
@@ -94,34 +84,11 @@ const StudyPlanner = () => {
     }
   };
 
-  /* ---------------- PHASE 3: EFFORT-AWARE LOAD ---------------- */
-
-  const getTodayEffortLoad = () => {
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
-
-    return tasks.reduce((total, task) => {
-      if (task.isCompleted) return total;
-      if (!task.deadline) return total;
-
-      const taskDate = new Date(task.deadline);
-      taskDate.setHours(0, 0, 0, 0);
-
-      if (taskDate <= today) {
-        const effortValue =
-          EFFORT_POINTS[task.effort] || EFFORT_POINTS.SMALL;
-        return total + effortValue;
-      }
-
-      return total;
-    }, 0);
-  };
-
-  const todayEffortLoad = getTodayEffortLoad();
-  const completedCount = tasks.filter((t) => t.isCompleted).length;
+  /* ---------------- LOAD CALC ---------------- */
+ 
+  const completedCount = tasks.filter((t) => t.completed).length;
 
   /* ---------------- UI ---------------- */
-
   return (
     <div style={{ padding: "20px" }}>
       <h2>Study Planner</h2>
@@ -130,21 +97,29 @@ const StudyPlanner = () => {
         Completed: {completedCount} / {tasks.length}
       </p>
 
-      {/* -------- Phase 3 Load Awareness -------- */}
+
+
+      {/* -------- Phase 3: Workload Awareness -------- */}
       {todayEffortLoad >= 8 && (
         <p style={{ color: "red", fontWeight: "bold" }}>
-          ⚠ Today’s workload is too heavy ({todayEffortLoad} effort points).
-          Consider postponing something.
+          🚨 Heavy workload today ({todayEffortLoad} effort points).  
+          You should postpone or break tasks down.
         </p>
       )}
 
       {todayEffortLoad >= 5 && todayEffortLoad < 8 && (
-        <p style={{ color: "orange" }}>
+        <p style={{ color: "orange", fontWeight: "bold" }}>
           ⚠ Moderate workload today ({todayEffortLoad} effort points).
         </p>
       )}
 
-      {/* -------- Add Task -------- */}
+      {todayEffortLoad < 5 && todayEffortLoad > 0 && (
+        <p style={{ color: "green", fontWeight: "bold" }}>
+          ✅ Light workload today ({todayEffortLoad} effort points).
+        </p>
+      )}
+
+
       <div style={{ marginBottom: "16px" }}>
         <input
           type="text"
@@ -153,35 +128,17 @@ const StudyPlanner = () => {
           onChange={(e) => setTitle(e.target.value)}
         />
 
-        <select
-          value={priority}
-          onChange={(e) => setPriority(e.target.value)}
-        >
+        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
           <option value="HIGH">High</option>
           <option value="MEDIUM">Medium</option>
           <option value="LOW">Low</option>
         </select>
 
-        <select
-          value={effort}
-          onChange={(e) => setEffort(e.target.value)}
-        >
+        <select value={effort} onChange={(e) => setEffort(e.target.value)}>
           <option value="SMALL">Small effort</option>
           <option value="MEDIUM">Medium effort</option>
           <option value="HEAVY">Heavy effort</option>
         </select>
-        <select value={priority} onChange={(e) => setPriority(e.target.value)}>
-            <option value="HIGH">High</option>
-            <option value="MEDIUM">Medium</option>
-            <option value="LOW">Low</option>
-          </select>
-
-          <input
-            type="date"
-            value={deadline}
-            onChange={(e) => setDeadline(e.target.value)}
-          />
-
 
         <input
           type="date"
@@ -192,7 +149,6 @@ const StudyPlanner = () => {
         <button onClick={handleAddTask}>Add Task</button>
       </div>
 
-      {/* -------- Task List -------- */}
       {tasks.map((task) => (
         <StudyTaskCard
           key={task._id}

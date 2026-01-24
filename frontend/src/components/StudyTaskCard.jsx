@@ -1,41 +1,49 @@
 const StudyTaskCard = ({ task, onToggleComplete, onDelete }) => {
-  const now = new Date();
-  const isOverdue =
-    task.deadline && new Date(task.deadline) < now && !task.isCompleted;
+  let backgroundColor = "#f1f5f9"; // default
 
-  let urgencyClass = "task-card";
-
-  if (task.isCompleted) {
-    urgencyClass += " completed";
-  } else if (isOverdue) {
-    urgencyClass += " overdue";
+  if (task.isOverdue) {
+    backgroundColor = "#ffdede"; // red-ish
   } else if (task.priority === "HIGH") {
-    urgencyClass += " high";
-  } else if (task.priority === "MEDIUM") {
-    urgencyClass += " medium";
-  } else if (task.priority === "LOW") {
-    urgencyClass += " low";
+    backgroundColor = "#fff3cd"; // yellow-ish
   }
 
   return (
-    <div className={urgencyClass}>
-      <input
-        type="checkbox"
-        checked={task.isCompleted}
-        onChange={() => onToggleComplete(task._id, task.isCompleted)}
-      />
+    <div
+      style={{
+        backgroundColor,
+        padding: "10px",
+        borderRadius: "6px",
+        marginBottom: "8px",
+        display: "flex",
+        justifyContent: "space-between",
+        alignItems: "center",
+      }}
+    >
+      <div>
+        <input
+          type="checkbox"
+          checked={task.completed}
+          onChange={() => onToggleComplete(task._id, task.completed)}
+        />
 
-      <span>{task.title}</span>
-
-      <span>Priority: {task.priority}</span>
-
-      {task.deadline && (
-        <span>
-          Deadline: {new Date(task.deadline).toLocaleDateString()}
+        <span
+          style={{
+            marginLeft: "8px",
+            textDecoration: task.completed ? "line-through" : "none",
+          }}
+        >
+          {task.title} | Priority: {task.priority}
+          {task.deadline && (
+            <> | Deadline: {new Date(task.deadline).toLocaleDateString()}</>
+          )}
         </span>
-      )}
 
-      {isOverdue && <strong>OVERDUE</strong>}
+        {task.isOverdue && (
+          <span style={{ color: "red", marginLeft: "8px", fontWeight: "bold" }}>
+            OVERDUE
+          </span>
+        )}
+      </div>
 
       <button onClick={() => onDelete(task._id)}>Delete</button>
     </div>

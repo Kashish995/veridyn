@@ -24,6 +24,12 @@ const studyTaskSchema = new mongoose.Schema(
       default: "MEDIUM",
     },
 
+    effort: {
+      type: String,
+      enum: ["SMALL", "MEDIUM", "HEAVY"],
+      default: "SMALL",
+    },
+
     deadline: {
       type: Date,
       default: null,
