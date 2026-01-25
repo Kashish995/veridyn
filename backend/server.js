@@ -13,6 +13,13 @@ import subjectRoutes from "./routes/subject.routes.js";
 import planningRoutes from "./routes/planning.routes.js";
 import autoTaskRoutes from "./routes/autoTask.routes.js";
 import progressRoutes from "./routes/progress.routes.js";
+import studyLogRoutes from "./routes/studyLog.routes.js";
+import completionRoutes from "./routes/completion.routes.js";
+import streakRoutes from "./routes/streak.routes.js";
+import summaryRoutes from "./routes/summary.routes.js";
+import reflectionRoutes from "./routes/reflection.routes.js";
+import patternRoutes from "./routes/pattern.routes.js";
+import goalRoutes from "./routes/goal.routes.js";
 
 dotenv.config();
 
@@ -38,7 +45,13 @@ app.use("/api/subjects", subjectRoutes);
 app.use("/api/planning", planningRoutes);
 app.use("/api/auto-task", autoTaskRoutes);
 app.use("/api/progress", progressRoutes);
-
+app.use("/api/study-log", studyLogRoutes);
+app.use("/api/completion", completionRoutes);
+app.use("/api/streak", streakRoutes);
+app.use("/api/summary", summaryRoutes);
+app.use("/api/reflection", reflectionRoutes);
+app.use("/api/patterns", patternRoutes);
+app.use("/api/goal", goalRoutes);
 /* Root test */
 app.get("/", (req, res) => {
   res.send("API RUNNING");
