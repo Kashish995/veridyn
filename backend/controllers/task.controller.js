@@ -1,10 +1,28 @@
 import Task from "../models/Task.js";
 import { smartReschedule } from "./smartReschedule.js";
 
-// existing controller
 export const createTask = async (req, res) => {
-  const task = await Task.create(req.body);
-  res.json(task);
+  try {
+    const { title, description, priority, estimatedTime, dueDate, userId } = req.body;
+
+    if (!userId) {
+      return res.status(400).json({ message: "userId is required" });
+    }
+
+    const task = await Task.create({
+      title,
+      description,
+      priority,
+      estimatedTime: Number(estimatedTime),
+      dueDate: new Date(dueDate),
+      userId
+    });
+
+    res.json(task);
+  } catch (err) {
+    console.error("createTask error:", err);
+    res.status(500).json({ message: "Failed to create task" });
+  }
 };
 
 export const getTasksByUser = async (req, res) => {
@@ -12,7 +30,6 @@ export const getTasksByUser = async (req, res) => {
   res.json(tasks);
 };
 
-// ✅ NEW CONTROLLER for Option A
 export const getTasksByDate = async (req, res) => {
   try {
     const { userId, date } = req.params;
@@ -34,7 +51,6 @@ export const getTasksByDate = async (req, res) => {
     res.status(500).json({ message: "Failed to fetch tasks by date" });
   }
 };
-
 
 export const updateTaskStatus = async (req, res) => {
   const task = await Task.findByIdAndUpdate(

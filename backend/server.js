@@ -7,6 +7,12 @@ import userRoutes from "./routes/user.routes.js";
 import taskRoutes from "./routes/task.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import studyTaskRoutes from "./routes/studyTask.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import profileRoutes from "./routes/profile.routes.js";
+import subjectRoutes from "./routes/subject.routes.js";
+import planningRoutes from "./routes/planning.routes.js";
+import autoTaskRoutes from "./routes/autoTask.routes.js";
+import progressRoutes from "./routes/progress.routes.js";
 
 dotenv.config();
 
@@ -26,6 +32,12 @@ app.use("/api/users", userRoutes);
 app.use("/api/tasks", taskRoutes);
 app.use("/api/health", healthRoutes);
 app.use("/api/study-tasks", studyTaskRoutes);
+app.use("/api/auth", authRoutes);
+app.use("/api/profile", profileRoutes);
+app.use("/api/subjects", subjectRoutes);
+app.use("/api/planning", planningRoutes);
+app.use("/api/auto-task", autoTaskRoutes);
+app.use("/api/progress", progressRoutes);
 
 /* Root test */
 app.get("/", (req, res) => {
