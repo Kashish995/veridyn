@@ -1,0 +1,42 @@
+Project name: Veridyn
+
+Stack:
+- Frontend: React (Vite)
+- Backend: Node + Express + MongoDB
+- Auth: JWT
+- API base: http://localhost:5000/api
+
+Core features:
+- Tasks with subjects
+- StudyLog (chapters per day)
+- Daily & weekly summary
+- Pattern detection (common blocker)
+- Adaptive daily goals
+- Reflection system
+- Streak system with freeze (1/week)
+- Insights dashboard with chart
+
+Main frontend page: Insights.jsx
+Main backend logic: summary, patterns, goal, streak, reflection controllers
+
+Current state:
+- Option B completed
+- UI polished (cards, colors)
+- System working
+
+Important files:
+- frontend/src/pages/Insights.jsx
+- frontend/src/api/api.js
+- backend/controllers/*
+- backend/routes/*
+
+
+
+// what i have to do when i am starting a new  chat regarding the same project
+
+I am working on a project called Veridyn.
+
+Here is the project context:
+[paste project-context.txt]
+
+Now help me continue development.
