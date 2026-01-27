@@ -15,6 +15,9 @@ export const saveReflection = async (req, res) => {
       await existing.save();
       return res.json(existing);
     }
+    if (!content) {
+      return res.status(400).json({ message: "Reflection content required" });
+    }
 
     const reflection = await Reflection.create({
       userId,
