@@ -10,18 +10,22 @@ function App() {
   return (
     <Router>
       <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-        <Link to="/dashboard" style={{ marginRight: "10px" }}>
+       <Link to="/login">Login</Link>
+       <Link to="/dashboard" style={{ marginRight: "10px" }}>
           Dashboard
         </Link>
+
         <Link to="/insights">Insights</Link>
       </nav>
 
       <Routes>
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path="/insights" element={<Insights />} />
+        <Route path="*" element={<Login />} />
       </Routes>
+
     </Router>
   );
 }

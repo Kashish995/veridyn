@@ -20,6 +20,7 @@ import summaryRoutes from "./routes/summary.routes.js";
 import reflectionRoutes from "./routes/reflection.routes.js";
 import patternRoutes from "./routes/pattern.routes.js";
 import goalRoutes from "./routes/goal.routes.js";
+import insightsRoutes from "./routes/insightsRoutes.js";
 
 dotenv.config();
 
@@ -52,6 +53,7 @@ app.use("/api/summary", summaryRoutes);
 app.use("/api/reflection", reflectionRoutes);
 app.use("/api/patterns", patternRoutes);
 app.use("/api/goal", goalRoutes);
+app.use("/api/insights", insightsRoutes);
 /* Root test */
 app.get("/", (req, res) => {
   res.send("API RUNNING");

@@ -7,77 +7,60 @@ function Insights() {
   const [weekly, setWeekly] = useState(null);
   const [patterns, setPatterns] = useState([]);
   const [goal, setGoal] = useState(null);
-
   const [reflection, setReflection] = useState(null);
+
+  // Option C1 states
+  const [subjectStats, setSubjectStats] = useState([]);
+  const [weakest, setWeakest] = useState("");
+  const [strongest, setStrongest] = useState("");
+
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const [data, setData] = useState(null);
-
   const [freezeMessage, setFreezeMessage] = useState("");
 
-  const fetchData = async () => {
-    try {
-      const [
-        todayRes,
-        weeklyRes,
-        patternRes,
-        goalRes,
-        reflectionRes,
-      ] = await Promise.all([
-        api.get("/summary/today"),
-        api.get("/summary/weekly"),
-        api.get("/patterns"),
-        api.get("/goal"),
-        api.get("/reflection/today"),
-      ]);
+  useEffect(() => {
+    const fetchInsights = async () => {
+      try {
+        setLoading(true);
 
-      setToday(todayRes.data);
-      setWeekly(weeklyRes.data);
-      setPatterns(patternRes.data.patterns || []);
-      setGoal(goalRes.data);
-      setReflection(reflectionRes.data);
-    } catch (err) {
-      console.error("Error loading insights", err);
-    }
-  };
+        const [
+          todayRes,
+          weeklyRes,
+          patternRes,
+          goalRes,
+          reflectionRes,
+          subjectRes,
+        ] = await Promise.all([
+          api.get("/summary/today"),
+          api.get("/summary/weekly"),
+          api.get("/patterns"),
+          api.get("/goal"),
+          api.get("/reflection/today"),
+          api.get("/insights/subjects"), // Option C1
+        ]);
 
-      useEffect(() => {
-  const fetchInsights = async () => {
-    try {
-      setLoading(true);
+        setToday(todayRes.data);
+        setWeekly(weeklyRes.data);
+        setPatterns(patternRes.data.patterns || []);
+        setGoal(goalRes.data);
+        setReflection(reflectionRes.data);
 
-      const [
-        todayRes,
-        weeklyRes,
-        patternRes,
-        goalRes,
-        reflectionRes,
-      ] = await Promise.all([
-        api.get("/summary/today"),
-        api.get("/summary/weekly"),
-        api.get("/patterns"),
-        api.get("/goal"),
-        api.get("/reflection/today"),
-      ]);
+        setSubjectStats(subjectRes.data.subjects || []);
+        setWeakest(subjectRes.data.weakest || "");
+        setStrongest(subjectRes.data.strongest || "");
+      } catch (err) {
+        console.error(err);
+        setError("Failed to load insights");
+      } finally {
+        setLoading(false);
+      }
+    };
 
-      setToday(todayRes.data);
-      setWeekly(weeklyRes.data);
-      setPatterns(patternRes.data.patterns || []);
-      setGoal(goalRes.data);
-      setReflection(reflectionRes.data);
-    } catch (err) {
-      console.error(err);
-      setError("Failed to load insights");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  fetchInsights();
-}, []);
-
+    fetchInsights();
+  }, []);
 
   const submitReflection = async () => {
     try {
@@ -99,10 +82,9 @@ function Insights() {
     }
   };
 
- if (loading) return <p>Loading insights...</p>;
+  if (loading) return <p>Loading insights...</p>;
   if (error) return <p>{error}</p>;
   if (!today || !weekly || !goal) return <p>Incomplete data</p>;
-
 
   const cardStyle = {
     border: "1px solid #ddd",
@@ -141,7 +123,7 @@ function Insights() {
 
         <p
           style={{
-            color: today.feedback.includes("low") ? "red" : "green",
+            color: today.feedback?.includes("low") ? "red" : "green",
             fontWeight: "bold",
           }}
         >
@@ -161,6 +143,24 @@ function Insights() {
         <p style={{ fontSize: "18px", fontWeight: "bold" }}>
           Daily target: {goal.dailyTarget}
         </p>
+      </div>
+
+      {/* SUBJECT ANALYTICS — OPTION C1 */}
+      <div style={cardStyle}>
+        <h3 style={sectionTitle}>Subject Analytics</h3>
+
+        {subjectStats.length > 0 ? (
+          subjectStats.map((s) => (
+            <p key={s.name}>
+              {s.name}: {s.chapters} chapters
+            </p>
+          ))
+        ) : (
+          <p>No subject data yet.</p>
+        )}
+
+        {weakest && <p style={{ color: "red" }}>Weakest: {weakest}</p>}
+        {strongest && <p style={{ color: "green" }}>Strongest: {strongest}</p>}
       </div>
 
       {/* PATTERNS */}
