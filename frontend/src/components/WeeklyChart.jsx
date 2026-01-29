@@ -1,20 +1,13 @@
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Tooltip,
-  Legend,
-} from "chart.js";
 import { Bar } from "react-chartjs-2";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
+const WeeklyChart = ({ weekly }) => {
+  // 🛡️ SAFETY: handle undefined or empty data
+  if (!weekly || Object.keys(weekly).length === 0) {
+    return <p>No weekly data yet.</p>;
+  }
 
-export default function WeeklyChart({ weekly }) {
-  if (!weekly) return null;
-
-  const labels = Object.keys(weekly.days);
-  const values = Object.values(weekly.days);
+  const labels = Object.keys(weekly);
+  const values = Object.values(weekly);
 
   const data = {
     labels,
@@ -22,16 +15,12 @@ export default function WeeklyChart({ weekly }) {
       {
         label: "Chapters studied",
         data: values,
+        backgroundColor: "rgba(75,192,192,0.6)",
       },
     ],
   };
 
-  const options = {
-    responsive: true,
-    plugins: {
-      legend: { display: true },
-    },
-  };
+  return <Bar data={data} />;
+};
 
-  return <Bar data={data} options={options} />;
-}
+export default WeeklyChart;

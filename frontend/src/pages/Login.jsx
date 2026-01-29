@@ -7,20 +7,26 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault();
+
     try {
-     const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
+      const res = await api.post("/auth/login", { email, password });
 
+      // make sure token exists
+      if (!res.data.token) {
+        alert("No token received");
+        return;
+      }
+
+      // SAVE TOKEN
       localStorage.setItem("token", res.data.token);
-      localStorage.setItem("user", JSON.stringify(res.data.user));
 
-
-      navigate("/dashboard");
+      // redirect to insights (not dashboard)
+      navigate("/insights");
     } catch (err) {
-      alert(err.response?.data?.message || "Login failed");
+      alert("Login failed");
+      console.error(err);
     }
   };
 
@@ -28,29 +34,30 @@ const Login = () => {
     <div style={{ padding: "40px" }}>
       <h2>Login</h2>
 
-      <input
-        type="email"
-        placeholder="Email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-      />
+      <form onSubmit={handleLogin}>
+        <input
+          type="email"
+          placeholder="Email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+        />
 
-      <br />
+        <br />
 
-      <input
-        type="password"
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-      />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+        />
 
-      <br />
+        <br />
 
-      <button onClick={handleLogin}>Login</button>
+        <button type="submit">Login</button>
+      </form>
 
       <p>
-        Don't have an account? <a href="/register">Signup</a>
-
+        Don't have an account? <a href="/signup">Signup</a>
       </p>
     </div>
   );
