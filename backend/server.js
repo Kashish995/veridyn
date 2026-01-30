@@ -21,6 +21,8 @@ import reflectionRoutes from "./routes/reflection.routes.js";
 import patternRoutes from "./routes/pattern.routes.js";
 import goalRoutes from "./routes/goal.routes.js";
 import insightsRoutes from "./routes/insightsRoutes.js";
+import authMiddleware from "./middleware/auth.middleware.js";
+
 
 dotenv.config();
 
@@ -46,7 +48,7 @@ app.use("/api/subjects", subjectRoutes);
 app.use("/api/planning", planningRoutes);
 app.use("/api/auto-task", autoTaskRoutes);
 app.use("/api/progress", progressRoutes);
-app.use("/api/study-log", studyLogRoutes);
+app.use("/api/studyLog", studyLogRoutes);
 app.use("/api/completion", completionRoutes);
 app.use("/api/streak", streakRoutes);
 app.use("/api/summary", summaryRoutes);
@@ -54,6 +56,9 @@ app.use("/api/reflection", reflectionRoutes);
 app.use("/api/patterns", patternRoutes);
 app.use("/api/goal", goalRoutes);
 app.use("/api/insights", insightsRoutes);
+app.use("/api", authMiddleware);
+
+
 /* Root test */
 app.get("/", (req, res) => {
   res.send("API RUNNING");

@@ -1,16 +1,9 @@
 import express from "express";
-import {
-  getStudyTasks,
-  createStudyTask,
-  updateStudyTask,
-  deleteStudyTask,
-} from "../controllers/studyTask.controller.js";
+import { createTask } from "../controllers/studyTask.controller.js";
+import authMiddleware from "../middleware/auth.middleware.js";
 
 const router = express.Router();
 
-router.get("/:userId", getStudyTasks);
-router.post("/", createStudyTask);
-router.patch("/:id", updateStudyTask);
-router.delete("/:id", deleteStudyTask);
+router.post("/", authMiddleware, createTask);
 
 export default router;
