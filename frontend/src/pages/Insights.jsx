@@ -8,6 +8,7 @@ function Insights() {
   const [patterns, setPatterns] = useState([]);
   const [goal, setGoal] = useState(null);
   const [reflection, setReflection] = useState(null);
+  const [suggestion, setSuggestion] = useState(null); // 🔥 NEW
 
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
@@ -16,20 +17,28 @@ function Insights() {
 
   const fetchData = async () => {
     try {
-      const [todayRes, weeklyRes, patternRes, goalRes, reflectionRes] =
-        await Promise.all([
-          api.get("/summary/today"),
-          api.get("/summary/weekly"),
-          api.get("/patterns"),
-          api.get("/goal"),
-          api.get("/reflection/today"),
-        ]);
+      const [
+        todayRes,
+        weeklyRes,
+        patternRes,
+        goalRes,
+        reflectionRes,
+        suggestionRes, // 🔥 NEW
+      ] = await Promise.all([
+        api.get("/summary/today"),
+        api.get("/summary/weekly"),
+        api.get("/patterns"),
+        api.get("/goal"),
+        api.get("/reflection/today"),
+        api.get("/suggestions"), // 🔥 NEW
+      ]);
 
       setToday(todayRes.data);
       setWeekly(weeklyRes.data);
       setPatterns(patternRes.data.patterns || []);
-      setGoal(goalRes.data || { dailyTarget: 1 }); // fallback
+      setGoal(goalRes.data || { dailyTarget: 1 });
       setReflection(reflectionRes.data);
+      setSuggestion(suggestionRes.data); // 🔥 NEW
     } catch (err) {
       console.error("Error loading insights", err);
     } finally {
@@ -110,6 +119,17 @@ function Insights() {
         </p>
       </div>
 
+      {/* 🔥 SMART SUGGESTION (OPTION C PATH 1) */}
+      {suggestion && (
+        <div style={{ ...cardStyle, backgroundColor: "#eef6ff" }}>
+          <h3>Smart Suggestion</h3>
+          <p style={{ fontWeight: "bold" }}>{suggestion.suggestion}</p>
+          <p style={{ fontStyle: "italic", color: "#555" }}>
+            Reason: {suggestion.reason}
+          </p>
+        </div>
+      )}
+
       {/* WEEKLY */}
       <h3>Weekly Progress</h3>
       <WeeklyChart weekly={weekly} />
@@ -119,6 +139,16 @@ function Insights() {
       <p style={{ fontSize: "18px", fontWeight: "bold" }}>
         Daily target: {goal.dailyTarget}
       </p>
+      
+      <button
+        onClick={async () => {
+          const res = await api.post("/goal/auto-adjust");
+          alert(res.data.message);
+          setGoal({ ...goal, dailyTarget: res.data.dailyTarget });
+        }}
+      >
+        Auto Adjust Goal
+      </button>
 
       {/* PATTERNS */}
       {patterns.length > 0 && (

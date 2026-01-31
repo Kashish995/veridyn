@@ -1,47 +1,22 @@
 import express from "express";
-import Goal from "../models/Goal.js";
+console.log("✅ goal.routes.js loaded");
+
 import authMiddleware from "../middleware/auth.middleware.js";
+import todaySummaryMiddleware from "../middleware/todaySummary.middleware.js";
+import { getGoal, autoAdjustGoal } from "../controllers/goal.controller.js";
 
 const router = express.Router();
-
-// GET goal
-router.get("/", authMiddleware, async (req, res) => {
-  try {
-    const userId = req.userId; // ✅ FROM middleware
-
-    let goal = await Goal.findOne({ userId });
-
-    if (!goal) {
-      goal = await Goal.create({
-        userId,
-        dailyTarget: 2,
-      });
-    }
-
-    res.json(goal);
-  } catch (err) {
-    console.error("GOAL ERROR 👉", err);
-    res.status(500).json({ message: err.message });
-  }
+router.get("/test", (req, res) => {
+  res.send("THIS IS THE REAL GOAL ROUTER");
 });
 
-// UPDATE goal
-router.post("/", authMiddleware, async (req, res) => {
-  try {
-    const { dailyTarget } = req.body;
-    const userId = req.userId; // ✅
+router.get("/", authMiddleware, getGoal);
 
-    let goal = await Goal.findOneAndUpdate(
-      { userId },
-      { dailyTarget },
-      { new: true, upsert: true }
-    );
-
-    res.json(goal);
-  } catch (err) {
-    console.error("GOAL UPDATE ERROR 👉", err);
-    res.status(500).json({ message: err.message });
-  }
-});
+router.post(
+  "/auto-adjust",
+  authMiddleware,
+  todaySummaryMiddleware,
+  autoAdjustGoal
+);
 
 export default router;

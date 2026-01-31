@@ -1,8 +1,8 @@
 import mongoose from "mongoose";
 
- export const goalSchema = new mongoose.Schema(
+const goalSchema = new mongoose.Schema(
   {
-    userId: {   // ✅ MUST be userId
+    userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
@@ -11,6 +11,8 @@ import mongoose from "mongoose";
     dailyTarget: {
       type: Number,
       default: 2,
+      min: 1,
+      max: 20,
     },
   },
   { timestamps: true }

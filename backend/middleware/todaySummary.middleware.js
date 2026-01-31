@@ -4,15 +4,21 @@ const todaySummaryMiddleware = async (req, res, next) => {
   try {
     const userId = req.userId;
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    const start = new Date();
+    start.setHours(0, 0, 0, 0);
+
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
 
     const tasks = await Task.find({
       userId,
-      date: { $gte: today }
+      dueDate: { $gte: start, $lte: end }
     });
 
-    const completedTasks = tasks.filter(t => t.completed).length;
+    const completedTasks = tasks.filter(
+      t => t.status === "completed"
+    ).length;
+
     const totalTasks = tasks.length;
 
     req.todaySummary = { completedTasks, totalTasks };
