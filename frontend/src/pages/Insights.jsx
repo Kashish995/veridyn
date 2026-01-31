@@ -9,53 +9,36 @@ function Insights() {
   const [goal, setGoal] = useState(null);
   const [reflection, setReflection] = useState(null);
 
-  // Subject analytics
-  const [subjectStats, setSubjectStats] = useState([]);
-  const [weakest, setWeakest] = useState("");
-  const [strongest, setStrongest] = useState("");
-
   const [reason, setReason] = useState("");
   const [note, setNote] = useState("");
-
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
   const [freezeMessage, setFreezeMessage] = useState("");
+  const [loading, setLoading] = useState(true);
+
+  const fetchData = async () => {
+    try {
+      const [todayRes, weeklyRes, patternRes, goalRes, reflectionRes] =
+        await Promise.all([
+          api.get("/summary/today"),
+          api.get("/summary/weekly"),
+          api.get("/patterns"),
+          api.get("/goal"),
+          api.get("/reflection/today"),
+        ]);
+
+      setToday(todayRes.data);
+      setWeekly(weeklyRes.data);
+      setPatterns(patternRes.data.patterns || []);
+      setGoal(goalRes.data || { dailyTarget: 1 }); // fallback
+      setReflection(reflectionRes.data);
+    } catch (err) {
+      console.error("Error loading insights", err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchInsights = async () => {
-      try {
-        const todayRes = await api.get("/summary/today");
-        const weeklyRes = await api.get("/summary/weekly");
-        const patternsRes = await api.get("/patterns");
-        const goalRes = await api.get("/goal");
-        const reflectionRes = await api.get("/reflection/today");
-        const subjectsRes = await api.get("/insights/subjects");
-
-        setToday(todayRes.data);
-        setWeekly(weeklyRes.data);
-        setPatterns(patternsRes.data);
-        setGoal(goalRes.data);
-        setReflection(reflectionRes.data);
-        setSubjectStats(subjectsRes.data);
-
-        // optional strongest/weakest logic
-        if (subjectsRes.data.length > 0) {
-          const sorted = [...subjectsRes.data].sort(
-            (a, b) => a.chapters - b.chapters
-          );
-          setWeakest(sorted[0].name);
-          setStrongest(sorted[sorted.length - 1].name);
-        }
-
-        setLoading(false);
-      } catch (err) {
-        console.error("Failed to load insights", err);
-        setError("Failed to load insights");
-        setLoading(false);
-      }
-    };
-
-    fetchInsights();
+    fetchData();
   }, []);
 
   const submitReflection = async () => {
@@ -78,116 +61,106 @@ function Insights() {
     }
   };
 
-  if (loading) return <p>Loading insights...</p>;
-  if (error) return <p>{error}</p>;
-  if (!today || !goal) return <p>Incomplete data</p>;
+  if (loading) return <p>Loading today’s data...</p>;
+  if (!today || !weekly || !goal) return <p>Failed to load insights.</p>;
 
   const cardStyle = {
     border: "1px solid #ddd",
-    borderRadius: "10px",
-    padding: "16px",
-    marginBottom: "16px",
+    borderRadius: "8px",
+    padding: "15px",
+    marginBottom: "15px",
     backgroundColor: "#fafafa",
   };
 
-  const sectionTitle = { marginBottom: "10px" };
-
   return (
-    <div style={{ padding: "20px", maxWidth: "900px", margin: "0 auto" }}>
+    <div style={{ padding: "20px" }}>
       <h1 style={{ marginBottom: "20px" }}>Insights</h1>
 
+      {/* TODAY */}
       <div style={cardStyle}>
-        <h3 style={sectionTitle}>Today</h3>
+        <h3>Today</h3>
+
         <p>Chapters studied: {today.chaptersStudied}</p>
         <p>
           Tasks: {today.completedTasks} / {today.totalTasks}
         </p>
+
         <p>
           Streak:{" "}
-          <b style={{ color: today.streakStatus === "active" ? "green" : "red" }}>
+          <span
+            style={{
+              color: today.streakStatus === "active" ? "green" : "red",
+              fontWeight: "bold",
+            }}
+          >
             {today.streakStatus}
-          </b>
+          </span>
         </p>
 
         <button onClick={useFreeze}>Use Streak Freeze</button>
         {freezeMessage && <p>{freezeMessage}</p>}
 
-        <p style={{ fontWeight: "bold" }}>Feedback: {today.feedback}</p>
-      </div>
-
-      <div style={cardStyle}>
-        <h3 style={sectionTitle}>Weekly Progress</h3>
-        <WeeklyChart weekly={weekly} />
-      </div>
-
-      <div style={cardStyle}>
-        <h3 style={sectionTitle}>Goal</h3>
-        <p style={{ fontSize: "18px", fontWeight: "bold" }}>
-          Daily target: {goal.dailyTarget}
+        <p
+          style={{
+            color: today.feedback.includes("low") ? "red" : "green",
+            fontWeight: "bold",
+          }}
+        >
+          Feedback: {today.feedback}
         </p>
       </div>
 
-      <div style={cardStyle}>
-        <h3 style={sectionTitle}>Subject Analytics</h3>
+      {/* WEEKLY */}
+      <h3>Weekly Progress</h3>
+      <WeeklyChart weekly={weekly} />
 
-        {subjectStats.length > 0 ? (
-          subjectStats.map((s) => (
-            <p key={s.name}>
-              {s.name}: {s.chapters} chapters
-            </p>
-          ))
-        ) : (
-          <p>No subject data yet.</p>
-        )}
+      {/* GOAL */}
+      <h3>Goal</h3>
+      <p style={{ fontSize: "18px", fontWeight: "bold" }}>
+        Daily target: {goal.dailyTarget}
+      </p>
 
-        {weakest && <p style={{ color: "red" }}>Weakest: {weakest}</p>}
-        {strongest && <p style={{ color: "green" }}>Strongest: {strongest}</p>}
-      </div>
-
-      <div style={cardStyle}>
-        <h3 style={sectionTitle}>Patterns</h3>
-        {patterns.length > 0 ? (
-          patterns.map((p, i) => (
+      {/* PATTERNS */}
+      {patterns.length > 0 && (
+        <>
+          <h3>Patterns</h3>
+          {patterns.map((p, i) => (
             <p key={i}>• {p}</p>
-          ))
-        ) : (
-          <p>No strong patterns detected yet.</p>
-        )}
-      </div>
+          ))}
+        </>
+      )}
 
-      <div style={cardStyle}>
-        <h3 style={sectionTitle}>Reflection</h3>
+      {/* REFLECTION */}
+      <h3>Reflection</h3>
+      {reflection ? (
+        <p>
+          Today’s blocker: <b>{reflection.reason}</b> — {reflection.note}
+        </p>
+      ) : (
+        <div>
+          <select value={reason} onChange={(e) => setReason(e.target.value)}>
+            <option value="">Select reason</option>
+            <option value="distraction">Distraction</option>
+            <option value="fatigue">Fatigue</option>
+            <option value="poor planning">Poor planning</option>
+            <option value="lack of motivation">Lack of motivation</option>
+            <option value="other">Other</option>
+          </select>
 
-        {reflection ? (
-          <p>
-            Today’s blocker: <b>{reflection.reason}</b> — {reflection.note}
-          </p>
-        ) : (
-          <div>
-            <select value={reason} onChange={(e) => setReason(e.target.value)}>
-              <option value="">Select reason</option>
-              <option value="distraction">Distraction</option>
-              <option value="fatigue">Fatigue</option>
-              <option value="poor planning">Poor planning</option>
-              <option value="lack of motivation">Lack of motivation</option>
-              <option value="other">Other</option>
-            </select>
+          <br />
 
-            <br />
+          <input
+            type="text"
+            placeholder="Optional note"
+            value={note}
+            onChange={(e) => setNote(e.target.value)}
+          />
 
-            <input
-              type="text"
-              placeholder="Optional note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+          <br />
 
-            <br />
-
-            <button onClick={submitReflection}>Save Reflection</button>
-          </div>
-        )}
-      </div>
+          <button onClick={submitReflection}>Save Reflection</button>
+        </div>
+      )}
     </div>
   );
 }

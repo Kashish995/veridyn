@@ -1,9 +1,9 @@
 import express from "express";
+import { getTomorrowSuggestion } from "../controllers/suggestion.controller.js";
 import authMiddleware from "../middleware/auth.middleware.js";
-import { getInsights } from "../controllers/insightsController.js";
 
 const router = express.Router();
 
-router.get("/", authMiddleware, getInsights);
+router.get("/tomorrow", authMiddleware, getTomorrowSuggestion);
 
 export default router;

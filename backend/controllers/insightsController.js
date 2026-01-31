@@ -1,8 +1,8 @@
 import StudyLog from "../models/StudyLog.js";
 
-export const getSubjectAnalytics = async (req, res) => {
+export const getInsights = async (req, res) => {
   try {
-    const userId = req.user.id;
+    const userId = req.userId; // ✅ FIXED (middleware uses req.userId)
 
     const logs = await StudyLog.find({ user: userId });
 
@@ -39,7 +39,7 @@ export const getSubjectAnalytics = async (req, res) => {
       strongest: strongest.name,
     });
   } catch (err) {
-    console.error(err);
+    console.error("INSIGHTS ERROR 👉", err);
     res.status(500).json({ message: "Failed to calculate subject analytics" });
   }
 };
