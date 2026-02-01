@@ -69,11 +69,7 @@ app.use("/api/summary", authMiddleware, summaryRoutes);
 app.use("/api/reflection", authMiddleware, reflectionRoutes);
 app.use("/api/patterns", authMiddleware, patternRoutes);
 
-app.use("/api/goals", (req, res, next) => {
-  console.log("🔥 /api/goals route HIT");
-  next();
-}, goalRoutes);
-
+app.use("/api/goals", goalRoutes);
 app.use("/api/insights", insightsRoutes);
 app.use("/api/suggestions", authMiddleware, suggestionRoutes);
 
