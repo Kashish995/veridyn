@@ -11,8 +11,10 @@ const goalSchema = new mongoose.Schema(
     dailyTarget: {
       type: Number,
       default: 2,
-      min: 1,
-      max: 20,
+    },
+    streak: {
+      type: Number,
+      default: 0,
     },
   },
   { timestamps: true }

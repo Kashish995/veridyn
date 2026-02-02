@@ -37,8 +37,10 @@ export const getGoalDashboard = async (req, res) => {
       dailyTarget: goal.dailyTarget,
       completedToday: completedTasks,
       totalToday: totalTasks,
-      progressPercent
+      progressPercent,
+      streak: goal.streak
     });
+
   } catch (err) {
     console.error("GOAL DASHBOARD ERROR:", err);
     res.status(500).json({ message: "Failed to load dashboard" });
@@ -58,20 +60,27 @@ export const autoAdjustGoal = async (req, res) => {
     }
 
     let newTarget = goal.dailyTarget;
-    let message = "Goal unchanged";
+      let message = "Goal unchanged";
 
-    if (today.totalTasks > 0 && today.completedTasks === today.totalTasks) {
-      newTarget = goal.dailyTarget + 1;
-      message = "Goal increased due to full completion";
-    } else if (today.completedTasks < today.totalTasks / 2) {
-      newTarget = Math.max(1, goal.dailyTarget - 1);
-      message = "Goal reduced due to low completion";
-    }
+      if (today.totalTasks > 0 && today.completedTasks === today.totalTasks) {
+        newTarget = goal.dailyTarget + 1;
+        goal.streak += 1;
+        message = "Goal increased due to full completion";
+      } else if (today.completedTasks < today.totalTasks / 2) {
+        newTarget = Math.max(1, goal.dailyTarget - 1);
+        goal.streak = 0;
+        message = "Goal reduced due to low completion";
+      }
 
-    goal.dailyTarget = newTarget;
-    await goal.save();
+      goal.dailyTarget = newTarget;
+      await goal.save();
 
-    res.json({ dailyTarget: newTarget, message });
+      res.json({
+        dailyTarget: newTarget,
+        streak: goal.streak,
+        message
+      });
+
   } catch (err) {
     console.error("AUTO GOAL ERROR:", err);
     res.status(500).json({ message: "Failed to auto-adjust goal" });

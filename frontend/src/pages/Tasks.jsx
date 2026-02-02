@@ -1,71 +1,140 @@
 import { useEffect, useState } from "react";
-import {
-  getTasksByUser,
-  createTask,
-  updateTaskStatus,
-  deleteTask,
-} from "../api/taskApi";
+import axios from "axios";
 
-const USER_ID = "6963fd04456b9d41a7336a6a"; // your MongoDB user ID
-
-export default function Tasks() {
+const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
+  const [dueDate, setDueDate] = useState("");
 
-  const loadTasks = async () => {
-    const data = await getTasksByUser(USER_ID);
-    setTasks(data);
+  const token = localStorage.getItem("token");
+
+  const fetchTasks = async () => {
+    const res = await axios.get("http://localhost:5000/api/tasks", {
+      headers: { Authorization: `Bearer ${token}` }
+    });
+    setTasks(res.data);
+  };
+
+  const addTask = async () => {
+    if (!title || !dueDate) return alert("Enter title and date");
+
+    await axios.post(
+      "http://localhost:5000/api/tasks",
+      { title, dueDate, priority: "medium", estimatedTime: 30 },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    setTitle("");
+    setDueDate("");
+    fetchTasks();
+  };
+
+  const markDone = async (id) => {
+    await axios.patch(
+      `http://localhost:5000/api/tasks/${id}`,
+      { status: "completed" },
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    fetchTasks();
   };
 
   useEffect(() => {
-    loadTasks();
+    fetchTasks();
   }, []);
 
-  const handleAddTask = async () => {
-    if (!title.trim()) return;
-
-    await createTask({
-      title,
-      description: "Created from frontend",
-      status: "pending",
-      userId: USER_ID,
-    });
-
-    setTitle("");
-    loadTasks();
-  };
-
-  const toggleStatus = async (task) => {
-    const newStatus = task.status === "pending" ? "completed" : "pending";
-    await updateTaskStatus(task._id, newStatus);
-    loadTasks();
-  };
-
-  const handleDelete = async (id) => {
-    await deleteTask(id);
-    loadTasks();
-  };
-
   return (
-    <div style={{ padding: "20px" }}>
-      <h2>My Tasks</h2>
+    <div style={styles.container}>
+      <h2 style={styles.title}>📝 Tasks</h2>
 
-      <input
-        value={title}
-        onChange={(e) => setTitle(e.target.value)}
-        placeholder="New task title"
-      />
-      <button onClick={handleAddTask}>Add</button>
+      <div style={styles.form}>
+        <input
+          style={styles.input}
+          placeholder="Task title"
+          value={title}
+          onChange={e => setTitle(e.target.value)}
+        />
 
-      <ul>
-        {tasks.map((task) => (
-          <li key={task._id}>
-            <b>{task.title}</b> — {task.status}
-            <button onClick={() => toggleStatus(task)}>Toggle</button>
-            <button onClick={() => handleDelete(task._id)}>Delete</button>
+        <input
+          style={styles.input}
+          type="date"
+          value={dueDate}
+          onChange={e => setDueDate(e.target.value)}
+        />
+
+        <button onClick={addTask} style={styles.addBtn}>
+          Add Task
+        </button>
+      </div>
+
+      <ul style={styles.list}>
+        {tasks.map(t => (
+          <li key={t._id} style={styles.listItem}>
+            <span>
+              {t.title} — <b>{t.status}</b>
+            </span>
+
+            {t.status !== "completed" && (
+              <button onClick={() => markDone(t._id)} style={styles.doneBtn}>
+                ✔
+              </button>
+            )}
           </li>
         ))}
       </ul>
     </div>
   );
-}
+};
+
+const styles = {
+  container: {
+    padding: "20px",
+    maxWidth: "400px",
+    margin: "auto"
+  },
+  title: {
+    textAlign: "center",
+    marginBottom: "15px"
+  },
+  form: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
+    marginBottom: "15px"
+  },
+  input: {
+    padding: "8px",
+    borderRadius: "5px",
+    border: "1px solid #ccc"
+  },
+  addBtn: {
+    padding: "8px",
+    borderRadius: "6px",
+    border: "none",
+    background: "#4caf50",
+    color: "white",
+    cursor: "pointer"
+  },
+  list: {
+    listStyle: "none",
+    padding: 0
+  },
+  listItem: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "8px",
+    marginBottom: "6px",
+    borderRadius: "6px",
+    background: "#f4f4f4"
+  },
+  doneBtn: {
+    border: "none",
+    background: "#2196f3",
+    color: "white",
+    borderRadius: "4px",
+    cursor: "pointer",
+    padding: "4px 8px"
+  }
+};
+
+export default Tasks;
