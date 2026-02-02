@@ -1,9 +1,8 @@
 import express from "express";
-import { getTomorrowSuggestion } from "../controllers/suggestion.controller.js";
-import authMiddleware from "../middleware/auth.middleware.js";
+import { getSuggestion } from "../controllers/suggestion.controller.js";
 
 const router = express.Router();
 
-router.get("/tomorrow", authMiddleware, getTomorrowSuggestion);
+router.get("/", getSuggestion);
 
 export default router;

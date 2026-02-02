@@ -38,6 +38,15 @@ const Tasks = () => {
     fetchTasks();
   };
 
+  // 🗑 DELETE TASK
+  const deleteTask = async (id) => {
+    await axios.delete(
+      `http://localhost:5000/api/tasks/${id}`,
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+    fetchTasks();
+  };
+
   useEffect(() => {
     fetchTasks();
   }, []);
@@ -73,11 +82,20 @@ const Tasks = () => {
               {t.title} — <b>{t.status}</b>
             </span>
 
-            {t.status !== "completed" && (
-              <button onClick={() => markDone(t._id)} style={styles.doneBtn}>
-                ✔
+            <div>
+              {t.status !== "completed" && (
+                <button onClick={() => markDone(t._id)} style={styles.doneBtn}>
+                  ✔
+                </button>
+              )}
+
+              <button
+                onClick={() => deleteTask(t._id)}
+                style={{ marginLeft: "6px" }}
+              >
+                🗑
               </button>
-            )}
+            </div>
           </li>
         ))}
       </ul>

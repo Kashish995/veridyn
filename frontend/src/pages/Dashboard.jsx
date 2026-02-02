@@ -31,7 +31,7 @@ const Dashboard = () => {
     fetchDashboard();
   }, []);
 
-  if (!data) return <p>Loading...</p>;
+  if (!data) return <p>Loading dashboard...</p>;
 
   return (
   <div style={styles.container}>

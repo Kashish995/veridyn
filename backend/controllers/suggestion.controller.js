@@ -1,72 +1,41 @@
-import StudyLog from "../models/StudyLog.js";
 import Task from "../models/Task.js";
 
-export const getTomorrowSuggestion = async (req, res) => {
+export const getSuggestion = async (req, res) => {
   try {
     const userId = req.userId;
 
-    const today = new Date();
-    const last7Days = [];
+    const tasks = await Task.find({ userId });
 
-    for (let i = 1; i <= 7; i++) {
-      const d = new Date();
-      d.setDate(today.getDate() - i);
-      last7Days.push(d.toISOString().split("T")[0]);
+    if (!tasks.length) {
+      return res.json({
+        suggestion: "Add your first task today",
+        reason: "No tasks found for today"
+      });
     }
 
-    const logs = await StudyLog.find({
-      userId,
-      date: { $in: last7Days },
-    });
-
-    const subjectTotals = {};
-
-    logs.forEach((l) => {
-      const key = l.subjectId.toString();
-      subjectTotals[key] =
-        (subjectTotals[key] || 0) + l.chaptersStudied;
-    });
-
-    let weakestSubject = null;
-    let min = Infinity;
-
-    for (let s in subjectTotals) {
-      if (subjectTotals[s] < min) {
-        min = subjectTotals[s];
-        weakestSubject = s;
-      }
-    }
-
-    // yesterday completion
-    const yesterday = new Date();
-    yesterday.setDate(today.getDate() - 1);
-
-    const start = new Date(yesterday.toISOString().split("T")[0]);
-    const end = new Date(start);
-    end.setDate(end.getDate() + 1);
-
-    const tasks = await Task.find({
-      userId,
-      dueDate: { $gte: start, $lt: end },
-    });
-
+    const completed = tasks.filter(t => t.status === "completed").length;
     const total = tasks.length;
-    const completed = tasks.filter((t) => t.status === "completed").length;
 
-    let suggestion = "Revise your weakest subject";
-    let reason = "Based on your last 7 days performance";
-
-    if (weakestSubject) {
-      suggestion = `Study your weakest subject (2 chapters) and complete 2 tasks`;
-      reason = "Low study count in this subject recently";
+    if (completed === 0) {
+      return res.json({
+        suggestion: "Start with the easiest task",
+        reason: "You haven’t completed any task yet"
+      });
     }
 
-    if (total > 0 && completed / total < 0.7) {
-      reason += " and low task completion yesterday";
+    if (completed < total) {
+      return res.json({
+        suggestion: "Finish one pending task",
+        reason: "You already made progress today"
+      });
     }
 
-    res.json({ suggestion, reason });
+    return res.json({
+      suggestion: "Great job! Plan tomorrow’s tasks",
+      reason: "All tasks completed"
+    });
+
   } catch (err) {
-    res.status(500).json({ message: "Failed to generate suggestion" });
+    res.status(500).json({ message: "Failed to get suggestion" });
   }
 };
