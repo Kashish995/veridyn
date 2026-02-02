@@ -1,6 +1,6 @@
 import Goal from "../models/Goal.js";
 
-// GET current goal (auto-create if not exists)
+// GET current goal (simple)
 export const getGoal = async (req, res) => {
   try {
     const userId = req.userId;
@@ -17,6 +17,35 @@ export const getGoal = async (req, res) => {
     res.status(500).json({ message: "Failed to get goal" });
   }
 };
+
+
+// DASHBOARD (goal + today summary)
+export const getGoalDashboard = async (req, res) => {
+  try {
+    const userId = req.userId;
+    const { completedTasks, totalTasks } = req.todaySummary;
+
+    const goal = await Goal.findOneAndUpdate(
+      { userId },
+      { $setOnInsert: { dailyTarget: 2 } },
+      { new: true, upsert: true }
+    );
+
+    const progressPercent =
+      totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
+    res.json({
+      dailyTarget: goal.dailyTarget,
+      completedToday: completedTasks,
+      totalToday: totalTasks,
+      progressPercent
+    });
+  } catch (err) {
+    console.error("GOAL DASHBOARD ERROR 👉", err);
+    res.status(500).json({ message: "Failed to load dashboard" });
+  }
+};
+
 
 // AUTO adjust goal based on performance
 export const autoAdjustGoal = async (req, res) => {

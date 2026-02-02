@@ -69,11 +69,11 @@ app.use("/api/summary", authMiddleware, summaryRoutes);
 app.use("/api/reflection", authMiddleware, reflectionRoutes);
 app.use("/api/patterns", authMiddleware, patternRoutes);
 
-app.use("/api/goals", goalRoutes);
-app.use("/api/insights", insightsRoutes);
+app.use("/api/goals", authMiddleware, goalRoutes);
+app.use("/api/insights",authMiddleware, insightsRoutes);
 app.use("/api/suggestions", authMiddleware, suggestionRoutes);
 
-app.use("/api/health", healthRoutes);
+app.use("/api/health",authMiddleware, healthRoutes);
 
 app.get("/", (req, res) => {
   res.send("API RUNNING");

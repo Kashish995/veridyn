@@ -1,26 +1,28 @@
-import Task from "../models/Task.js";
+import jwt from "jsonwebtoken";
 
-const todaySummaryMiddleware = async (req, res, next) => {
+const authMiddleware = (req, res, next) => {
+  const authHeader = req.header("Authorization");
+
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return res.status(401).json({ message: "No token provided" });
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
   try {
-    const userId = req.userId;
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    const today = new Date();
-    today.setHours(0, 0, 0, 0);
+    // ✅ support both possible payload styles
+    req.userId = decoded.id || decoded._id || decoded.userId;
 
-    const tasks = await Task.find({
-      userId,
-      date: { $gte: today }
-    });
+    if (!req.userId) {
+      return res.status(401).json({ message: "Invalid token payload" });
+    }
 
-    const completedTasks = tasks.filter(t => t.completed).length;
-    const totalTasks = tasks.length;
-
-    req.todaySummary = { completedTasks, totalTasks };
     next();
   } catch (err) {
-    console.error("TODAY SUMMARY ERROR 👉", err);
-    res.status(500).json({ message: "Failed to build today summary" });
+    return res.status(401).json({ message: "Invalid token" });
   }
 };
 
-export default todaySummaryMiddleware;
+export default authMiddleware;

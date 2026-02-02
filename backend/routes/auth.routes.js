@@ -1,4 +1,5 @@
 import express from "express";
+import { register, login } from "../controllers/auth.controller.js";
 import jwt from "jsonwebtoken";
 import User from "../models/User.js"; // adjust path
 import bcrypt from "bcryptjs";
@@ -19,7 +20,7 @@ router.post("/login", async (req, res) => {
     process.env.JWT_SECRET,
     { expiresIn: "1d" }
   );
-
+  
   res.json({
     token,
     user: {
@@ -29,5 +30,8 @@ router.post("/login", async (req, res) => {
     },
   });
 });
+
+router.post("/register", register);
+router.post("/login", login);
 
 export default router;
