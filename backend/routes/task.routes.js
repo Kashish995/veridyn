@@ -1,4 +1,5 @@
 import { Router } from "express";
+import authMiddleware from "../middleware/auth.middleware.js";
 import {
   createTask,
   getTasksByUser,
@@ -9,9 +10,10 @@ import {
 
 const router = Router();
 
+// 🔐 PROTECTED ROUTES
 router.post("/", createTask);
-router.get("/user/:userId", getTasksByUser);
-router.get("/user/:userId/:date", getTasksByDate);
+router.get("/", getTasksByUser);
+router.get("/:date", getTasksByDate);
 router.patch("/:taskId", updateTaskStatus);
 router.delete("/:taskId", deleteTask);
 

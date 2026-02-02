@@ -3,11 +3,9 @@ import { smartReschedule } from "./smartReschedule.js";
 
 export const createTask = async (req, res) => {
   try {
-    const { title, description, priority, estimatedTime, dueDate, userId } = req.body;
+    console.log("CREATE TASK USERID 👉", req.userId);
 
-    if (!userId) {
-      return res.status(400).json({ message: "userId is required" });
-    }
+    const { title, description, priority, estimatedTime, dueDate } = req.body;
 
     const task = await Task.create({
       title,
@@ -15,46 +13,42 @@ export const createTask = async (req, res) => {
       priority,
       estimatedTime: Number(estimatedTime),
       dueDate: new Date(dueDate),
-      userId
+      userId: req.userId
     });
 
     res.json(task);
   } catch (err) {
     console.error("createTask error:", err);
-    res.status(500).json({ message: "Failed to create task" });
+    res.status(500).json({ message: err.message });
   }
 };
 
 export const getTasksByUser = async (req, res) => {
-  const tasks = await Task.find({ userId: req.params.userId });
+  const tasks = await Task.find({ userId: req.userId });
   res.json(tasks);
 };
 
 export const getTasksByDate = async (req, res) => {
-  try {
-    const { userId, date } = req.params;
+  const { date } = req.params;
+  const userId = req.userId;
 
-    await smartReschedule(userId, new Date(date));
+  await smartReschedule(userId, new Date(date));
 
-    const start = new Date(date);
-    const end = new Date(date);
-    end.setHours(23, 59, 59, 999);
+  const start = new Date(date);
+  const end = new Date(date);
+  end.setHours(23, 59, 59, 999);
 
-    const tasks = await Task.find({
-      userId,
-      dueDate: { $gte: start, $lte: end }
-    });
+  const tasks = await Task.find({
+    userId,
+    dueDate: { $gte: start, $lte: end }
+  });
 
-    res.json(tasks);
-  } catch (err) {
-    console.error("getTasksByDate error:", err);
-    res.status(500).json({ message: "Failed to fetch tasks by date" });
-  }
+  res.json(tasks);
 };
 
 export const updateTaskStatus = async (req, res) => {
-  const task = await Task.findByIdAndUpdate(
-    req.params.taskId,
+  const task = await Task.findOneAndUpdate(
+    { _id: req.params.taskId, userId: req.userId },
     req.body,
     { new: true }
   );
@@ -62,6 +56,11 @@ export const updateTaskStatus = async (req, res) => {
 };
 
 export const deleteTask = async (req, res) => {
-  await Task.findByIdAndDelete(req.params.taskId);
+  await Task.findOneAndDelete({
+    _id: req.params.taskId,
+    userId: req.userId
+  });
   res.json({ message: "Task deleted" });
 };
+
+
