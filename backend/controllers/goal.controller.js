@@ -5,31 +5,30 @@ export const getGoal = async (req, res) => {
   try {
     const userId = req.userId;
 
-    const goal = await Goal.findOneAndUpdate(
-      { userId },
-      { $setOnInsert: { dailyTarget: 2 } },
-      { new: true, upsert: true }
-    );
+    let goal = await Goal.findOne({ userId });
+
+    if (!goal) {
+      goal = await Goal.create({ userId, dailyTarget: 2 });
+    }
 
     res.json(goal);
   } catch (err) {
-    console.error("GET GOAL ERROR 👉", err);
+    console.error("GET GOAL ERROR:", err);
     res.status(500).json({ message: "Failed to get goal" });
   }
 };
 
-
-// DASHBOARD (goal + today summary)
+// DASHBOARD (with today summary)
 export const getGoalDashboard = async (req, res) => {
   try {
     const userId = req.userId;
     const { completedTasks, totalTasks } = req.todaySummary;
 
-    const goal = await Goal.findOneAndUpdate(
-      { userId },
-      { $setOnInsert: { dailyTarget: 2 } },
-      { new: true, upsert: true }
-    );
+    let goal = await Goal.findOne({ userId });
+
+    if (!goal) {
+      goal = await Goal.create({ userId, dailyTarget: 2 });
+    }
 
     const progressPercent =
       totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
@@ -41,37 +40,32 @@ export const getGoalDashboard = async (req, res) => {
       progressPercent
     });
   } catch (err) {
-    console.error("GOAL DASHBOARD ERROR 👉", err);
+    console.error("GOAL DASHBOARD ERROR:", err);
     res.status(500).json({ message: "Failed to load dashboard" });
   }
 };
 
-
-// AUTO adjust goal based on performance
+// AUTO ADJUST GOAL (Option C logic)
 export const autoAdjustGoal = async (req, res) => {
   try {
     const userId = req.userId;
     const today = req.todaySummary;
 
-    if (!today) {
-      return res.status(400).json({ message: "Today summary not available" });
-    }
+    let goal = await Goal.findOne({ userId });
 
-    const goal = await Goal.findOneAndUpdate(
-      { userId },
-      { $setOnInsert: { dailyTarget: 2 } },
-      { new: true, upsert: true }
-    );
+    if (!goal) {
+      goal = await Goal.create({ userId, dailyTarget: 2 });
+    }
 
     let newTarget = goal.dailyTarget;
     let message = "Goal unchanged";
 
-    if (today.completedTasks < today.totalTasks / 2) {
-      newTarget = Math.max(1, goal.dailyTarget - 1);
-      message = "Goal reduced due to low completion";
-    } else if (today.completedTasks === today.totalTasks) {
+    if (today.totalTasks > 0 && today.completedTasks === today.totalTasks) {
       newTarget = goal.dailyTarget + 1;
       message = "Goal increased due to full completion";
+    } else if (today.completedTasks < today.totalTasks / 2) {
+      newTarget = Math.max(1, goal.dailyTarget - 1);
+      message = "Goal reduced due to low completion";
     }
 
     goal.dailyTarget = newTarget;
@@ -79,7 +73,7 @@ export const autoAdjustGoal = async (req, res) => {
 
     res.json({ dailyTarget: newTarget, message });
   } catch (err) {
-    console.error("AUTO GOAL ERROR 👉", err);
+    console.error("AUTO GOAL ERROR:", err);
     res.status(500).json({ message: "Failed to auto-adjust goal" });
   }
 };
