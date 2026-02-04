@@ -7,7 +7,8 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const navigate = useNavigate();
 
-  const handleLogin = async () => {
+  const handleLogin = async (e) => {
+    e.preventDefault(); 
     try {
       const res = await axios.post("http://localhost:5000/api/auth/login", {
         email,
@@ -24,7 +25,7 @@ const Login = () => {
   return (
     <div style={styles.page}>
       <div style={styles.card}>
-        <h1 style={styles.title}>📚 Study Tracker</h1>
+        <h1 style={styles.title}>📚 Veridyn</h1>
         <p style={styles.subtitle}>Login to continue</p>
 
         <input
@@ -43,9 +44,11 @@ const Login = () => {
           onChange={(e) => setPassword(e.target.value)}
         />
 
-        <button style={styles.button} onClick={handleLogin}>
-          Login
-        </button>
+        <form onSubmit={handleLogin}>
+          <button type="submit">Login</button>
+        </form>
+
+
 
         <p style={{ marginTop: "10px" }}>
           Don’t have an account? <Link to="/register">Register</Link>

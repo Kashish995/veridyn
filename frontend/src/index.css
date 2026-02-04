@@ -98,3 +98,7 @@ button:focus-visible {
   opacity: 0.5;
   text-decoration: line-through;
 }
+body {
+  background: radial-gradient(circle at top, #ede9fe, #fdf2f8, #fff);
+   color: #1f2937;
+}

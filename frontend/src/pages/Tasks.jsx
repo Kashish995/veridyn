@@ -52,46 +52,37 @@ const Tasks = () => {
  return (
   <div style={styles.page}>
     <div style={styles.card}>
-      <h2 style={styles.heading}>📝 Today’s Tasks</h2>
+      <h2 style={styles.title}>📝 Today’s Tasks</h2>
 
       <div style={styles.inputRow}>
         <input
           style={styles.input}
           placeholder="What will you study?"
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={e => setTitle(e.target.value)}
         />
 
         <input
           style={styles.input}
           type="date"
           value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
+          onChange={e => setDueDate(e.target.value)}
         />
 
-        <button style={styles.addButton} onClick={addTask}>
-          ➕ Add
-        </button>
+        <button style={styles.addBtn} onClick={addTask}>＋ Add</button>
       </div>
 
-      <ul style={styles.list}>
-        {tasks.map((t) => (
-          <li
-            key={t._id}
-            style={{
-              ...styles.taskItem,
-              background:
-                t.status === "completed" ? "#dcfce7" : "#f3f4f6",
-            }}
-          >
-            <span style={{ fontWeight: "bold" }}>
-              {t.status === "completed" ? "✅" : "📌"} {t.title}
+      <div style={styles.list}>
+        {tasks.map(t => (
+          <div key={t._id} style={styles.taskItem}>
+            <span>
+              {t.title} — <b>{t.status}</b>
             </span>
 
             <div>
               {t.status !== "completed" && (
                 <button
-                  style={styles.doneButton}
+                  style={styles.doneBtn}
                   onClick={() => markDone(t._id)}
                 >
                   ✔
@@ -99,39 +90,41 @@ const Tasks = () => {
               )}
 
               <button
-                style={styles.deleteButton}
+                style={styles.deleteBtn}
                 onClick={() => deleteTask(t._id)}
               >
                 🗑
               </button>
             </div>
-          </li>
+          </div>
         ))}
-      </ul>
+      </div>
     </div>
   </div>
 );
-};
+}
+
+export default Tasks;
 
 const styles = {
   page: {
     minHeight: "100vh",
+    background: "linear-gradient(to bottom, #eef2ff, #f8fafc)",
     display: "flex",
     justifyContent: "center",
+    alignItems: "flex-start",
     paddingTop: "40px",
-    background: "linear-gradient(135deg, #eef2ff, #f8fafc)",
   },
   card: {
+    width: "420px",
     background: "white",
-    padding: "25px",
-    borderRadius: "20px",
-    width: "440px",
-    boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
+    padding: "20px",
+    borderRadius: "14px",
+    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
   },
-  heading: {
-    color: "#4f46e5",
-    marginBottom: "15px",
+  title: {
     textAlign: "center",
+    marginBottom: "15px",
   },
   inputRow: {
     display: "flex",
@@ -141,46 +134,48 @@ const styles = {
   input: {
     flex: 1,
     padding: "8px",
-    borderRadius: "10px",
+    borderRadius: "6px",
     border: "1px solid #ccc",
   },
-  addButton: {
+  addBtn: {
     background: "#4f46e5",
     color: "white",
     border: "none",
-    borderRadius: "10px",
     padding: "8px 12px",
+    borderRadius: "6px",
     cursor: "pointer",
-    fontWeight: "bold",
   },
   list: {
-    listStyle: "none",
-    padding: 0,
+    display: "flex",
+    flexDirection: "column",
+    gap: "8px",
   },
   taskItem: {
+    background: "#f1f5f9",
+    padding: "10px",
+    borderRadius: "6px",
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "12px",
-    borderRadius: "12px",
-    marginBottom: "8px",
   },
-  doneButton: {
-    marginRight: "6px",
+  doneBtn: {
     background: "#22c55e",
+    color: "white",
     border: "none",
-    borderRadius: "8px",
     padding: "4px 8px",
+    borderRadius: "4px",
+    marginRight: "6px",
     cursor: "pointer",
   },
-  deleteButton: {
+  deleteBtn: {
     background: "#ef4444",
-    border: "none",
-    borderRadius: "8px",
-    padding: "4px 8px",
-    cursor: "pointer",
     color: "white",
+    border: "none",
+    padding: "4px 8px",
+    borderRadius: "4px",
+    cursor: "pointer",
   },
 };
 
-export default Tasks;
+
+
