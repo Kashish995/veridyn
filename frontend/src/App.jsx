@@ -8,7 +8,7 @@ import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import ProtectedRoute from "./components/ProtectedRoute";
 
-import logo from "./assets/vlogo.png.png"; // ✅ MUST be at top
+import logo from "./assets/vlogo.png"; // ✅ MUST be at top
 import "./App.css";
 
 function App() {
@@ -27,7 +27,8 @@ function App() {
               style={{
                 width: "42px",
                 height: "42px",
-                filter: "drop-shadow(0 0 4px rgba(0,0,0,0.4))"
+                objectFit: "contain",
+                filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.4))"
               }}
             />
 
@@ -37,9 +38,35 @@ function App() {
           </div>
 
           <div>
-            <Link to="/dashboard" style={styles.link}>📊 Dashboard</Link>
-            <Link to="/tasks" style={styles.link}>📝 Tasks</Link>
-            <Link to="/insights" style={styles.link}>📈 Insights</Link>
+            <Link
+              to="/dashboard"
+              style={{
+              ...styles.link,
+              textShadow: "0 2px 4px rgba(0,0,0,0.5)"
+                }}
+              >
+                📊 Dashboard
+              </Link>
+
+            <Link
+                to="/tasks"
+                style={{
+                  ...styles.link,
+                  textShadow: "0 2px 4px rgba(0,0,0,0.5)"
+                }}
+              >
+                📝 Tasks
+              </Link>
+
+              <Link
+                to="/insights"
+                style={{
+                  ...styles.link,
+                  textShadow: "0 2px 4px rgba(0,0,0,0.5)"
+                }}
+              >
+                📈 Insights
+              </Link>
           </div>
         </nav>
       )}
