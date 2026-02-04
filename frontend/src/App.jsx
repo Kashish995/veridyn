@@ -11,29 +11,28 @@ function App() {
 
   const token = localStorage.getItem("token"); // ✅ REQUIRED
    console.log("TOKEN:", token);
-   
+
   return (
     <Router>
-      <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
-        {!token && (
-          <>
-            <Link to="/login">Login</Link>{" "}
-            <Link to="/register">Register</Link>
-          </>
-        )}
+      <nav style={styles.navbar}>
+  <h2 style={styles.logo}>📚 StudyTracker</h2>
 
-        {token && (
-          <>
-            <Link to="/dashboard" style={{ marginRight: "10px" }}>
-              Dashboard
-            </Link>
-            <Link to="/tasks" style={{ marginRight: "10px" }}>
-              Tasks
-            </Link>
-            <Link to="/insights">Insights</Link>
-          </>
-        )}
-      </nav>
+  {!token && (
+    <div>
+      <Link style={styles.link} to="/login">Login</Link>
+      <Link style={styles.link} to="/register">Register</Link>
+    </div>
+  )}
+
+  {token && (
+    <div>
+      <Link style={styles.link} to="/dashboard">Dashboard</Link>
+      <Link style={styles.link} to="/tasks">Tasks</Link>
+      <Link style={styles.link} to="/insights">Insights</Link>
+    </div>
+  )}
+</nav>
+
 
 
       <Routes>
@@ -72,5 +71,27 @@ function App() {
     </Router>
   );
 }
+
+const styles = {
+  navbar: {
+    display: "flex",
+    justifyContent: "space-between",
+    alignItems: "center",
+    padding: "12px 24px",
+    background: "#4f46e5",
+    color: "white",
+  },
+  logo: {
+    margin: 0,
+    fontSize: "20px",
+  },
+  link: {
+    marginLeft: "15px",
+    color: "white",
+    textDecoration: "none",
+    fontWeight: "bold",
+  },
+};
+
 
 export default App;

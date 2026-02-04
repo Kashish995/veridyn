@@ -10,7 +10,7 @@ const Tasks = () => {
 
   const fetchTasks = async () => {
     const res = await axios.get("http://localhost:5000/api/tasks", {
-      headers: { Authorization: `Bearer ${token}` }
+      headers: { Authorization: `Bearer ${token}` },
     });
     setTasks(res.data);
   };
@@ -38,12 +38,10 @@ const Tasks = () => {
     fetchTasks();
   };
 
-  // 🗑 DELETE TASK
   const deleteTask = async (id) => {
-    await axios.delete(
-      `http://localhost:5000/api/tasks/${id}`,
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    await axios.delete(`http://localhost:5000/api/tasks/${id}`, {
+      headers: { Authorization: `Bearer ${token}` },
+    });
     fetchTasks();
   };
 
@@ -51,47 +49,58 @@ const Tasks = () => {
     fetchTasks();
   }, []);
 
-  return (
-    <div style={styles.container}>
-      <h2 style={styles.title}>📝 Tasks</h2>
+ return (
+  <div style={styles.page}>
+    <div style={styles.card}>
+      <h2 style={styles.heading}>📝 Today’s Tasks</h2>
 
-      <div style={styles.form}>
+      <div style={styles.inputRow}>
         <input
           style={styles.input}
-          placeholder="Task title"
+          placeholder="What will you study?"
           value={title}
-          onChange={e => setTitle(e.target.value)}
+          onChange={(e) => setTitle(e.target.value)}
         />
 
         <input
           style={styles.input}
           type="date"
           value={dueDate}
-          onChange={e => setDueDate(e.target.value)}
+          onChange={(e) => setDueDate(e.target.value)}
         />
 
-        <button onClick={addTask} style={styles.addBtn}>
-          Add Task
+        <button style={styles.addButton} onClick={addTask}>
+          ➕ Add
         </button>
       </div>
 
       <ul style={styles.list}>
-        {tasks.map(t => (
-          <li key={t._id} style={styles.listItem}>
-            <span>
-              {t.title} — <b>{t.status}</b>
+        {tasks.map((t) => (
+          <li
+            key={t._id}
+            style={{
+              ...styles.taskItem,
+              background:
+                t.status === "completed" ? "#dcfce7" : "#f3f4f6",
+            }}
+          >
+            <span style={{ fontWeight: "bold" }}>
+              {t.status === "completed" ? "✅" : "📌"} {t.title}
             </span>
 
             <div>
               {t.status !== "completed" && (
-                <button onClick={() => markDone(t._id)} style={styles.doneBtn}>
+                <button
+                  style={styles.doneButton}
+                  onClick={() => markDone(t._id)}
+                >
                   ✔
                 </button>
               )}
 
               <button
+                style={styles.deleteButton}
                 onClick={() => deleteTask(t._id)}
-                style={{ marginLeft: "6px" }}
               >
                 🗑
               </button>
@@ -100,59 +109,78 @@ const Tasks = () => {
         ))}
       </ul>
     </div>
-  );
+  </div>
+);
 };
 
 const styles = {
-  container: {
-    padding: "20px",
-    maxWidth: "400px",
-    margin: "auto"
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: "15px"
-  },
-  form: {
+  page: {
+    minHeight: "100vh",
     display: "flex",
-    flexDirection: "column",
+    justifyContent: "center",
+    paddingTop: "40px",
+    background: "linear-gradient(135deg, #eef2ff, #f8fafc)",
+  },
+  card: {
+    background: "white",
+    padding: "25px",
+    borderRadius: "20px",
+    width: "440px",
+    boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
+  },
+  heading: {
+    color: "#4f46e5",
+    marginBottom: "15px",
+    textAlign: "center",
+  },
+  inputRow: {
+    display: "flex",
     gap: "8px",
-    marginBottom: "15px"
+    marginBottom: "15px",
   },
   input: {
+    flex: 1,
     padding: "8px",
-    borderRadius: "5px",
-    border: "1px solid #ccc"
+    borderRadius: "10px",
+    border: "1px solid #ccc",
   },
-  addBtn: {
-    padding: "8px",
-    borderRadius: "6px",
-    border: "none",
-    background: "#4caf50",
+  addButton: {
+    background: "#4f46e5",
     color: "white",
-    cursor: "pointer"
+    border: "none",
+    borderRadius: "10px",
+    padding: "8px 12px",
+    cursor: "pointer",
+    fontWeight: "bold",
   },
   list: {
     listStyle: "none",
-    padding: 0
+    padding: 0,
   },
-  listItem: {
+  taskItem: {
     display: "flex",
     justifyContent: "space-between",
     alignItems: "center",
-    padding: "8px",
-    marginBottom: "6px",
-    borderRadius: "6px",
-    background: "#f4f4f4"
+    padding: "12px",
+    borderRadius: "12px",
+    marginBottom: "8px",
   },
-  doneBtn: {
+  doneButton: {
+    marginRight: "6px",
+    background: "#22c55e",
     border: "none",
-    background: "#2196f3",
-    color: "white",
-    borderRadius: "4px",
+    borderRadius: "8px",
+    padding: "4px 8px",
     cursor: "pointer",
-    padding: "4px 8px"
-  }
+  },
+  deleteButton: {
+    background: "#ef4444",
+    border: "none",
+    borderRadius: "8px",
+    padding: "4px 8px",
+    cursor: "pointer",
+    color: "white",
+  },
 };
 
 export default Tasks;
