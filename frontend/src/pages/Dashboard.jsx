@@ -6,7 +6,7 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const navigate = useNavigate();
-
+  
   const token = localStorage.getItem("token");
 
   const fetchDashboard = async () => {

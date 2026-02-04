@@ -8,14 +8,16 @@ import Tasks from "./pages/Tasks";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
-  const token = localStorage.getItem("token"); // ✅ THIS WAS MISSING
 
+  const token = localStorage.getItem("token"); // ✅ REQUIRED
+   console.log("TOKEN:", token);
+   
   return (
     <Router>
       <nav style={{ padding: "10px", borderBottom: "1px solid #ccc" }}>
         {!token && (
           <>
-            <Link to="/login" style={{ marginRight: "10px" }}>Login</Link>
+            <Link to="/login">Login</Link>{" "}
             <Link to="/register">Register</Link>
           </>
         )}
@@ -32,6 +34,7 @@ function App() {
           </>
         )}
       </nav>
+
 
       <Routes>
         <Route path="/login" element={<Login />} />
