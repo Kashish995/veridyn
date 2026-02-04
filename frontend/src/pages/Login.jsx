@@ -14,23 +14,30 @@ const Login = () => {
   }
 }, []);
 
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password
-      });
+ const handleLogin = async () => {
+  try {
+    const res = await axios.post("http://localhost:5000/api/auth/login", {
+      email,
+      password
+    });
 
-      // ✅ SAVE TOKEN HERE
-      localStorage.setItem("token", res.data.token);
+    console.log("LOGIN RESPONSE 👉", res.data);
 
-      // go to dashboard page
-      navigate("/dashboard");
-    } catch (err) {
-      console.error(err);
-      alert("Login failed");
+    if (!res.data.token) {
+      alert("No token received from server");
+      return;
     }
-  };
+
+    localStorage.setItem("token", res.data.token);
+
+    navigate("/dashboard");
+  } catch (err) {
+    console.error("LOGIN ERROR 👉", err.response?.data || err.message);
+    alert("Login failed");
+  }
+};
+
+
 
   return (
     <div>
