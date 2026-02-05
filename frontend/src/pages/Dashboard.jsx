@@ -41,125 +41,86 @@ const Dashboard = () => {
 
   if (!data) return <p style={{ textAlign: "center" }}>Loading...</p>;
 
+  // ✅ DERIVED VALUES (THIS WAS MISSING)
+  const completedTasks = data.completedTasks ?? 0;
+  const totalTasks = data.totalTasks ?? 0;
+  const goal = data.goal ?? 0;
+
+  const progress =
+    totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+
   return (
-  <div style={styles.page}>
-    <div style={styles.card}>
-      <h2 style={styles.heading}>👋 Welcome back</h2>
+  <div className="dashboard-wrapper">
+    <div className="dashboard-card">
+      {totalTasks === 0 ? (
+        <>
+          <h2 className="dashboard-title">🌱 New Day, New Start</h2>
 
-      <div style={styles.statRow}>
-        <div style={styles.statBox}>
-          <p>Tasks</p>
-          <h3>{data.completedToday} / {data.totalToday}</h3>
-        </div>
-        <div style={styles.statBox}>
-          <p>Goal</p>
-          <h3>{data.dailyTarget}</h3>
-        </div>
-      </div>
+          <p className="progress-text">
+            You haven’t added any tasks yet.
+            <br />
+            Start by adding what you want to focus on today.
+          </p>
 
-      <p style={{ marginTop: "10px" }}>Progress</p>
-      <div style={styles.progressBar}>
-        <div
-          style={{
-            ...styles.progressFill,
-            width: `${data.progressPercent}%`,
-          }}
-        />
-      </div>
+          <button
+            className="primary-btn"
+            onClick={() => navigate("/tasks")}
+          >
+            Add Your First Task
+          </button>
 
-      <p style={{ marginTop: "8px" }}>{data.progressPercent}% completed</p>
+          <button className="danger-btn" onClick={logout}>
+            Logout
+          </button>
+        </>
+      ) : (
+        <>
+          <h2 className="dashboard-title">👋 Welcome back</h2>
 
-      <div style={styles.buttonRow}>
-        <button style={styles.greenButton} onClick={endDay}>End Day</button>
-        <button style={styles.blueButton} onClick={() => navigate("/tasks")}>
-          Go to Tasks
-        </button>
-        <button style={styles.redButton} onClick={logout}>Logout</button>
-      </div>
+          <div className="stats-row">
+            <div className="stat-box">
+              <div className="stat-label">Tasks</div>
+              <div className="stat-value">
+                {completedTasks} / {totalTasks}
+              </div>
+            </div>
+
+            <div className="stat-box">
+              <div className="stat-label">Goal</div>
+              <div className="stat-value">{goal}</div>
+            </div>
+          </div>
+
+          <div className="progress-label">Progress</div>
+
+          <div className="progress-bar">
+            <div
+              className="progress-fill"
+              style={{ width: `${progress}%` }}
+            />
+          </div>
+
+          <div className="progress-text">{progress}% completed</div>
+
+          <button className="primary-btn" onClick={endDay}>
+            End Day
+          </button>
+
+          <button
+            className="secondary-btn"
+            onClick={() => navigate("/tasks")}
+          >
+            Go to Tasks
+          </button>
+
+          <button className="danger-btn" onClick={logout}>
+            Logout
+          </button>
+        </>
+      )}
     </div>
   </div>
 );
 };
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "linear-gradient(135deg, #eef2ff, #f8fafc)",
-  },
-  card: {
-    background: "white",
-    padding: "30px",
-    borderRadius: "20px",
-    width: "380px",
-    boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
-    textAlign: "center",
-    animation: "fadeIn 0.6s ease-in-out",
-  },
-  heading: {
-    color: "#4f46e5",
-    marginBottom: "15px",
-  },
-  statRow: {
-    display: "flex",
-    justifyContent: "space-between",
-    gap: "10px",
-  },
-  statBox: {
-    flex: 1,
-    background: "#eef2ff",
-    borderRadius: "12px",
-    padding: "10px",
-  },
-  progressBar: {
-    width: "100%",
-    height: "12px",
-    background: "#e5e7eb",
-    borderRadius: "10px",
-    overflow: "hidden",
-  },
-  progressFill: {
-    height: "100%",
-    background: "#22c55e",
-    borderRadius: "10px",
-    transition: "width 0.5s ease",
-  },
-  buttonRow: {
-    marginTop: "20px",
-    display: "flex",
-    flexDirection: "column",
-    gap: "10px",
-  },
-  greenButton: {
-    background: "#22c55e",
-    color: "white",
-    padding: "10px",
-    borderRadius: "10px",
-    border: "none",
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-  blueButton: {
-    background: "#3b82f6",
-    color: "white",
-    padding: "10px",
-    borderRadius: "10px",
-    border: "none",
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-  redButton: {
-    background: "#ef4444",
-    color: "white",
-    padding: "10px",
-    borderRadius: "10px",
-    border: "none",
-    fontWeight: "bold",
-    cursor: "pointer",
-  },
-};
-
 
 export default Dashboard;

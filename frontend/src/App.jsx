@@ -20,6 +20,7 @@ function App() {
       {/* NAVBAR (only when logged in) */}
       {token && (
         <nav style={styles.navbar}>
+          {/* LEFT: Logo + App Name */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <img
               src={logo}
@@ -28,48 +29,37 @@ function App() {
                 width: "42px",
                 height: "42px",
                 objectFit: "contain",
-                filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.4))"
+                filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.4))",
               }}
             />
-
-            <span style={{ fontSize: "20px", fontWeight: "600", letterSpacing: "1px" }}>
+            <span
+              style={{
+                fontSize: "20px",
+                fontWeight: "600",
+                letterSpacing: "1px",
+              }}
+            >
               Veridyn
             </span>
           </div>
 
+          {/* RIGHT: Navigation Links */}
           <div>
-            <Link
-              to="/dashboard"
-              style={{
-              ...styles.link,
-              textShadow: "0 2px 4px rgba(0,0,0,0.5)"
-                }}
-              >
-                📊 Dashboard
-              </Link>
+            <Link to="/dashboard" style={styles.link}>
+              <span className="nav-icon">📊</span> Dashboard
+            </Link>
 
-            <Link
-                to="/tasks"
-                style={{
-                  ...styles.link,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.5)"
-                }}
-              >
-                📝 Tasks
-              </Link>
+            <Link to="/tasks" style={styles.link}>
+              <span className="nav-icon">📝</span> Tasks
+            </Link>
 
-              <Link
-                to="/insights"
-                style={{
-                  ...styles.link,
-                  textShadow: "0 2px 4px rgba(0,0,0,0.5)"
-                }}
-              >
-                📈 Insights
-              </Link>
+            <Link to="/insights" style={styles.link}>
+              <span className="nav-icon">📈</span> Insights
+            </Link>
           </div>
         </nav>
-      )}
+)}
+
 
       {/* ROUTES */}
       <Routes>
