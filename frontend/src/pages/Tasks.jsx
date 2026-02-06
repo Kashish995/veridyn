@@ -5,6 +5,10 @@ const Tasks = () => {
   const [tasks, setTasks] = useState([]);
   const [title, setTitle] = useState("");
   const [dueDate, setDueDate] = useState("");
+  const [startTime, setStartTime] = useState("");
+  const [endTime, setEndTime] = useState("");
+  const [priority, setPriority] = useState("Medium");
+
 
   const token = localStorage.getItem("token");
 
@@ -16,18 +20,42 @@ const Tasks = () => {
   };
 
   const addTask = async () => {
-    if (!title || !dueDate) return alert("Enter title and date");
+  if (!title || !dueDate || !startTime || !endTime) {
+    alert("Please fill all fields");
+    return;
+  }
 
-    await axios.post(
+  try {
+    const res = await axios.post(
       "http://localhost:5000/api/tasks",
-      { title, dueDate, priority: "medium", estimatedTime: 30 },
-      { headers: { Authorization: `Bearer ${token}` } }
+      {
+        title,
+        dueDate,
+        startTime,
+        endTime,
+        priority, // must be: low | medium | high
+      },
+      {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
     );
+
+    console.log("Task added:", res.data);
 
     setTitle("");
     setDueDate("");
+    setStartTime("");
+    setEndTime("");
+    setPriority("medium");
+
     fetchTasks();
-  };
+  } catch (err) {
+    console.error("ADD TASK ERROR:", err.response?.data || err.message);
+    alert("Failed to add task. Check console.");
+  }
+};
 
   const markDone = async (id) => {
     await axios.patch(
@@ -54,24 +82,56 @@ const Tasks = () => {
     <div style={styles.card}>
       <h2 style={styles.title}>📝 Today’s Tasks</h2>
 
-      <div style={styles.inputRow}>
-        <input
-          style={styles.input}
-          placeholder="What will you study?"
-          value={title}
-          onChange={e => setTitle(e.target.value)}
-        />
+      {/* INPUT ROW 1 */}
+<div style={styles.inputRow}>
+  <input
+    style={styles.input}
+    placeholder="What will you study?"
+    value={title}
+    onChange={e => setTitle(e.target.value)}
+  />
 
-        <input
-          style={styles.input}
-          type="date"
-          value={dueDate}
-          onChange={e => setDueDate(e.target.value)}
-        />
+  <input
+    style={styles.input}
+    type="date"
+    value={dueDate}
+    onChange={e => setDueDate(e.target.value)}
+  />
+</div>
 
-        <button style={styles.addBtn} onClick={addTask}>＋ Add</button>
-      </div>
+{/* INPUT ROW 2 */}
+<div style={styles.inputRow}>
+  <input
+    style={styles.input}
+    type="time"
+    value={startTime}
+    onChange={e => setStartTime(e.target.value)}
+  />
 
+  <input
+    style={styles.input}
+    type="time"
+    value={endTime}
+    onChange={e => setEndTime(e.target.value)}
+  />
+
+  <select
+    style={styles.input}
+    value={priority}
+    onChange={e => setPriority(e.target.value)}
+  >
+    <option value="low">Low</option>
+    <option value="medium">Medium</option>
+    <option value="high">High</option>
+  </select>
+
+  <button type="button" style={styles.addBtn} onClick={addTask}>
+    ＋ Add
+  </button>
+</div>
+
+
+      {/* TASK LIST */}
       <div style={styles.list}>
         {tasks.map(t => (
           <div key={t._id} style={styles.taskItem}>
