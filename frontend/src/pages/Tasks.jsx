@@ -21,19 +21,18 @@ const Tasks = () => {
 
   const addTask = async () => {
   if (!title || !dueDate || !startTime || !endTime) {
-    alert("Please fill all fields");
-    return;
+    return alert("Fill all fields");
   }
 
   try {
-    const res = await axios.post(
+    await axios.post(
       "http://localhost:5000/api/tasks",
       {
         title,
         dueDate,
         startTime,
         endTime,
-        priority, // must be: low | medium | high
+        priority: priority.toLowerCase(), // 🔥 THIS MATTERS
       },
       {
         headers: {
@@ -41,8 +40,6 @@ const Tasks = () => {
         },
       }
     );
-
-    console.log("Task added:", res.data);
 
     setTitle("");
     setDueDate("");
@@ -53,7 +50,7 @@ const Tasks = () => {
     fetchTasks();
   } catch (err) {
     console.error("ADD TASK ERROR:", err.response?.data || err.message);
-    alert("Failed to add task. Check console.");
+    alert("Failed to add task");
   }
 };
 
