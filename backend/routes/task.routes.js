@@ -1,5 +1,5 @@
 import { Router } from "express";
-import authMiddleware from "../middleware/auth.middleware.js";
+import { protect } from "../middleware/auth.middleware.js";
 import {
   createTask,
   getTasksByUser,
@@ -7,6 +7,7 @@ import {
   updateTaskStatus,
   deleteTask
 } from "../controllers/task.controller.js";
+import { endDayTasks } from "../controllers/task.controller.js";
 
 const router = Router();
 
@@ -16,5 +17,7 @@ router.get("/", getTasksByUser);
 router.get("/:date", getTasksByDate);
 router.patch("/:taskId", updateTaskStatus);
 router.delete("/:taskId", deleteTask);
+router.post("/end-day", protect, endDayTasks);
+
 
 export default router;

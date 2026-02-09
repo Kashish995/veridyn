@@ -15,9 +15,11 @@ const taskSchema = new mongoose.Schema(
 
     status: {
       type: String,
-      enum: ["pending", "in-progress", "completed"],
+      enum: ["pending", "in-progress", "completed", "missed"],
       default: "pending",
     },
+
+
 
     priority: {
       type: String,
@@ -55,7 +57,12 @@ const taskSchema = new mongoose.Schema(
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subject"
     },
-
+    startTime: String,
+    endTime: String,
+    estimatedTime: {
+      type: Number,
+      default: 30,
+    },
   },
   { timestamps: true }
 );

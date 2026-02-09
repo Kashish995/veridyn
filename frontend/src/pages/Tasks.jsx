@@ -26,20 +26,20 @@ const Tasks = () => {
 
   try {
     await axios.post(
-      "http://localhost:5000/api/tasks",
-      {
-        title,
-        dueDate,
-        startTime,
-        endTime,
-        priority: priority.toLowerCase(), // 🔥 THIS MATTERS
-      },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
+  "http://localhost:5000/api/tasks",
+  {
+    title,
+    dueDate,
+    priority: priority.toLowerCase(),
+    estimatedTime: 30, // ✅ REQUIRED BY SCHEMA
+  },
+  {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  }
+);
+
 
     setTitle("");
     setDueDate("");
@@ -129,33 +129,64 @@ const Tasks = () => {
 
 
       {/* TASK LIST */}
-      <div style={styles.list}>
-        {tasks.map(t => (
-          <div key={t._id} style={styles.taskItem}>
-            <span>
-              {t.title} — <b>{t.status}</b>
-            </span>
+<div style={styles.list}>
+  {tasks.map(t => (
+    <div key={t._id} style={styles.taskItem}>
+      
+      {/* Title + Status */}
+      <div>
+        <span>
+          {t.title} —{" "}
+          <b
+            style={{
+              color:
+                t.status === "missed"
+                  ? "#ef4444"
+                  : t.status === "completed"
+                  ? "#22c55e"
+                  : "#6b7280",
+            }}
+          >
+            {t.status.toUpperCase()}
+          </b>
+        </span>
 
-            <div>
-              {t.status !== "completed" && (
-                <button
-                  style={styles.doneBtn}
-                  onClick={() => markDone(t._id)}
-                >
-                  ✔
-                </button>
-              )}
-
-              <button
-                style={styles.deleteBtn}
-                onClick={() => deleteTask(t._id)}
-              >
-                🗑
-              </button>
-            </div>
+        {/* Missed warning */}
+        {t.status === "missed" && (
+          <div
+            style={{
+              color: "#ef4444",
+              fontSize: "12px",
+              marginTop: "4px",
+            }}
+          >
+            ⚠️ This task was skipped.
           </div>
-        ))}
+        )}
       </div>
+
+      {/* Action buttons */}
+      <div>
+        {t.status !== "completed" && t.status !== "missed" && (
+          <button
+            style={styles.doneBtn}
+            onClick={() => markDone(t._id)}
+          >
+            ✔
+          </button>
+        )}
+
+        <button
+          style={styles.deleteBtn}
+          onClick={() => deleteTask(t._id)}
+        >
+          🗑
+        </button>
+      </div>
+
+    </div>
+  ))}
+</div>
     </div>
   </div>
 );

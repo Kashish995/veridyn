@@ -63,4 +63,21 @@ export const deleteTask = async (req, res) => {
   res.json({ message: "Task deleted" });
 };
 
+export const endDayTasks = async (req, res) => {
+  try {
+    const userId = req.userId;
 
+    const result = await Task.updateMany(
+      { userId, status: "pending" },
+      { status: "missed" }
+    );
+
+    res.json({
+      message: "Day ended. Pending tasks marked as missed.",
+      updatedCount: result.modifiedCount,
+    });
+  } catch (err) {
+    console.error("endDayTasks error:", err);
+    res.status(500).json({ message: err.message });
+  }
+};
