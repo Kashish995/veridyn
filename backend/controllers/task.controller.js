@@ -68,8 +68,13 @@ export const endDayTasks = async (req, res) => {
     const userId = req.userId;
 
     const result = await Task.updateMany(
-      { userId, status: "pending" },
-      { status: "missed" }
+      {
+        userId,
+        status: { $in: ["pending", "in-progress"] },
+      },
+      {
+        $set: { status: "missed" },
+      }
     );
 
     res.json({
@@ -77,7 +82,8 @@ export const endDayTasks = async (req, res) => {
       updatedCount: result.modifiedCount,
     });
   } catch (err) {
-    console.error("endDayTasks error:", err);
-    res.status(500).json({ message: err.message });
+    console.error("End day error:", err);
+    res.status(500).json({ message: "Failed to end day" });
   }
 };
+

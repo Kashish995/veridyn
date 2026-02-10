@@ -1,5 +1,6 @@
 import { Router } from "express";
-import { protect } from "../middleware/auth.middleware.js";
+import authMiddleware from "../middleware/auth.middleware.js";
+
 import {
   createTask,
   getTasksByUser,
@@ -12,12 +13,15 @@ import { endDayTasks } from "../controllers/task.controller.js";
 const router = Router();
 
 // 🔐 PROTECTED ROUTES
-router.post("/", createTask);
-router.get("/", getTasksByUser);
-router.get("/:date", getTasksByDate);
-router.patch("/:taskId", updateTaskStatus);
-router.delete("/:taskId", deleteTask);
-router.post("/end-day", protect, endDayTasks);
+router.post("/", authMiddleware, createTask);
+router.get("/", authMiddleware, getTasksByUser);
+router.get("/:date", authMiddleware, getTasksByDate);
+router.patch("/:taskId", authMiddleware, updateTaskStatus);
+router.delete("/:taskId", authMiddleware, deleteTask);
+
+// End day → mark pending tasks as missed
+router.post("/end-day", authMiddleware, endDayTasks);
+
 
 
 export default router;
