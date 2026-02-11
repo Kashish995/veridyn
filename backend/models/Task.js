@@ -29,6 +29,13 @@ const taskSchema = new mongoose.Schema(
       type: Date,
       required: true,
     },
+    startTime: {
+      type: String,
+    },
+
+    endTime: {
+      type: String,
+    },
 
     estimatedTime: {
       type: Number, // in minutes
@@ -54,12 +61,6 @@ const taskSchema = new mongoose.Schema(
     subjectId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Subject"
-    },
-    startTime: String,
-    endTime: String,
-    estimatedTime: {
-      type: Number,
-      default: 30,
     },
   },
   { timestamps: true }

@@ -5,7 +5,15 @@ export const createTask = async (req, res) => {
   try {
     console.log("CREATE TASK USERID 👉", req.userId);
 
-    const { title, description, priority, estimatedTime, dueDate } = req.body;
+   const { 
+      title, 
+      description, 
+      priority, 
+      estimatedTime, 
+      dueDate,
+      startTime,
+      endTime
+    } = req.body;
 
     const task = await Task.create({
       title,
@@ -13,8 +21,11 @@ export const createTask = async (req, res) => {
       priority,
       estimatedTime: Number(estimatedTime),
       dueDate: new Date(dueDate),
+      startTime,
+      endTime,
       userId: req.userId
     });
+
 
     res.json(task);
   } catch (err) {
@@ -25,8 +36,32 @@ export const createTask = async (req, res) => {
 
 export const getTasksByUser = async (req, res) => {
   const tasks = await Task.find({ userId: req.userId });
-  res.json(tasks);
+
+  const now = new Date();
+
+  for (let task of tasks) {
+    if (
+      task.status !== "completed" &&
+      task.startTime &&
+      task.endTime
+    ) {
+      const [endHour, endMinute] = task.endTime.split(":");
+
+      const taskEndTime = new Date(task.dueDate);
+      taskEndTime.setHours(endHour, endMinute, 0);
+
+      if (now > taskEndTime) {
+        task.status = "missed";
+        await task.save();
+      }
+    }
+  }
+
+  const updatedTasks = await Task.find({ userId: req.userId });
+
+  res.json(updatedTasks);
 };
+
 
 export const getTasksByDate = async (req, res) => {
   const { date } = req.params;
@@ -64,26 +99,22 @@ export const deleteTask = async (req, res) => {
 };
 
 export const endDayTasks = async (req, res) => {
-  try {
-    const userId = req.userId;
+  const today = new Date();
+  today.setHours(0,0,0,0);
 
-    const result = await Task.updateMany(
-      {
-        userId,
-        status: { $in: ["pending", "in-progress"] },
-      },
-      {
-        $set: { status: "missed" },
-      }
-    );
+  const end = new Date();
+  end.setHours(23,59,59,999);
 
-    res.json({
-      message: "Day ended. Pending tasks marked as missed.",
-      updatedCount: result.modifiedCount,
-    });
-  } catch (err) {
-    console.error("End day error:", err);
-    res.status(500).json({ message: "Failed to end day" });
-  }
+  await Task.updateMany(
+    {
+      userId: req.userId,
+      dueDate: { $gte: today, $lte: end },
+      status: { $ne: "completed" }
+    },
+    { status: "missed" }
+  );
+
+  res.json({ message: "Day ended" });
 };
+
 

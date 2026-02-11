@@ -7,8 +7,7 @@ const Tasks = () => {
   const [dueDate, setDueDate] = useState("");
   const [startTime, setStartTime] = useState("");
   const [endTime, setEndTime] = useState("");
-  const [priority, setPriority] = useState("Medium");
-
+  const [priority, setPriority] = useState("medium");
 
   const token = localStorage.getItem("token");
 
@@ -20,39 +19,38 @@ const Tasks = () => {
   };
 
   const addTask = async () => {
-  if (!title || !dueDate || !startTime || !endTime) {
-    return alert("Fill all fields");
-  }
+    if (!title || !dueDate || !startTime || !endTime) {
+      return alert("Fill all fields");
+    }
 
-  try {
-    await axios.post(
-  "http://localhost:5000/api/tasks",
-  {
-    title,
-    dueDate,
-    priority: priority.toLowerCase(),
-    estimatedTime: 30, // ✅ REQUIRED BY SCHEMA
-  },
-  {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  }
-);
+    try {
+      await axios.post(
+        "http://localhost:5000/api/tasks",
+       {
+        title,
+        dueDate,
+        startTime,
+        endTime,
+        priority,
+        estimatedTime: 30,
+      },
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
 
+      setTitle("");
+      setDueDate("");
+      setStartTime("");
+      setEndTime("");
+      setPriority("medium");
 
-    setTitle("");
-    setDueDate("");
-    setStartTime("");
-    setEndTime("");
-    setPriority("medium");
-
-    fetchTasks();
-  } catch (err) {
-    console.error("ADD TASK ERROR:", err.response?.data || err.message);
-    alert("Failed to add task");
-  }
-};
+      fetchTasks();
+    } catch (err) {
+      console.error("ADD TASK ERROR:", err.response?.data || err.message);
+      alert("Failed to add task");
+    }
+  };
 
   const markDone = async (id) => {
     await axios.patch(
@@ -74,123 +72,142 @@ const Tasks = () => {
     fetchTasks();
   }, []);
 
- return (
-  <div style={styles.page}>
-    <div style={styles.card}>
-      <h2 style={styles.title}>📝 Today’s Tasks</h2>
+  return (
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <h2 style={styles.title}>📝 Today’s Tasks</h2>
 
-      {/* INPUT ROW 1 */}
-<div style={styles.inputRow}>
-  <input
-    style={styles.input}
-    placeholder="What will you study?"
-    value={title}
-    onChange={e => setTitle(e.target.value)}
-  />
+        {/* INPUT ROW 1 */}
+        <div style={styles.inputRow}>
+          <input
+            style={styles.input}
+            placeholder="What will you study?"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+          />
 
-  <input
-    style={styles.input}
-    type="date"
-    value={dueDate}
-    onChange={e => setDueDate(e.target.value)}
-  />
-</div>
+          <input
+            style={styles.input}
+            type="date"
+            value={dueDate}
+            onChange={(e) => setDueDate(e.target.value)}
+          />
+        </div>
 
-{/* INPUT ROW 2 */}
-<div style={styles.inputRow}>
-  <input
-    style={styles.input}
-    type="time"
-    value={startTime}
-    onChange={e => setStartTime(e.target.value)}
-  />
+        {/* INPUT ROW 2 */}
+        <div style={styles.inputRow}>
+          <input
+            style={styles.input}
+            type="time"
+            value={startTime}
+            onChange={(e) => setStartTime(e.target.value)}
+          />
 
-  <input
-    style={styles.input}
-    type="time"
-    value={endTime}
-    onChange={e => setEndTime(e.target.value)}
-  />
+          <input
+            style={styles.input}
+            type="time"
+            value={endTime}
+            onChange={(e) => setEndTime(e.target.value)}
+          />
 
-  <select
-    style={styles.input}
-    value={priority}
-    onChange={e => setPriority(e.target.value)}
-  >
-    <option value="low">Low</option>
-    <option value="medium">Medium</option>
-    <option value="high">High</option>
-  </select>
-
-  <button type="button" style={styles.addBtn} onClick={addTask}>
-    ＋ Add
-  </button>
-</div>
-
-
-      {/* TASK LIST */}
-<div style={styles.list}>
-  {tasks.map(t => (
-    <div key={t._id} style={styles.taskItem}>
-      
-      {/* Title + Status */}
-      <div>
-        <span>
-          {t.title} —{" "}
-          <b
-            style={{
-              color:
-                t.status === "missed"
-                  ? "#ef4444"
-                  : t.status === "completed"
-                  ? "#22c55e"
-                  : "#6b7280",
-            }}
+          <select
+            style={styles.input}
+            value={priority}
+            onChange={(e) => setPriority(e.target.value)}
           >
-            {t.status.toUpperCase()}
-          </b>
-        </span>
+            <option value="low">Low</option>
+            <option value="medium">Medium</option>
+            <option value="high">High</option>
+          </select>
 
-        {/* Missed warning */}
-        {t.status === "missed" && (
-          <div
-            style={{
-              color: "#ef4444",
-              fontSize: "12px",
-              marginTop: "4px",
-            }}
-          >
-            ⚠️ This task was skipped.
-          </div>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      <div>
-        {t.status !== "completed" && t.status !== "missed" && (
-          <button
-            style={styles.doneBtn}
-            onClick={() => markDone(t._id)}
-          >
-            ✔
+          <button style={styles.addBtn} onClick={addTask}>
+            ＋ Add
           </button>
-        )}
+        </div>
 
-        <button
-          style={styles.deleteBtn}
-          onClick={() => deleteTask(t._id)}
-        >
-          🗑
-        </button>
+        {/* TASK LIST */}
+        <div style={styles.list}>
+          {tasks.map((t) => {
+            const now = new Date();
+            const today = now.toISOString().split("T")[0];
+
+            const taskDate = t.dueDate
+              ? new Date(t.dueDate).toISOString().split("T")[0]
+              : null;
+
+            const taskEnd =
+              taskDate && endTime
+                ? new Date(`${taskDate}T${endTime}`)
+                : null;
+
+            const isMissed =
+              t.status === "pending" &&
+              taskEnd &&
+              now > taskEnd;
+
+            const displayStatus = isMissed ? "missed" : t.status;
+
+            return (
+              <div key={t._id} style={styles.taskItem}>
+                <div style={styles.taskLeft}>
+                  <div style={styles.taskTitle}>{t.title}</div>
+
+                  <div style={styles.timeRow}>
+                    🕒 {startTime || "--:--"} – {endTime || "--:--"}
+                  </div>
+
+                  <div
+                    style={{
+                      ...styles.status,
+                      color:
+                        displayStatus === "completed"
+                          ? "#16a34a"
+                          : displayStatus === "missed"
+                          ? "#ef4444"
+                          : "#f59e0b",
+                    }}
+                  >
+                    {displayStatus.toUpperCase()}
+                  </div>
+
+                  {displayStatus === "missed" && (
+                    <div
+                      style={{
+                        color: "#ef4444",
+                        fontSize: "12px",
+                        marginTop: "4px",
+                      }}
+                    >
+                      ⚠ You broke your schedule. Discipline is greater than motivation.
+                    </div>
+                  )}
+                </div>
+
+                <div style={styles.actionButtons}>
+                  {t.status !== "completed" && (
+                    <button
+                      style={styles.doneBtn}
+                      onClick={() => markDone(t._id)}
+                    >
+                      ✔
+                    </button>
+                  )}
+
+                  <button
+                    style={styles.deleteBtn}
+                    onClick={() => deleteTask(t._id)}
+                  >
+                    🗑
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
       </div>
-
     </div>
-  ))}
-</div>
-    </div>
-  </div>
-);
-}
+  );
+};
 
 export default Tasks;
 
@@ -240,10 +257,32 @@ const styles = {
   },
   taskItem: {
     background: "#f1f5f9",
-    padding: "10px",
-    borderRadius: "6px",
+    padding: "12px",
+    borderRadius: "8px",
     display: "flex",
     justifyContent: "space-between",
+    alignItems: "center",
+  },
+  taskLeft: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "4px",
+  },
+  taskTitle: {
+    fontWeight: "600",
+    fontSize: "14px",
+  },
+  timeRow: {
+    fontSize: "12px",
+    color: "#6b7280",
+  },
+  status: {
+    fontSize: "12px",
+    fontWeight: "600",
+  },
+  actionButtons: {
+    display: "flex",
+    gap: "6px",
     alignItems: "center",
   },
   doneBtn: {
@@ -252,7 +291,6 @@ const styles = {
     border: "none",
     padding: "4px 8px",
     borderRadius: "4px",
-    marginRight: "6px",
     cursor: "pointer",
   },
   deleteBtn: {
@@ -263,8 +301,4 @@ const styles = {
     borderRadius: "4px",
     cursor: "pointer",
   },
-  
 };
-
-
-
