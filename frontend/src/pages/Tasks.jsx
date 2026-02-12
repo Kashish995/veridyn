@@ -27,13 +27,14 @@ const Tasks = () => {
       await axios.post(
         "http://localhost:5000/api/tasks",
        {
-        title,
-        dueDate,
-        startTime,
-        endTime,
-        priority,
-        estimatedTime: 30,
-      },
+          title,
+          dueDate,
+          startTime,
+          endTime,
+          priority,
+          estimatedTime: 30,
+        },
+
         {
           headers: { Authorization: `Bearer ${token}` },
         }

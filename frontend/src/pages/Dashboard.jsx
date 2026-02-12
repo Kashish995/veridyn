@@ -5,124 +5,250 @@ import { useNavigate } from "react-router-dom";
 const Dashboard = () => {
   const [data, setData] = useState(null);
   const navigate = useNavigate();
-
   const token = localStorage.getItem("token");
 
   const fetchDashboard = async () => {
-    const res = await axios.get("http://localhost:5000/api/goals/dashboard", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-    setData(res.data);
+    try {
+      const res = await axios.get(
+        "http://localhost:5000/api/goals/dashboard",
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      setData(res.data);
+    } catch (err) {
+      console.error("Dashboard error:", err.response?.data || err.message);
+    }
   };
 
   const endDay = async () => {
-  await axios.post(
-    "http://localhost:5000/api/tasks/end-day",
-    {},
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
+    try {
+      await axios.post(
+        "http://localhost:5000/api/tasks/end-day",
+        {},
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        }
+      );
+      fetchDashboard();
+    } catch (err) {
+      console.error("End day error:", err.response?.data || err.message);
     }
-  );
-
-  fetchDashboard(); // already exists
-};
-
-
-  const logout = () => {
-    localStorage.removeItem("token");
-    navigate("/login");
   };
 
   useEffect(() => {
     fetchDashboard();
   }, []);
 
-  if (!data) return <p style={{ textAlign: "center" }}>Loading...</p>;
-
-  // ✅ DERIVED VALUES (THIS WAS MISSING)
-  const completedTasks = data.completedTasks ?? 0;
-  const totalTasks = data.totalTasks ?? 0;
-  const goal = data.goal ?? 0;
-
-  const progress =
-    totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
+  if (!data) {
+    return (
+      <div style={styles.loadingContainer}>
+        <p>Loading Dashboard...</p>
+      </div>
+    );
+  }
 
   return (
-  <div className="dashboard-wrapper">
-    <div className="dashboard-card">
-      {totalTasks === 0 ? (
-        <>
-          <h2 className="dashboard-title">🌱 New Day, New Start</h2>
+    <div style={styles.page}>
+      <div style={styles.card}>
+        <h2 style={styles.heading}>👋 Welcome Back</h2>
 
-          <p className="progress-text">
-            You haven’t added any tasks yet.
-            <br />
-            Start by adding what you want to focus on today.
-          </p>
+        {/* Discipline Score */}
+        <div style={styles.scoreBox}>
+          Discipline Score:{" "}
+          <span style={styles.scoreValue}>
+            {data.disciplineScore ?? 50} / 100
+          </span>
+        </div>
 
-          <button
-            className="primary-btn"
-            onClick={() => navigate("/tasks")}
-          >
-            Add Your First Task
-          </button>
-
-          <button className="danger-btn" onClick={logout}>
-            Logout
-          </button>
-        </>
-      ) : (
-        <>
-          <h2 className="dashboard-title">👋 Welcome back</h2>
-
-          <div className="stats-row">
-            <div className="stat-box">
-              <div className="stat-label">Tasks</div>
-              <div className="stat-value">
-                {completedTasks} / {totalTasks}
-              </div>
-            </div>
-
-            <div className="stat-box">
-              <div className="stat-label">Goal</div>
-              <div className="stat-value">{goal}</div>
+        {/* Stats */}
+        <div style={styles.statRow}>
+          <div style={styles.statBox}>
+            <div style={styles.statLabel}>Tasks</div>
+            <div style={styles.statValue}>
+              {data.completedTasks} / {data.totalTasks}
             </div>
           </div>
 
-          <div className="progress-label">Progress</div>
-
-          <div className="progress-bar">
-            <div
-              className="progress-fill"
-              style={{ width: `${progress}%` }}
-            />
+          <div style={styles.statBox}>
+            <div style={styles.statLabel}>Goal</div>
+            <div style={styles.statValue}>{data.goal}</div>
           </div>
+        </div>
 
-          <div className="progress-text">{progress}% completed</div>
+        {/* Progress */}
+        <div style={styles.progressLabel}>Progress</div>
+        <div style={styles.progressBar}>
+          <div
+            style={{
+              ...styles.progressFill,
+              width: `${data.progress}%`,
+            }}
+          />
+        </div>
+        <div style={styles.progressText}>
+          {data.progress}% completed
+        </div>
 
-          <button className="primary-btn" onClick={endDay}>
+        {/* Buttons */}
+        <div style={styles.buttonRow}>
+          <button style={styles.primaryBtn} onClick={endDay}>
             End Day
           </button>
 
           <button
-            className="secondary-btn"
+            style={styles.secondaryBtn}
             onClick={() => navigate("/tasks")}
           >
             Go to Tasks
           </button>
 
-          <button className="danger-btn" onClick={logout}>
+          <button
+            style={styles.dangerBtn}
+            onClick={() => {
+              localStorage.removeItem("token");
+              navigate("/login");
+            }}
+          >
             Logout
           </button>
-        </>
-      )}
+        </div>
+      </div>
     </div>
-  </div>
-);
+  );
 };
 
 export default Dashboard;
+
+const styles = {
+  page: {
+    minHeight: "100vh",
+    background: "linear-gradient(135deg, #eef2ff, #f8fafc)",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "flex-start",
+    paddingTop: "60px",
+  },
+
+  card: {
+    width: "420px",
+    background: "white",
+    padding: "28px",
+    borderRadius: "20px",
+    boxShadow:
+      "0 12px 30px rgba(79,70,229,0.15), 0 0 40px rgba(236,72,153,0.08)",
+  },
+
+  heading: {
+    textAlign: "center",
+    marginBottom: "20px",
+    color: "#4f46e5",
+  },
+
+  scoreBox: {
+    textAlign: "center",
+    marginBottom: "20px",
+    fontWeight: "600",
+  },
+
+  scoreValue: {
+    color: "#22c55e",
+    fontWeight: "700",
+  },
+
+  statRow: {
+    display: "flex",
+    gap: "12px",
+    marginBottom: "20px",
+  },
+
+  statBox: {
+    flex: 1,
+    background: "#eef2ff",
+    borderRadius: "14px",
+    padding: "14px",
+    textAlign: "center",
+  },
+
+  statLabel: {
+    fontSize: "14px",
+    color: "#6b7280",
+  },
+
+  statValue: {
+    fontSize: "20px",
+    fontWeight: "700",
+    marginTop: "4px",
+  },
+
+  progressLabel: {
+    textAlign: "center",
+    fontSize: "14px",
+    marginBottom: "8px",
+  },
+
+  progressBar: {
+    width: "100%",
+    height: "12px",
+    background: "#e5e7eb",
+    borderRadius: "999px",
+    overflow: "hidden",
+    marginBottom: "10px",
+  },
+
+  progressFill: {
+    height: "100%",
+    background: "linear-gradient(90deg, #22c55e, #4ade80)",
+    borderRadius: "999px",
+    transition: "width 0.4s ease",
+  },
+
+  progressText: {
+    textAlign: "center",
+    fontSize: "14px",
+    marginBottom: "20px",
+  },
+
+  buttonRow: {
+    display: "flex",
+    flexDirection: "column",
+    gap: "10px",
+  },
+
+  primaryBtn: {
+    background: "#22c55e",
+    color: "white",
+    border: "none",
+    padding: "12px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+
+  secondaryBtn: {
+    background: "#3b82f6",
+    color: "white",
+    border: "none",
+    padding: "12px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+
+  dangerBtn: {
+    background: "#ef4444",
+    color: "white",
+    border: "none",
+    padding: "12px",
+    borderRadius: "10px",
+    cursor: "pointer",
+    fontWeight: "600",
+  },
+
+  loadingContainer: {
+    minHeight: "100vh",
+    display: "flex",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+};

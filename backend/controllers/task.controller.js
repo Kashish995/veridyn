@@ -1,5 +1,6 @@
 import Task from "../models/Task.js";
 import { smartReschedule } from "./smartReschedule.js";
+import User from "../models/User.js";
 
 export const createTask = async (req, res) => {
   try {
@@ -15,6 +16,7 @@ export const createTask = async (req, res) => {
       endTime
     } = req.body;
 
+
     const task = await Task.create({
       title,
       description,
@@ -25,13 +27,12 @@ export const createTask = async (req, res) => {
       endTime,
       userId: req.userId
     });
-
-
-    res.json(task);
+      res.json(task);
   } catch (err) {
-    console.error("createTask error:", err);
-    res.status(500).json({ message: err.message });
-  }
+        console.error("createTask error:", err);
+        res.status(500).json({ message: err.message });
+      }
+
 };
 
 export const getTasksByUser = async (req, res) => {
@@ -41,18 +42,31 @@ export const getTasksByUser = async (req, res) => {
 
   for (let task of tasks) {
     if (
-      task.status !== "completed" &&
+      task.status === "pending" &&
       task.startTime &&
       task.endTime
     ) {
       const [endHour, endMinute] = task.endTime.split(":");
 
       const taskEndTime = new Date(task.dueDate);
-      taskEndTime.setHours(endHour, endMinute, 0);
+      taskEndTime.setHours(
+        Number(endHour),
+        Number(endMinute),
+        0,
+        0
+      );
 
       if (now > taskEndTime) {
         task.status = "missed";
         await task.save();
+
+        const user = await User.findById(req.userId);
+        user.disciplineScore -= 15;
+
+        if (user.disciplineScore < 0) user.disciplineScore = 0;
+
+        await user.save();
+
       }
     }
   }
@@ -82,11 +96,37 @@ export const getTasksByDate = async (req, res) => {
 };
 
 export const updateTaskStatus = async (req, res) => {
-  const task = await Task.findOneAndUpdate(
-    { _id: req.params.taskId, userId: req.userId },
-    req.body,
-    { new: true }
-  );
+  const { status } = req.body;
+
+  const task = await Task.findOne({
+    _id: req.params.taskId,
+    userId: req.userId,
+  });
+
+  if (!task) {
+    return res.status(404).json({ message: "Task not found" });
+  }
+
+  task.status = status;
+  await task.save();
+
+  const user = await User.findById(req.userId);
+
+  // Discipline Logic
+  if (status === "completed") {
+    user.disciplineScore += 10;
+  }
+
+  if (status === "missed") {
+    user.disciplineScore -= 15;
+  }
+
+  // Clamp score between 0 and 100
+  if (user.disciplineScore > 100) user.disciplineScore = 100;
+  if (user.disciplineScore < 0) user.disciplineScore = 0;
+
+  await user.save();
+
   res.json(task);
 };
 
@@ -116,5 +156,29 @@ export const endDayTasks = async (req, res) => {
 
   res.json({ message: "Day ended" });
 };
+export const updateMissedTasks = async (userId) => {
+  const now = new Date();
+
+  const tasks = await Task.find({
+    userId,
+    status: "pending"
+  });
+
+  for (let task of tasks) {
+    if (!task.endTime) continue;
+
+    const [hours, minutes] = task.endTime.split(":");
+
+    const taskDeadline = new Date(task.dueDate);
+    taskDeadline.setHours(hours);
+    taskDeadline.setMinutes(minutes);
+
+    if (now > taskDeadline) {
+      task.status = "missed";
+      await task.save();
+    }
+  }
+};
+
 
 

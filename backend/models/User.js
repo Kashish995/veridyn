@@ -12,8 +12,12 @@ const userSchema = new mongoose.Schema(
     streakFreezeWeek: {
       type: String, // YYYY-WW
     },
-
+    disciplineScore: {
+      type: Number,
+      default: 50,
+    },
   },
+  
   { timestamps: true }
 );
 
