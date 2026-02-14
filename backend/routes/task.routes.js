@@ -1,5 +1,6 @@
 import { Router } from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
+import { getNextTask } from "../controllers/task.controller.js";
 
 import {
   createTask,
@@ -16,6 +17,7 @@ const router = Router();
 router.post("/", authMiddleware, createTask);
 router.get("/", authMiddleware, getTasksByUser);
 router.get("/:date", authMiddleware, getTasksByDate);
+router.get("/next", authMiddleware, getNextTask);
 router.patch("/:taskId", authMiddleware, updateTaskStatus);
 router.delete("/:taskId", authMiddleware, deleteTask);
 
