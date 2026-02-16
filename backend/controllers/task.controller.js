@@ -237,19 +237,36 @@ export const endDayTasks = async (req, res) => {
     // 4️⃣ Update discipline score
     const user = await User.findById(userId);
 
-    user.disciplineScore += completed * 5;
-    user.disciplineScore -= missed * 3;
+    // Base scoring
+      user.disciplineScore += completed * 5;
+      user.disciplineScore -= missed * 3;
 
-    // Extra penalty if nothing done
-    if (completed === 0 && tasks.length > 0) {
-      user.disciplineScore -= 5;
-    }
+      // Extra penalty if zero productivity
+      if (completed === 0 && tasks.length > 0) {
+        user.disciplineScore -= 5;
+      }
 
-    // Keep within 0–100
-    if (user.disciplineScore < 0) user.disciplineScore = 0;
-    if (user.disciplineScore > 100) user.disciplineScore = 100;
+      /* 🔥 ADD THIS HERE */
+      if (missed === 0 && completed > 0) {
+        user.streak += 1;
 
-    await user.save();
+        if (user.streak === 3) {
+          user.disciplineScore += 5;
+        }
+
+        if (user.streak === 7) {
+          user.disciplineScore += 10;
+        }
+      } else {
+        user.streak = 0;
+      }
+
+      // Keep score in range
+      if (user.disciplineScore < 0) user.disciplineScore = 0;
+      if (user.disciplineScore > 100) user.disciplineScore = 100;
+
+      await user.save();
+
 
     res.json({
       message: "Day ended successfully",

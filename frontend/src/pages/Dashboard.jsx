@@ -24,8 +24,8 @@ ChartJS.register(
 
 const Dashboard = () => {
   const [data, setData] = useState(null);
-  const [nextTask, setNextTask] = useState(null);
   const [weeklyStats, setWeeklyStats] = useState([]);
+  const [nextTask, setNextTask] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
 
