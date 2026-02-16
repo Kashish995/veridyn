@@ -16,6 +16,11 @@ const userSchema = new mongoose.Schema(
       type: Number,
       default: 50,
     },
+    streak: {
+      type: Number,
+      default: 0,
+    },
+
   },
   
   { timestamps: true }
