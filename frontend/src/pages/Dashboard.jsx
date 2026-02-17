@@ -112,6 +112,22 @@ const Dashboard = () => {
       },
     ],
   };
+  const endDay = async () => {
+  try {
+    await axios.post(
+      "http://localhost:5000/api/tasks/end-day",
+      {},
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    fetchDashboard();
+    fetchWeeklyStats();
+  } catch (err) {
+    console.error("End day error:", err.message);
+  }
+};
 
   return (
   <div style={styles.page}>

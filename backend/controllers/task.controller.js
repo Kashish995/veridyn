@@ -290,33 +290,32 @@ export const getNextTask = async (req, res) => {
       status: "pending",
     });
 
-    let upcoming = null;
+    let upcomingTask = null;
+    let minTimeDiff = Infinity;
 
     for (let task of tasks) {
-      if (!task.startTime) continue;
+      if (!task.startTime || !task.dueDate) continue;
 
-      const [hours, minutes] = task.startTime.split(":");
+      const [hours, minutes] = task.startTime.split(":").map(Number);
 
-      const taskTime = new Date(task.dueDate);
-      taskTime.setHours(Number(hours), Number(minutes), 0, 0);
+      if (isNaN(hours) || isNaN(minutes)) continue;
 
-      if (taskTime > now) {
-        if (!upcoming || taskTime < upcoming.time) {
-          upcoming = {
-            task,
-            time: taskTime,
-          };
-        }
+      const taskDateTime = new Date(task.dueDate);
+      taskDateTime.setHours(hours, minutes, 0, 0);
+
+      const timeDiff = taskDateTime - now;
+
+      if (timeDiff > 0 && timeDiff < minTimeDiff) {
+        minTimeDiff = timeDiff;
+        upcomingTask = task;
       }
     }
 
-    if (!upcoming) {
-      return res.json(null);
-    }
+    res.json(upcomingTask || null);
 
-    res.json(upcoming.task);
   } catch (err) {
     console.error("Next task error:", err);
     res.status(500).json({ message: err.message });
   }
 };
+
