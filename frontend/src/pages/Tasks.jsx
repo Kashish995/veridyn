@@ -144,7 +144,8 @@ const Tasks = () => {
 
         {/* TASK LIST */}
         <div style={styles.list}>
-          {tasks.map((t) => {
+          {Array.isArray(tasks) &&
+            tasks.map((t) => {
             const now = new Date();
             const today = now.toISOString().split("T")[0];
 
@@ -153,9 +154,10 @@ const Tasks = () => {
               : null;
 
             const taskEnd =
-              taskDate && endTime
-                ? new Date(`${taskDate}T${endTime}`)
+              taskDate && t.endTime
+                ? new Date(`${taskDate}T${t.endTime}`)
                 : null;
+
 
             const isMissed =
               t.status === "pending" &&
@@ -170,7 +172,7 @@ const Tasks = () => {
                   <div style={styles.taskTitle}>{t.title}</div>
 
                   <div style={styles.timeRow}>
-                    🕒 {startTime || "--:--"} – {endTime || "--:--"}
+                    🕒 {t.startTime || "--:--"} – {t.endTime || "--:--"}
                   </div>
 
                   <div
@@ -201,7 +203,7 @@ const Tasks = () => {
                 </div>
 
                 <div style={styles.actionButtons}>
-                  {t.status !== "completed" && (
+                  {t.status === "pending" && (
                     <button
                       style={styles.doneBtn}
                       onClick={() => markDone(t._id)}
