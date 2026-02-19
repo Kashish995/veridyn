@@ -12,11 +12,26 @@ const Tasks = () => {
   const token = localStorage.getItem("token");
 
   const fetchTasks = async () => {
-    const res = await axios.get("http://localhost:5000/api/tasks", {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setTasks(res.data);
-  };
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/tasks",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (res.data.success) {
+      setTasks(res.data.data || []);
+    } else {
+      setTasks([]);
+    }
+
+  } catch (error) {
+    console.error("Fetch tasks error:", error);
+    setTasks([]);
+  }
+};
+
 
   const addTask = async () => {
     if (!title || !dueDate || !startTime || !endTime) {
@@ -70,8 +85,9 @@ const Tasks = () => {
   };
 
   useEffect(() => {
-    fetchTasks();
-  }, []);
+  fetchTasks();
+}, []);
+
 
   return (
     <div style={styles.page}>

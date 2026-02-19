@@ -2,6 +2,7 @@ import Task from "../models/Task.js";
 import User from "../models/User.js";
 import DailyStats from "../models/DailyStats.js";
 import { smartReschedule } from "./smartReschedule.js";
+import sendResponse from "../utils/apiResponse.js";
 
 /* =========================
    CREATE TASK
@@ -49,12 +50,29 @@ export const createTask = async (req, res) => {
 
     await stats.save();
 
-    res.json(task);
+    return sendResponse(
+      res,
+      201,
+      true,
+      "Task created successfully",
+      task,
+      null
+    );
+
   } catch (err) {
     console.error("createTask error:", err);
-    res.status(500).json({ message: err.message });
+
+    return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to create task",
+      null,
+      err.message
+    );
   }
 };
+
 
 /* =========================
    AUTO MARK MISSED
@@ -116,10 +134,26 @@ export const getTasksByUser = async (req, res) => {
     await updateMissedTasks(req.userId);
 
     const tasks = await Task.find({ userId: req.userId });
-    res.json(tasks);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Tasks fetched successfully",
+      tasks,
+      null
+    );
+
   } catch (err) {
     console.error("getTasksByUser error:", err);
-    res.status(500).json({ message: err.message });
+    return sendResponse(
+        res,
+        500,
+        false,
+        "Failed to fetch tasks",
+        null,
+        err.message
+      );
+
   }
 };
 
@@ -142,10 +176,24 @@ export const getTasksByDate = async (req, res) => {
       dueDate: { $gte: start, $lte: end },
     });
 
-    res.json(tasks);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Tasks fetched successfully",
+      tasks,
+      null
+    );
   } catch (err) {
     console.error("getTasksByDate error:", err);
-    res.status(500).json({ message: err.message });
+   return sendResponse(
+      res,
+      500,
+      false,
+      "Failed to fetch tasks",
+      null,
+      err.message
+    );
   }
 };
 
@@ -160,7 +208,15 @@ export const updateTaskStatus = async (req, res) => {
     });
 
     if (!task) {
-      return res.status(404).json({ message: "Task not found" });
+     return sendResponse(
+      res,
+      404,
+      false,
+      "Task not found",
+      null,
+      "TASK_NOT_FOUND"
+    );
+
     }
 
     // 🚨 LOCK MISSED TASKS
@@ -181,7 +237,14 @@ export const updateTaskStatus = async (req, res) => {
 
     await task.save();
 
-    res.json(task);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Task updated successfully",
+      task,
+      null
+    );
   } catch (err) {
     console.error("updateTaskStatus error:", err);
     res.status(500).json({ message: err.message });
@@ -198,7 +261,15 @@ export const deleteTask = async (req, res) => {
       userId: req.userId,
     });
 
-    res.json({ message: "Task deleted" });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Task deleted successfully",
+      null,
+      null
+    );
+
   } catch (err) {
     console.error("deleteTask error:", err);
     res.status(500).json({ message: err.message });
@@ -268,12 +339,19 @@ export const endDayTasks = async (req, res) => {
       await user.save();
 
 
-    res.json({
-      message: "Day ended successfully",
-      disciplineScore: user.disciplineScore,
-      completed,
-      missed,
-    });
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Day ended successfully",
+      {
+        disciplineScore: user.disciplineScore,
+        completed,
+        missed,
+      },
+      null
+    );
+
 
   } catch (err) {
     console.error("endDayTasks error:", err);
@@ -311,7 +389,15 @@ export const getNextTask = async (req, res) => {
       }
     }
 
-    res.json(upcomingTask || null);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Next task fetched",
+      upcomingTask || null,
+      null
+    );
+
 
   } catch (err) {
     console.error("Next task error:", err);

@@ -32,6 +32,7 @@ import insightsRoutes from "./routes/insightsRoutes.js";
 import suggestionRoutes from "./routes/suggestion.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config();
 
@@ -76,6 +77,8 @@ app.use("/api/suggestions", authMiddleware, suggestionRoutes);
 
 app.use("/api/health",authMiddleware, healthRoutes);
 app.use("/api/stats", statsRoutes);
+app.use(errorHandler);
+
 
 app.get("/", (req, res) => {
   res.send("API RUNNING");
