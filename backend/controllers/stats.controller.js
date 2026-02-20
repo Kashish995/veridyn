@@ -1,23 +1,29 @@
 import DailyStats from "../models/DailyStats.js";
+import { calculateWeeklyPerformance } from "../services/analyticsService.js";
 
 export const getWeeklyStats = async (req, res) => {
   try {
-    const userId = req.userId;
-
-    const today = new Date();
     const sevenDaysAgo = new Date();
-    sevenDaysAgo.setDate(today.getDate() - 6);
+    sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
     const stats = await DailyStats.find({
-      userId,
-      date: {
-        $gte: sevenDaysAgo.toISOString().split("T")[0],
-      },
-    }).sort({ date: 1 });
+      userId: req.userId,
+      date: { $gte: sevenDaysAgo.toISOString().split("T")[0] }
+    });
 
-    res.json(stats);
-  } catch (err) {
-    console.error("Weekly stats error:", err);
-    res.status(500).json({ message: err.message });
+    return res.status(200).json({
+      success: true,
+      message: "Weekly stats fetched",
+      data: stats,
+      error: null
+    });
+
+  } catch (error) {
+    return res.status(500).json({
+      success: false,
+      message: "Failed to fetch weekly stats",
+      data: null,
+      error: error.message
+    });
   }
 };
