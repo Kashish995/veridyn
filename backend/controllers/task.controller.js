@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import DailyStats from "../models/DailyStats.js";
 import { smartReschedule } from "./smartReschedule.js";
 import sendResponse from "../utils/apiResponse.js";
-
+import { calculateDailyDiscipline } from "../services/disciplineService.js";
 /* =========================
    CREATE TASK
 ========================= */
@@ -309,36 +309,17 @@ export const endDayTasks = async (req, res) => {
     const user = await User.findById(userId);
 
     // Base scoring
-      user.disciplineScore += completed * 5;
-      user.disciplineScore -= missed * 3;
+    const result = calculateDailyDiscipline({
+        tasks,
+        currentScore: user.disciplineScore,
+        currentStreak: user.streak
+      });
 
-      // Extra penalty if zero productivity
-      if (completed === 0 && tasks.length > 0) {
-        user.disciplineScore -= 5;
-      }
-
-      /* 🔥 ADD THIS HERE */
-      if (missed === 0 && completed > 0) {
-        user.streak += 1;
-
-        if (user.streak === 3) {
-          user.disciplineScore += 5;
-        }
-
-        if (user.streak === 7) {
-          user.disciplineScore += 10;
-        }
-      } else {
-        user.streak = 0;
-      }
-
-      // Keep score in range
-      if (user.disciplineScore < 0) user.disciplineScore = 0;
-      if (user.disciplineScore > 100) user.disciplineScore = 100;
+      user.disciplineScore = result.newScore;
+      user.streak = result.newStreak;
 
       await user.save();
-
-
+      
     return sendResponse(
       res,
       200,
