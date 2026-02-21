@@ -28,23 +28,31 @@ const Dashboard = () => {
   const [nextTask, setNextTask] = useState(null);
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
-
+  const [weeklyPerformance, setWeeklyPerformance] = useState(null);
   /* =========================
      FETCH DASHBOARD
   ========================= */
   const fetchDashboard = async () => {
-    try {
-      const res = await axios.get(
-        "http://localhost:5000/api/goals/dashboard",
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/goals/dashboard",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    // Handle both response shapes safely
+    if (res.data?.success !== undefined) {
+      setData(res.data.data);
+    } else {
       setData(res.data);
-    } catch (err) {
-      console.error("Dashboard error:", err.response?.data || err.message);
     }
-  };
+
+  } catch (err) {
+    console.error("Dashboard error:", err.response?.data || err.message);
+  }
+};
+
 
   /* =========================
      FETCH WEEKLY STATS
@@ -57,7 +65,11 @@ const Dashboard = () => {
           headers: { Authorization: `Bearer ${token}` },
         }
       );
-      setWeeklyStats(res.data);
+      if (res.data.success) {
+          setWeeklyStats(res.data.data || []);
+        } else {
+          setWeeklyStats([]);
+        }
     } catch (err) {
       console.error("Weekly stats error:", err.message);
     }
@@ -70,9 +82,29 @@ const Dashboard = () => {
         headers: { Authorization: `Bearer ${token}` },
       }
     );
-    setNextTask(res.data);
+    if (res.data.success) {
+        setNextTask(res.data.data);
+      }
   } catch (err) {
     console.error("Next task error:", err.message);
+  }
+};
+
+const fetchWeeklyPerformance = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/stats/weekly-performance",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (res.data.success) {
+      setWeeklyPerformance(res.data.data);
+    }
+
+  } catch (err) {
+    console.error("Weekly performance error:", err.message);
   }
 };
 
@@ -80,6 +112,7 @@ const Dashboard = () => {
     fetchDashboard();
     fetchWeeklyStats();
     fetchNextTask();
+    fetchWeeklyPerformance();
   }, []);
 
   if (!data) {
@@ -93,8 +126,10 @@ const Dashboard = () => {
   /* =========================
      CHART DATA
   ========================= */
+  const safeStats = Array.isArray(weeklyStats) ? weeklyStats : [];
+
   const chartData = {
-    labels: weeklyStats.map((d) => d.date.slice(5)),
+    labels: safeStats.map((d) => d.date?.slice(5)),
     datasets: [
       {
         label: "Completed",
@@ -138,13 +173,13 @@ const Dashboard = () => {
         <h2 style={styles.sectionTitle}>Discipline</h2>
         <div style={styles.scoreBox}>
           <span style={styles.scoreNumber}>
-            {data.disciplineScore ?? 50}
+            {data?.disciplineScore ?? 50}
           </span>
           <span style={styles.scoreTotal}> / 100</span>
         </div>
       </div>
 
-      {/* Summary Card */}
+      {/* Today's Summary Card */}
       <div style={styles.card}>
         <h2 style={styles.sectionTitle}>Today's Summary</h2>
 
@@ -152,14 +187,14 @@ const Dashboard = () => {
           <div style={styles.statBox}>
             <div style={styles.statLabel}>Tasks</div>
             <div style={styles.statValue}>
-              {data.completedTasks} / {data.totalTasks}
+              {data?.completedTasks ?? 0} / {data?.totalTasks ?? 0}
             </div>
           </div>
 
           <div style={styles.statBox}>
             <div style={styles.statLabel}>Goal</div>
             <div style={styles.statValue}>
-              {data.goal}
+              {data?.goal ?? 0}
             </div>
           </div>
         </div>
@@ -168,81 +203,92 @@ const Dashboard = () => {
           <div
             style={{
               ...styles.progressFill,
-              width: `${data.progress}%`,
+              width: `${data?.progress ?? 0}%`,
             }}
           />
         </div>
 
         <div style={styles.progressText}>
-          {data.progress}% completed
+          {data?.progress ?? 0}% completed
         </div>
       </div>
+
+      {/* 7-Day Performance Card */}
+      {weeklyPerformance && (
+        <div style={styles.card}>
+          <h2 style={styles.sectionTitle}>📊 7-Day Performance</h2>
+
+          <div style={{ fontSize: "28px", fontWeight: "700" }}>
+            {weeklyPerformance.completionRate ?? 0}%
+          </div>
+
+          <div
+            style={{
+              marginTop: "8px",
+              fontWeight: "600",
+              color:
+                weeklyPerformance.category === "Focused"
+                  ? "#22c55e"
+                  : weeklyPerformance.category === "Average"
+                  ? "#f59e0b"
+                  : "#ef4444",
+            }}
+          >
+            {weeklyPerformance.category}
+          </div>
+        </div>
+      )}
+
+      {/* Upcoming Task Card */}
       {nextTask && (
-  <div style={styles.card}>
-    <h2 style={styles.sectionTitle}>⏰ Upcoming Task</h2>
+        <div style={styles.card}>
+          <h2 style={styles.sectionTitle}>⏰ Upcoming Task</h2>
 
-    <div style={{ fontWeight: "600", marginBottom: "6px" }}>
-      {nextTask.title}
-    </div>
+          <div style={{ fontWeight: "600", marginBottom: "6px" }}>
+            {nextTask.title}
+          </div>
 
-    <div style={{ fontSize: "14px", color: "#6b7280" }}>
-      {nextTask.startTime} – {nextTask.endTime}
-    </div>
+          <div style={{ fontSize: "14px", color: "#6b7280" }}>
+            {nextTask.startTime} – {nextTask.endTime}
+          </div>
 
-    <div
-      style={{
-        marginTop: "6px",
-        fontSize: "13px",
-        fontWeight: "600",
-        color:
-          nextTask.priority === "high"
-            ? "#ef4444"
-            : nextTask.priority === "medium"
-            ? "#f59e0b"
-            : "#22c55e",
-      }}
-    >
-      Priority: {nextTask.priority}
-    </div>
-  </div>
-)}
-  {data.upcomingTask && (
-  <div style={{ marginBottom: "20px" }}>
-    <h3>Upcoming Task</h3>
-    <div style={{
-      background: "#f1f5f9",
-      padding: "12px",
-      borderRadius: "10px"
-    }}>
-      <div style={{ fontWeight: "600" }}>
-        {data.upcomingTask.title}
-      </div>
-      <div style={{ fontSize: "13px", color: "#6b7280" }}>
-        🕒 {data.upcomingTask.startTime} - {data.upcomingTask.endTime}
-      </div>
-    </div>
-  </div>
-)}
+          <div
+            style={{
+              marginTop: "6px",
+              fontSize: "13px",
+              fontWeight: "600",
+              color:
+                nextTask.priority === "high"
+                  ? "#ef4444"
+                  : nextTask.priority === "medium"
+                  ? "#f59e0b"
+                  : "#22c55e",
+            }}
+          >
+            Priority: {nextTask.priority}
+          </div>
+        </div>
+      )}
 
       {/* Weekly Graph Card */}
       <div style={styles.card}>
         <h2 style={styles.sectionTitle}>Weekly Performance</h2>
 
-        {weeklyStats.length > 0 ? (
+        {Array.isArray(weeklyStats) && weeklyStats.length > 0 ? (
           <Line data={chartData} />
         ) : (
-          <p style={{ textAlign: "center" }}>
-            No data yet
-          </p>
+          <p style={{ textAlign: "center" }}>No data yet</p>
         )}
       </div>
-        <div style={styles.buttonRow}>
-          <button style={styles.primaryBtn} onClick={endDay}>
-            End Day
-          </button>
-        </div>
 
-      {/* Buttons */}
+      {/* End Day Button */}
+      <div style={styles.buttonRow}>
+        <button style={styles.primaryBtn} onClick={endDay}>
+          End Day
+        </button>
+      </div>
+
+      {/* Navigation Buttons */}
       <div style={styles.buttonRow}>
         <button
           style={styles.primaryBtn}
@@ -265,7 +311,6 @@ const Dashboard = () => {
     </div>
   </div>
 );
-
 };
 
 export default Dashboard;

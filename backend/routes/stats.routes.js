@@ -1,6 +1,5 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
-
 import {
   getWeeklyStats,
   getWeeklyPerformance
@@ -9,7 +8,6 @@ import {
 const router = express.Router();
 
 router.get("/weekly", authMiddleware, getWeeklyStats);
-
 router.get("/weekly-performance", authMiddleware, getWeeklyPerformance);
 
 export default router;
