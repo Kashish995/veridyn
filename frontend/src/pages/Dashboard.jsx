@@ -29,6 +29,7 @@ const Dashboard = () => {
   const navigate = useNavigate();
   const token = localStorage.getItem("token");
   const [weeklyPerformance, setWeeklyPerformance] = useState(null);
+  const [insights, setInsights] = useState(null);
   /* =========================
      FETCH DASHBOARD
   ========================= */
@@ -108,11 +109,30 @@ const fetchWeeklyPerformance = async () => {
   }
 };
 
+const fetchInsights = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/stats/insights",
+      {
+        headers: { Authorization: `Bearer ${token}` },
+      }
+    );
+
+    if (res.data.success) {
+      setInsights(res.data.data);
+    }
+
+  } catch (err) {
+    console.error("Insights error:", err.message);
+  }
+};
+
   useEffect(() => {
     fetchDashboard();
     fetchWeeklyStats();
     fetchNextTask();
     fetchWeeklyPerformance();
+    fetchInsights();
   }, []);
 
   if (!data) {
@@ -171,11 +191,19 @@ const fetchWeeklyPerformance = async () => {
       {/* Discipline Card */}
       <div style={styles.card}>
         <h2 style={styles.sectionTitle}>Discipline</h2>
+
         <div style={styles.scoreBox}>
           <span style={styles.scoreNumber}>
             {data?.disciplineScore ?? 50}
           </span>
           <span style={styles.scoreTotal}> / 100</span>
+        </div>
+
+        <div style={{ marginTop: "8px",
+          fontSize: "14px",
+          color: "#6b7280"
+           }}>
+          🔥 Streak: {data?.streak ?? 0} days
         </div>
       </div>
 
@@ -239,6 +267,58 @@ const fetchWeeklyPerformance = async () => {
         </div>
       )}
 
+            {insights && (
+          <div style={styles.card}>
+            <h2 style={styles.sectionTitle}>🧠 Behavioral Insights</h2>
+
+            <div style={{ marginBottom: "10px" }}>
+              <strong>Trend:</strong>{" "}
+              <span
+                style={{
+                  color:
+                    insights.trend === "Improving"
+                      ? "#22c55e"
+                      : insights.trend === "Declining"
+                      ? "#ef4444"
+                      : "#f59e0b",
+                }}
+              >
+                {insights.trend}
+              </span>
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+              <strong>Risk Level:</strong>{" "}
+              <span
+                style={{
+                  color:
+                    insights.riskLevel === "High"
+                      ? "#ef4444"
+                      : insights.riskLevel === "Medium"
+                      ? "#f59e0b"
+                      : "#22c55e",
+                }}
+              >
+                {insights.riskLevel}
+              </span>
+            </div>
+
+            <div style={{ marginBottom: "10px" }}>
+              {insights.feedback}
+            </div>
+
+            <div
+              style={{
+                background: "#eef2ff",
+                padding: "10px",
+                borderRadius: "10px",
+                fontSize: "14px",
+              }}
+            >
+              💡 {insights.recommendation}
+            </div>
+          </div>
+        )}
       {/* Upcoming Task Card */}
       {nextTask && (
         <div style={styles.card}>

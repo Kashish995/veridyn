@@ -3,7 +3,7 @@ import User from "../models/User.js";
 import DailyStats from "../models/DailyStats.js";
 import { smartReschedule } from "./smartReschedule.js";
 import sendResponse from "../utils/apiResponse.js";
-import { calculateDailyDiscipline } from "../services/disciplineService.js";
+import { calculateDisciplineChange } from "../services/disciplineService.js";
 /* =========================
    CREATE TASK
 ========================= */
@@ -308,17 +308,17 @@ export const endDayTasks = async (req, res) => {
     // 4️⃣ Update discipline score
     const user = await User.findById(userId);
 
-    // Base scoring
-    const result = calculateDailyDiscipline({
-        tasks,
-        currentScore: user.disciplineScore,
-        currentStreak: user.streak
-      });
+const { newScore, newStreak } =
+  calculateDisciplineChange({
+    tasks,
+    currentScore: user.disciplineScore,
+    currentStreak: user.streak
+  });
 
-      user.disciplineScore = result.newScore;
-      user.streak = result.newStreak;
+user.disciplineScore = newScore;
+user.streak = newStreak;
 
-      await user.save();
+await user.save();
       
     return sendResponse(
       res,
