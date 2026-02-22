@@ -3,7 +3,7 @@ import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 
 // REGISTER
-export const register = async (req, res) => {
+export const register = async (req, res, next) => {
   try {
     const { name, email, password } = req.body;
 
@@ -14,7 +14,9 @@ export const register = async (req, res) => {
 
     const existingUser = await User.findOne({ email });
     if (existingUser) {
-      return res.status(409).json({ message: "User already exists" });
+      const error = new Error("User already exists");
+      error.statusCode = 400;
+      return next(error);
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -33,14 +35,14 @@ export const register = async (req, res) => {
         email: user.email,
       },
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (err) {
+  next(err);
+}
 };
 
 // LOGIN
 // LOGIN
-export const login = async (req, res) => {
+export const login = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
@@ -68,8 +70,8 @@ export const login = async (req, res) => {
         email: user.email,
       },
     });
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  } catch (err) {
+  next(err);
+}
 };
 

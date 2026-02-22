@@ -2,7 +2,7 @@ import DailyStats from "../models/DailyStats.js";
 import { calculateWeeklyPerformance } from "../services/analyticsService.js";
 import { generateInsights } from "../services/insightService.js";
 
-export const getWeeklyStats = async (req, res) => {
+export const getWeeklyStats = async (req, res, next) => {
   try {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
@@ -20,15 +20,10 @@ export const getWeeklyStats = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to fetch weekly stats",
-      data: null,
-      error: error.message
-    });
-  }
+  next(error);
+}
 };
-export const getWeeklyPerformance = async (req, res) => {
+export const getWeeklyPerformance = async (req, res, next) => {
   try {
     const performance = await calculateWeeklyPerformance(req.userId);
 
@@ -40,15 +35,10 @@ export const getWeeklyPerformance = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to calculate weekly performance",
-      data: null,
-      error: error.message
-    });
-  }
+  next(error);
+}
 };
-export const getInsights = async (req, res) => {
+export const getInsights = async (req, res, next) => {
   try {
     const insights = await generateInsights(req.userId);
 
@@ -60,11 +50,6 @@ export const getInsights = async (req, res) => {
     });
 
   } catch (error) {
-    return res.status(500).json({
-      success: false,
-      message: "Failed to generate insights",
-      data: null,
-      error: error.message
-    });
-  }
+  next(error);
+}
 };

@@ -7,7 +7,7 @@ import { calculateDisciplineChange } from "../services/disciplineService.js";
 /* =========================
    CREATE TASK
 ========================= */
-export const createTask = async (req, res) => {
+export const createTask = async (req, res, next) => {
   try {
     const {
       title,
@@ -60,17 +60,8 @@ export const createTask = async (req, res) => {
     );
 
   } catch (err) {
-    console.error("createTask error:", err);
-
-    return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to create task",
-      null,
-      err.message
-    );
-  }
+  next(err);
+}
 };
 
 
@@ -129,7 +120,7 @@ const updateMissedTasks = async (userId) => {
 /* =========================
    GET TASKS (AUTO CHECK)
 ========================= */
-export const getTasksByUser = async (req, res) => {
+export const getTasksByUser = async (req, res, next) => {
   try {
     await updateMissedTasks(req.userId);
 
@@ -144,23 +135,14 @@ export const getTasksByUser = async (req, res) => {
     );
 
   } catch (err) {
-    console.error("getTasksByUser error:", err);
-    return sendResponse(
-        res,
-        500,
-        false,
-        "Failed to fetch tasks",
-        null,
-        err.message
-      );
-
-  }
+  next(err);
+}
 };
 
 /* =========================
    GET TASKS BY DATE
 ========================= */
-export const getTasksByDate = async (req, res) => {
+export const getTasksByDate = async (req, res, next) => {
   try {
     const { date } = req.params;
     const userId = req.userId;
@@ -185,22 +167,14 @@ export const getTasksByDate = async (req, res) => {
       null
     );
   } catch (err) {
-    console.error("getTasksByDate error:", err);
-   return sendResponse(
-      res,
-      500,
-      false,
-      "Failed to fetch tasks",
-      null,
-      err.message
-    );
-  }
+  next(err);
+}
 };
 
 /* =========================
    UPDATE TASK STATUS
 ========================= */
-export const updateTaskStatus = async (req, res) => {
+export const updateTaskStatus = async (req, res, next) => {
   try {
     const task = await Task.findOne({
       _id: req.params.taskId,
@@ -246,15 +220,14 @@ export const updateTaskStatus = async (req, res) => {
       null
     );
   } catch (err) {
-    console.error("updateTaskStatus error:", err);
-    res.status(500).json({ message: err.message });
-  }
+  next(err);
+}
 };
 
 /* =========================
    DELETE TASK
 ========================= */
-export const deleteTask = async (req, res) => {
+export const deleteTask = async (req, res, next) => {
   try {
     await Task.findOneAndDelete({
       _id: req.params.taskId,
@@ -271,13 +244,12 @@ export const deleteTask = async (req, res) => {
     );
 
   } catch (err) {
-    console.error("deleteTask error:", err);
-    res.status(500).json({ message: err.message });
-  }
+  next(err);
+}
 };
 
 
-export const endDayTasks = async (req, res) => {
+export const endDayTasks = async (req, res, next) => {
   try {
     const userId = req.userId;
 
@@ -335,12 +307,11 @@ await user.save();
 
 
   } catch (err) {
-    console.error("endDayTasks error:", err);
-    res.status(500).json({ message: err.message });
-  }
+  next(err);
+}
 };
 
-export const getNextTask = async (req, res) => {
+export const getNextTask = async (req, res, next) => {
   try {
     const now = new Date();
 
@@ -381,8 +352,7 @@ export const getNextTask = async (req, res) => {
 
 
   } catch (err) {
-    console.error("Next task error:", err);
-    res.status(500).json({ message: err.message });
-  }
+  next(err);
+}
 };
 
