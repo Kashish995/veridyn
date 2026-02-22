@@ -32,5 +32,6 @@ const dailyStatsSchema = new mongoose.Schema(
 );
 
 const DailyStats = mongoose.model("DailyStats", dailyStatsSchema);
+dailyStatsSchema.index({ userId: 1, date: 1 });
 export default DailyStats;
 

@@ -67,5 +67,7 @@ const taskSchema = new mongoose.Schema(
 );
 
 const Task = mongoose.model("Task", taskSchema);
+taskSchema.index({ userId: 1, dueDate: 1 });
+taskSchema.index({ userId: 1, status: 1 });
 export default Task;
 

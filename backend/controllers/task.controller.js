@@ -4,6 +4,7 @@ import DailyStats from "../models/DailyStats.js";
 import { smartReschedule } from "./smartReschedule.js";
 import sendResponse from "../utils/apiResponse.js";
 import { calculateDisciplineChange } from "../services/disciplineService.js";
+import { updateMissedTasks } from "../services/taskLifecycleService.js";
 /* =========================
    CREATE TASK
 ========================= */
@@ -18,6 +19,24 @@ export const createTask = async (req, res, next) => {
       startTime,
       endTime,
     } = req.body;
+
+    if (!title || !dueDate || !startTime || !endTime) {
+  const error = new Error("Missing required fields");
+  error.statusCode = 400;
+  return next(error);
+}
+
+if (priority && !["low", "medium", "high"].includes(priority)) {
+  const error = new Error("Invalid priority value");
+  error.statusCode = 400;
+  return next(error);
+}
+
+if (isNaN(new Date(dueDate))) {
+  const error = new Error("Invalid due date");
+  error.statusCode = 400;
+  return next(error);
+}
 
     const task = await Task.create({
       title,
@@ -65,57 +84,7 @@ export const createTask = async (req, res, next) => {
 };
 
 
-/* =========================
-   AUTO MARK MISSED
-========================= */
-const updateMissedTasks = async (userId) => {
-  const now = new Date();
 
-  const tasks = await Task.find({
-    userId,
-    status: "pending",
-  });
-
-  for (let task of tasks) {
-    if (!task.endTime) continue;
-
-    const [hours, minutes] = task.endTime.split(":");
-
-    const deadline = new Date(task.dueDate);
-    deadline.setHours(Number(hours), Number(minutes), 0, 0);
-
-    if (now > deadline) {
-      task.status = "missed";
-      await task.save();
-
-      // ---- Discipline Penalty ----
-      const user = await User.findById(userId);
-      user.disciplineScore -= 15;
-      if (user.disciplineScore < 0) user.disciplineScore = 0;
-      await user.save();
-
-      // ---- DailyStats Update ----
-      const today = new Date().toISOString().split("T")[0];
-
-      let stats = await DailyStats.findOne({
-        userId,
-        date: today,
-      });
-
-      if (!stats) {
-        stats = await DailyStats.create({
-          userId,
-          date: today,
-        });
-      }
-
-      stats.missed += 1;
-      stats.scoreChange -= 15;
-
-      await stats.save();
-    }
-  }
-};
 
 /* =========================
    GET TASKS (AUTO CHECK)
@@ -194,18 +163,27 @@ export const updateTaskStatus = async (req, res, next) => {
     }
 
     // 🚨 LOCK MISSED TASKS
-    if (task.status === "missed") {
-      return res.status(400).json({
-        message: "Missed tasks cannot be modified.",
-      });
-    }
+  if (task.status === "missed") {
+  return sendResponse(
+    res,
+    400,
+    false,
+    "Missed tasks cannot be modified.",
+    null,
+    "TASK_LOCKED"
+  );
+}
 
-    // 🚫 Prevent changing missed back to completed
-    if (req.body.status === "completed" && task.status === "missed") {
-      return res.status(400).json({
-        message: "You cannot complete a missed task.",
-      });
-    }
+if (req.body.status === "completed" && task.status === "missed") {
+  return sendResponse(
+    res,
+    400,
+    false,
+    "You cannot complete a missed task.",
+    null,
+    "INVALID_STATUS_CHANGE"
+  );
+}
 
     task.status = req.body.status || task.status;
 
@@ -254,7 +232,7 @@ export const endDayTasks = async (req, res, next) => {
     const userId = req.userId;
 
     // 1️⃣ Update missed tasks first
-    await updateMissedTasks(userId);
+    await updateMissedTasks(req.userId);
 
     // 2️⃣ Get today's tasks
     const todayStart = new Date();
