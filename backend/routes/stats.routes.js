@@ -1,15 +1,20 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
 import {
-  getWeeklyStats,
-  getWeeklyPerformance,
-  getInsights
+  getMonthlyPerformance,
+  getStreakAnalytics,
+  getPerformanceInsights
 } from "../controllers/stats.controller.js";
 
 const router = express.Router();
 
-router.get("/weekly", authMiddleware, getWeeklyStats);
-router.get("/weekly-performance", authMiddleware, getWeeklyPerformance);
-router.get("/insights", authMiddleware, getInsights);
+// 30-day rolling performance
+router.get("/monthly", authMiddleware, getMonthlyPerformance);
+
+// historical + current streak
+router.get("/streak", authMiddleware, getStreakAnalytics);
+
+// full performance intelligence bundle
+router.get("/performance", authMiddleware, getPerformanceInsights);
 
 export default router;
