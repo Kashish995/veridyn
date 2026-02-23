@@ -1,6 +1,6 @@
-const DailyStats = require("../models/DailyStats");
+import DailyStats from "../models/DailyStats.js";
 
-exports.getStreakAnalytics = async (userId) => {
+export const getStreakAnalytics = async (userId) => {
   const stats = await DailyStats.find({ userId })
     .sort({ date: 1 }) // ascending order
     .lean();
