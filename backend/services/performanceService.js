@@ -135,9 +135,11 @@ export const detectBurnoutRisk = async (userId) => {
   }).sort({ date: 1 }).lean();
 
   if (stats.length < 5) {
-    return {
+   return {
       burnoutRisk: false,
-      reason: "Not enough data"
+      last3DayAverage: 0,
+      previous7DayAverage: 0,
+      severity: "No Data"
     };
   }
 
@@ -285,3 +287,34 @@ export const getMonthlyPerformance = async (userId) => {
   };
 };
 
+export const getPerformanceTier = async (userId) => {
+  const monthly = await getMonthlyPerformance(userId);
+
+  const rate = monthly.completionRate;
+
+  let tier = "Distracted";
+
+  if (rate >= 85) tier = "Elite";
+  else if (rate >= 70) tier = "Focused";
+  else if (rate >= 50) tier = "Average";
+
+  return {
+    tier,
+    completionRate: rate
+  };
+};
+export const getFullInsights = async (userId) => {
+  const monthly = await getMonthlyPerformance(userId);
+  const weekly = await getWeeklyPerformance(userId);
+  const volatility = await getProductivityVolatility(userId);
+  const tier = await getPerformanceTier(userId);
+  const burnout = await detectBurnoutRisk(userId);
+
+  return {
+    monthly,
+    weekly,
+    volatility,
+    tier,
+    burnout
+  };
+};

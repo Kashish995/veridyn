@@ -20,13 +20,15 @@ export const getWeeklyPerformance = async (req, res, next) => {
   }
 };
 // GET /api/stats/insights
-export const getInsights = async (req, res) => {
-  return res.success({
-    trend: "Stable",
-    riskLevel: "Low",
-    feedback: "No sufficient data yet.",
-    recommendation: "Start completing tasks to generate insights."
-  });
+export const getInsights = async (req, res, next) => {
+  try {
+    const insights =
+      await performanceService.getFullInsights(req.userId);
+
+    return res.success(insights);
+  } catch (error) {
+    next(error);
+  }
 };
 export const getMonthlyPerformance = async (req, res, next) => {
   try {

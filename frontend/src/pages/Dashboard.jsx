@@ -268,57 +268,77 @@ const fetchInsights = async () => {
       )}
 
             {insights && (
-          <div style={styles.card}>
-            <h2 style={styles.sectionTitle}>🧠 Behavioral Insights</h2>
+                <div style={styles.card}>
+                  <h2 style={styles.sectionTitle}>🧠 Performance Intelligence</h2>
 
-            <div style={{ marginBottom: "10px" }}>
-              <strong>Trend:</strong>{" "}
-              <span
-                style={{
-                  color:
-                    insights.trend === "Improving"
-                      ? "#22c55e"
-                      : insights.trend === "Declining"
-                      ? "#ef4444"
-                      : "#f59e0b",
-                }}
-              >
-                {insights.trend}
-              </span>
-            </div>
+                  <div style={{ marginBottom: "10px" }}>
+                    <strong>Tier:</strong>{" "}
+                    <span style={{
+                        padding: "4px 10px",
+                        borderRadius: "20px",
+                        background:
+                          insights.tier?.tier === "Elite"
+                            ? "#dcfce7"
+                            : insights.tier?.tier === "Focused"
+                            ? "#dbeafe"
+                            : insights.tier?.tier === "Average"
+                            ? "#fef3c7"
+                            : "#fee2e2",
+                      }}>
+                        {insights.tier?.tier}
+                      </span>
+                  </div>
 
-            <div style={{ marginBottom: "10px" }}>
-              <strong>Risk Level:</strong>{" "}
-              <span
-                style={{
-                  color:
-                    insights.riskLevel === "High"
-                      ? "#ef4444"
-                      : insights.riskLevel === "Medium"
-                      ? "#f59e0b"
-                      : "#22c55e",
-                }}
-              >
-                {insights.riskLevel}
-              </span>
-            </div>
+                  <div style={{ marginBottom: "10px" }}>
+                    <strong>Monthly Completion:</strong>{" "}
+                    {insights.monthly?.completionRate ?? 0}%
+                  </div>
 
-            <div style={{ marginBottom: "10px" }}>
-              {insights.feedback}
-            </div>
+                  <div style={{ marginBottom: "10px" }}>
+                    <strong>Volatility:</strong>{" "}
+                    {insights.volatility?.stabilityLevel} (
+                    {insights.volatility?.volatilityScore})
+                  </div>
 
-            <div
-              style={{
-                background: "#eef2ff",
-                padding: "10px",
-                borderRadius: "10px",
-                fontSize: "14px",
-              }}
-            >
-              💡 {insights.recommendation}
-            </div>
-          </div>
-        )}
+                  <div style={{ marginBottom: "10px" }}>
+                    <strong>Burnout Risk:</strong>{" "}
+                    {insights.burnout?.burnoutRisk
+                      ? `Yes (${insights.burnout?.severity})`
+                      : "No"}
+                  </div>
+
+                  {insights.burnout?.burnoutRisk && (
+                    <div
+                      style={{
+                        background: "#fef3c7",
+                        padding: "10px",
+                        borderRadius: "10px",
+                        fontSize: "14px",
+                      }}
+                    >
+                      ⚠️ Recent performance drop detected. Consider reducing load.
+                    </div>
+                  )}
+                  <div
+                    style={{
+                      marginTop: "12px",
+                      fontSize: "14px",
+                      background: "#f8fafc",
+                      padding: "10px",
+                      borderRadius: "10px",
+                      color: "#374151"
+                    }}
+                  >
+                    {insights.burnout?.burnoutRisk
+                        ? "Your recent performance has dropped sharply. Consider reducing task load."
+                        : insights.volatility?.stabilityLevel === "Unstable"
+                        ? "Your productivity pattern is inconsistent. Focus on routine stabilization."
+                        : insights.tier?.tier === "Elite"
+                        ? "You're operating at peak discipline. Maintain this structure."
+                        : "Build consistency to improve performance tier."}
+                    </div>
+                </div>
+              )}
       {/* Upcoming Task Card */}
       {nextTask && (
         <div style={styles.card}>
