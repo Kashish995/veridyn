@@ -1,23 +1,25 @@
 import mongoose from "mongoose";
 
-
-
 const goalSchema = new mongoose.Schema(
   {
     userId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "User",
       required: true,
-      unique: true,
+      unique: true
     },
     dailyTarget: {
       type: Number,
-      default: 2,
+      required: true,
+      min: 1,
+      max: 50
     },
-    streak: {
+    weeklyTarget: {
       type: Number,
-      default: 0,
-    },
+      required: true,
+      min: 1,
+      max: 350
+    }
   },
   { timestamps: true }
 );

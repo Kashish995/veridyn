@@ -1,11 +1,11 @@
 import express from "express";
-console.log("🚀 THIS server.js is running");
 import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
 
 /* Middleware */
 import authMiddleware from "./middleware/auth.middleware.js";
+import errorHandler from "./middleware/errorHandler.js";
 
 /* Routes */
 import authRoutes from "./routes/auth.routes.js";
@@ -32,27 +32,51 @@ import insightsRoutes from "./routes/insightsRoutes.js";
 import suggestionRoutes from "./routes/suggestion.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
-import errorHandler from "./middleware/errorHandler.js";
 
 dotenv.config();
 
 const app = express();
 
-/* Middleware */
+/* ---------------- GLOBAL MIDDLEWARE ---------------- */
+
 app.use(
   cors({
     origin: "*",
     methods: ["GET", "POST", "PATCH", "DELETE"],
   })
 );
+
 app.use(express.json());
 
-/* Routes */
-/* Public routes (NO auth) */
-/* Public routes (NO TOKEN) */
+/* 🔥 GLOBAL RESPONSE WRAPPER (IMPORTANT) */
+app.use((req, res, next) => {
+  res.success = (data, message = "Success") => {
+    return res.status(200).json({
+      success: true,
+      message,
+      data,
+      error: null,
+    });
+  };
+
+  res.fail = (message = "Error", status = 400) => {
+    return res.status(status).json({
+      success: false,
+      message,
+      data: null,
+      error: message,
+    });
+  };
+
+  next();
+});
+
+/* ---------------- ROUTES ---------------- */
+
+/* Public */
 app.use("/api/auth", authRoutes);
 
-/* Protected routes (TOKEN REQUIRED) */
+/* Protected */
 app.use("/api/users", authMiddleware, userRoutes);
 app.use("/api/profile", authMiddleware, profileRoutes);
 
@@ -72,30 +96,26 @@ app.use("/api/reflection", authMiddleware, reflectionRoutes);
 app.use("/api/patterns", authMiddleware, patternRoutes);
 
 app.use("/api/goals", authMiddleware, goalRoutes);
-app.use("/api/insights",authMiddleware, insightsRoutes);
+app.use("/api/insights", authMiddleware, insightsRoutes);
 app.use("/api/suggestions", authMiddleware, suggestionRoutes);
+app.use("/api/health", authMiddleware, healthRoutes);
 
-app.use("/api/health",authMiddleware, healthRoutes);
-app.use("/api/stats", statsRoutes);
-app.use(errorHandler);
+/* Stats route (already protected inside file if needed) */
+app.use("/api/stats", authMiddleware, statsRoutes);
 
-
+/* Root */
 app.get("/", (req, res) => {
   res.send("API RUNNING");
 });
 
-app.use((err, req, res, next) => {
-  console.error("GLOBAL ERROR 👉", err.stack);
-  res.status(500).json({
-    message: err.message || "Internal Server Error",
-  });
-});
+/* ---------------- ERROR HANDLER ---------------- */
 
-/* Root test */
+app.use(errorHandler);
+
+/* ---------------- DATABASE + SERVER START ---------------- */
 
 const PORT = 5000;
 
-/* 🔥 CONNECT DB FIRST, THEN START SERVER ONCE */
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {

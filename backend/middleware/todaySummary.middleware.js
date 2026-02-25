@@ -1,31 +1,39 @@
-import Task from "../models/Task.js";
+import DailyStats from "../models/DailyStats.js";
 
 const todaySummaryMiddleware = async (req, res, next) => {
   try {
-    const userId = req.userId;
+    const today = new Date().toISOString().split("T")[0];
 
-    const start = new Date();
-    start.setHours(0, 0, 0, 0);
+    const stats = await DailyStats.findOne({
+      userId: req.userId,
+      date: today
+    }).lean();
 
-    const end = new Date();
-    end.setHours(23, 59, 59, 999);
+    if (!stats) {
+      req.todaySummary = {
+        totalTasks: 0,
+        completed: 0,
+        missed: 0,
+        completionRate: 0
+      };
+      return next();
+    }
 
-    const tasks = await Task.find({
-      userId,
-      dueDate: { $gte: start, $lte: end }
-    });
+    const completionRate =
+      stats.totalTasks > 0
+        ? stats.completed / stats.totalTasks
+        : 0;
 
-    const completedTasks = tasks.filter(
-      t => t.status === "completed"
-    ).length;
+    req.todaySummary = {
+      totalTasks: stats.totalTasks,
+      completed: stats.completed,
+      missed: stats.missed,
+      completionRate
+    };
 
-    const totalTasks = tasks.length;
-
-    req.todaySummary = { completedTasks, totalTasks };
     next();
-  } catch (err) {
-    console.error("TODAY SUMMARY ERROR 👉", err);
-    res.status(500).json({ message: "Failed to build today summary" });
+  } catch (error) {
+    next(error);
   }
 };
 

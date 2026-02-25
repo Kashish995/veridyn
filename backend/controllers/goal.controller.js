@@ -1,49 +1,51 @@
 import Goal from "../models/Goal.js";
+import * as goalService from "../services/goalService.js";
 
 // GET current goal (simple)
-export const getGoal = async (req, res) => {
+export const setGoal = async (req, res, next) => {
   try {
-    const userId = req.userId;
+    const { dailyTarget, weeklyTarget } = req.body;
 
-    let goal = await Goal.findOne({ userId });
+    const goal = await goalService.setUserGoal(
+      req.userId,
+      dailyTarget,
+      weeklyTarget
+    );
 
-    if (!goal) {
-      goal = await Goal.create({ userId, dailyTarget: 2 });
-    }
+    return res.success(goal);
+  } catch (error) {
+    next(error);
+  }
+};
 
-    res.json(goal);
-  } catch (err) {
-    console.error("GET GOAL ERROR:", err);
-    res.status(500).json({ message: "Failed to get goal" });
+export const getGoal = async (req, res, next) => {
+  try {
+    const goal = await goalService.getUserGoal(req.userId);
+    return res.success(goal);
+  } catch (error) {
+    next(error);
   }
 };
 
 // DASHBOARD (with today summary)
-export const getGoalDashboard = async (req, res) => {
+export const getGoalDashboard = async (req, res, next) => {
   try {
-    const userId = req.userId;
-    const { completedTasks, totalTasks } = req.todaySummary;
+    const goal = await goalService.getUserGoal(req.userId);
 
-    let goal = await Goal.findOne({ userId });
+    const today = req.todaySummary || {
+      totalTasks: 0,
+      completed: 0,
+      missed: 0,
+      completionRate: 0
+    };
 
-    if (!goal) {
-      goal = await Goal.create({ userId, dailyTarget: 2 });
-    }
-
-    const progressPercent =
-      totalTasks === 0 ? 0 : Math.round((completedTasks / totalTasks) * 100);
-
-    res.json({
-      dailyTarget: goal.dailyTarget,
-      completedToday: completedTasks,
-      totalToday: totalTasks,
-      progressPercent,
-      streak: goal.streak
+    return res.success({
+      goal,
+      today
     });
 
-  } catch (err) {
-    console.error("GOAL DASHBOARD ERROR:", err);
-    res.status(500).json({ message: "Failed to load dashboard" });
+  } catch (error) {
+    next(error);
   }
 };
 

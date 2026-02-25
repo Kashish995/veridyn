@@ -222,7 +222,7 @@ const fetchInsights = async () => {
           <div style={styles.statBox}>
             <div style={styles.statLabel}>Goal</div>
             <div style={styles.statValue}>
-              {data?.goal ?? 0}
+              {data?.goal?.dailyTarget ?? 0}
             </div>
           </div>
         </div>
