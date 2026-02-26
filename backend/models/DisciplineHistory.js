@@ -1,5 +1,3 @@
-// models/DisciplineHistory.js
-
 import mongoose from "mongoose";
 
 const disciplineHistorySchema = new mongoose.Schema(
@@ -11,14 +9,14 @@ const disciplineHistorySchema = new mongoose.Schema(
       index: true
     },
     date: {
-      type: String, // YYYY-MM-DD
-      required: true
-    },
-    disciplineScore: {
-      type: Number,
+      type: String,
       required: true
     },
     completionRate: {
+      type: Number,
+      required: true
+    },
+    disciplineScore: {
       type: Number,
       required: true
     },
@@ -29,8 +27,5 @@ const disciplineHistorySchema = new mongoose.Schema(
   },
   { timestamps: true }
 );
-
-// Prevent duplicate records for same user + date
-disciplineHistorySchema.index({ userId: 1, date: 1 }, { unique: true });
 
 export default mongoose.model("DisciplineHistory", disciplineHistorySchema);

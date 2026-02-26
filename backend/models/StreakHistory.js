@@ -25,6 +25,6 @@ const streakHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
-streakHistorySchema.index({ userId: 1 });
+streakHistorySchema.index({ userId: 1, startData: -1  });
 
 export default mongoose.model("StreakHistory", streakHistorySchema);

@@ -1,22 +1,42 @@
 import express from "express";
 import authMiddleware from "../middleware/auth.middleware.js";
-import {
-  getWeeklyStats,
-  getWeeklyPerformance,
-  getInsights,
-  getMonthlyPerformance,
-  getMonthlyAggregateController
-} from "../controllers/stats.controller.js";
 
+import {
+  getWeeklyStatsController,
+  getWeeklyPerformanceController,
+  getFullInsightsController,
+  getMonthlyPerformanceController,
+  getMonthlyAggregateController,
+  getDisciplineHistoryController,
+  getStreakRecordsController,
+  getTierProgressionController,
+  getPerformanceTrendController
+} from "../controllers/stats.controller.js";
 const router = express.Router();
 
-router.get("/weekly", authMiddleware, getWeeklyStats);
-router.get("/weekly-performance", authMiddleware, getWeeklyPerformance);
-router.get("/insights", authMiddleware, getInsights);
-router.get("/monthly", authMiddleware, getMonthlyPerformance);
+// Weekly
+router.get("/weekly", authMiddleware, getWeeklyStatsController);
+router.get("/weekly-performance", authMiddleware, getWeeklyPerformanceController);
+
+// Insights
+router.get("/insights", authMiddleware, getFullInsightsController);
+
+// Monthly
+router.get("/monthly", authMiddleware, getMonthlyPerformanceController);
+router.get("/monthly-aggregate", authMiddleware, getMonthlyAggregateController);
+
+// Historical
+router.get("/history", authMiddleware, getDisciplineHistoryController);
+router.get("/streak-records", authMiddleware, getStreakRecordsController);
+
 router.get(
-  "/monthly-aggregate",
+  "/tier-progression",
   authMiddleware,
-  getMonthlyAggregateController
+  getTierProgressionController
+);
+router.get(
+  "/performance-trend",
+  authMiddleware,
+  getPerformanceTrendController
 );
 export default router;

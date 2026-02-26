@@ -22,5 +22,7 @@ router.get("/:date", authMiddleware, getTasksByDate);
 router.patch("/:taskId", authMiddleware, updateTaskStatus);
 router.delete("/:taskId", authMiddleware, deleteTask);
 router.post("/end-day", authMiddleware, endDayTasks);
+router.put("/complete/:id", authMiddleware, completeTaskController);
+router.put("/:taskId", authMiddleware, updateTaskStatus);
 
 export default router;

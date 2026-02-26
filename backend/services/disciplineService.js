@@ -1,7 +1,10 @@
-export const calculateDisciplineChange = ({
+import { calculateBehavioralAdjustment } from "./performanceService.js";
+
+export const calculateDisciplineChange = async ({
   tasks,
   currentScore,
-  currentStreak
+  currentStreak,
+  userId
 }) => {
 
   if (!tasks || tasks.length === 0) {
@@ -42,7 +45,7 @@ export const calculateDisciplineChange = ({
 
   let scoreChange = 0;
 
-  // Base rate scoring
+  // Base completion impact
   scoreChange += Math.round((completionRate - 0.5) * 20);
 
   // Zero productivity penalty
@@ -59,21 +62,30 @@ export const calculateDisciplineChange = ({
 
   let newScore = currentScore + scoreChange;
 
-  // Clamp overall score
-  if (newScore > 100) newScore = 100;
-  if (newScore < 0) newScore = 0;
-
   // Streak logic
   let newStreak = currentStreak;
 
   if (missedCount === 0 && weightedCompleted > 0) {
     newStreak += 1;
-    newScore += Math.min(newStreak, 5); // streak bonus capped
+    newScore += Math.min(newStreak, 5); // capped streak bonus
   } else {
     newStreak = 0;
   }
 
-  if (newScore > 100) newScore = 100;
+  /* =========================
+     Behavioral Adjustment v2
+  ========================= */
+
+  const behavioralAdjustment =
+    await calculateBehavioralAdjustment(userId);
+
+  newScore += behavioralAdjustment;
+
+  /* =========================
+     Final Clamp
+  ========================= */
+
+  newScore = Math.max(0, Math.min(100, newScore));
 
   return {
     newScore,

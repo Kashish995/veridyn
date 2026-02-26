@@ -1,7 +1,12 @@
 import DailyStats from "../models/DailyStats.js";
 import { getTierFromCompletionRate } from "../utils/tier.util.js";
 import DisciplineHistory from "../models/DisciplineHistory.js";
-
+import StreakHistory from "../models/StreakHistory.js";
+import {
+  groupByMonth,
+  calculateAverageCompletion,
+  calculateDominantTier
+} from "./aggregation.util.js";
 export const getStreakAnalytics = async (userId) => {
   const stats = await DailyStats.find({ userId })
     .sort({ date: 1 }) // ascending order
@@ -367,4 +372,115 @@ export const getMonthlyAggregate = async (userId) => {
     dominantTier,
     daysTracked: history.length
   };
+};
+export const getDisciplineHistory = async (userId) => {
+  const history = await DisciplineHistory.find({ userId })
+    .sort({ date: 1 })
+    .lean();
+
+  return history.map(day => ({
+    date: day.date,
+    completionRate: day.completionRate,
+    disciplineScore: day.disciplineScore,
+    tier: day.tier
+  }));
+};
+export const getStreakRecords = async (userId) => {
+  const records = await StreakHistory.find({ userId })
+    .sort({ startDate: -1 })
+    .lean();
+
+  if (!records.length) {
+    return {
+      longestRecordedStreak: 0,
+      totalCompletedStreaks: 0,
+      records: []
+    };
+  }
+
+  const longest = Math.max(...records.map(r => r.length));
+
+  return {
+    longestRecordedStreak: longest,
+    totalCompletedStreaks: records.length,
+    records
+  };
+};
+export const getTierProgression = async (userId) => {
+ const oneYearAgo = new Date();
+oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+
+const startDate = oneYearAgo.toISOString().split("T")[0];
+
+const history = await DisciplineHistory.find({
+  userId,
+  date: { $gte: startDate }
+}).lean();
+
+  if (!history.length) return [];
+
+  const grouped = groupByMonth(history);
+
+  return Object.keys(grouped)
+    .sort()
+    .map(month => ({
+      month,
+      averageCompletionRate: calculateAverageCompletion(grouped[month]),
+      dominantTier: calculateDominantTier(grouped[month])
+    }));
+};
+export const getPerformanceTrend = async (userId) => {
+  const progression = await getTierProgression(userId);
+
+  if (progression.length < 2) {
+    return {
+      trendDirection: "Insufficient Data",
+      averageMonthlyGrowth: 0,
+      projectedNextMonthCompletion: 0
+    };
+  }
+
+  const rates = progression.map(p => p.averageCompletionRate);
+
+  let totalGrowth = 0;
+
+  for (let i = 1; i < rates.length; i++) {
+    totalGrowth += (rates[i] - rates[i - 1]);
+  }
+
+  const avgGrowth = totalGrowth / (rates.length - 1);
+
+  const lastMonthRate = rates[rates.length - 1];
+  const projected = lastMonthRate + avgGrowth;
+
+  let trendDirection = "Stable";
+
+  if (avgGrowth > 2) trendDirection = "Improving";
+  else if (avgGrowth < -2) trendDirection = "Declining";
+
+  return {
+    trendDirection,
+    averageMonthlyGrowth: Number(avgGrowth.toFixed(1)),
+    projectedNextMonthCompletion: Number(projected.toFixed(1))
+  };
+};
+export const calculateBehavioralAdjustment = async (userId) => {
+  const volatility = await getProductivityVolatility(userId);
+  const burnout = await detectBurnoutRisk(userId);
+
+  let adjustment = 0;
+
+  // Penalize instability
+  if (volatility.volatilityScore > 0.25) {
+    adjustment -= 3;
+  } else if (volatility.volatilityScore > 0.12) {
+    adjustment -= 1;
+  }
+
+  // Penalize burnout
+  if (burnout.burnoutRisk) {
+    adjustment -= 5;
+  }
+
+  return adjustment;
 };

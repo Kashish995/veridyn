@@ -257,10 +257,11 @@ export const endDayTasks = async (req, res, next) => {
     const user = await User.findById(userId);
 
     const { newScore, newStreak } =
-      calculateDisciplineChange({
+      await calculateDisciplineChange({
         tasks,
         currentScore: user.disciplineScore,
         currentStreak: user.streak,
+        userId
       });
 
     user.disciplineScore = newScore;

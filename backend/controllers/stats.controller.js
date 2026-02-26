@@ -1,51 +1,107 @@
-import * as performanceService from "../services/performanceService.js";
-import { getMonthlyAggregate } from "../services/performanceService.js";
+import {
+  getWeeklyStats,
+  getWeeklyPerformance,
+  getFullInsights,
+  getMonthlyPerformance,
+  getMonthlyAggregate,
+  getDisciplineHistory,
+  getStreakRecords,
+  getTierProgression,
+  getPerformanceTrend
+} from "../services/performanceService.js";
 
-export const getWeeklyStats = async (req, res, next) => {
+/* =========================
+   WEEKLY
+========================= */
+
+export const getWeeklyStatsController = async (req, res, next) => {
   try {
-    const stats = await performanceService.getWeeklyStats(req.userId);
-    return res.success(stats);
-  } catch (error) {
-    next(error);
+    const data = await getWeeklyStats(req.user.id);
+    res.success(data);
+  } catch (err) {
+    next(err);
   }
 };
-// GET /api/stats/weekly-performance
-export const getWeeklyPerformance = async (req, res, next) => {
-  try {
-    const performance =
-      await performanceService.getWeeklyPerformance(req.userId);
 
-    return res.success(performance);
-  } catch (error) {
-    next(error);
+export const getWeeklyPerformanceController = async (req, res, next) => {
+  try {
+    const data = await getWeeklyPerformance(req.user.id);
+    res.success(data);
+  } catch (err) {
+    next(err);
   }
 };
-// GET /api/stats/insights
-export const getInsights = async (req, res, next) => {
-  try {
-    const insights =
-      await performanceService.getFullInsights(req.userId);
 
-    return res.success(insights);
-  } catch (error) {
-    next(error);
+/* =========================
+   INSIGHTS
+========================= */
+
+export const getFullInsightsController = async (req, res, next) => {
+  try {
+    const data = await getFullInsights(req.user.id);
+    res.success(data);
+  } catch (err) {
+    next(err);
   }
 };
-export const getMonthlyPerformance = async (req, res, next) => {
-  try {
-    const result =
-      await performanceService.getMonthlyPerformance(req.userId);
 
-    return res.success(result);
-  } catch (error) {
-    next(error);
+/* =========================
+   MONTHLY
+========================= */
+
+export const getMonthlyPerformanceController = async (req, res, next) => {
+  try {
+    const data = await getMonthlyPerformance(req.user.id);
+    res.success(data);
+  } catch (err) {
+    next(err);
   }
 };
+
 export const getMonthlyAggregateController = async (req, res, next) => {
   try {
     const data = await getMonthlyAggregate(req.user.id);
     res.success(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+/* =========================
+   HISTORY
+========================= */
+
+export const getDisciplineHistoryController = async (req, res, next) => {
+  try {
+    const history = await getDisciplineHistory(req.userId);
+    res.success(history);
   } catch (error) {
     next(error);
+  }
+};
+
+export const getStreakRecordsController = async (req, res, next) => {
+  try {
+    const data = await getStreakRecords(req.user.id);
+    res.success(data);
+  } catch (err) {
+    next(err);
+  }
+};
+
+export const getTierProgressionController = async (req, res, next) => {
+  try {
+    const data = await getTierProgression(req.user.id);
+    res.success(data);
+  } catch (err) {
+    next(err);
+  }
+};
+export const getPerformanceTrendController = async (req, res, next) => {
+  try {
+    const data = await getPerformanceTrend(req.user.id);
+    res.success(data);
+  } catch (err) {
+    next(err);
   }
 };
