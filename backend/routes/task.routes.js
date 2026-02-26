@@ -8,7 +8,8 @@ import {
   updateTaskStatus,
   deleteTask,
   getNextTask,
-  endDayTasks
+  endDayTasks,
+  completeTaskController
 } from "../controllers/task.controller.js";
 
 const router = Router();

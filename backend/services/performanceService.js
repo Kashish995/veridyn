@@ -1,4 +1,6 @@
 import DailyStats from "../models/DailyStats.js";
+import { getTierFromCompletionRate } from "../utils/tier.util.js";
+import DisciplineHistory from "../models/DisciplineHistory.js";
 
 export const getStreakAnalytics = async (userId) => {
   const stats = await DailyStats.find({ userId })
@@ -290,17 +292,11 @@ export const getMonthlyPerformance = async (userId) => {
 export const getPerformanceTier = async (userId) => {
   const monthly = await getMonthlyPerformance(userId);
 
-  const rate = monthly.completionRate;
-
-  let tier = "Distracted";
-
-  if (rate >= 85) tier = "Elite";
-  else if (rate >= 70) tier = "Focused";
-  else if (rate >= 50) tier = "Average";
+  const tier = getTierFromCompletionRate(monthly.completionRate);
 
   return {
     tier,
-    completionRate: rate
+    completionRate: monthly.completionRate
   };
 };
 export const getFullInsights = async (userId) => {
@@ -316,5 +312,59 @@ export const getFullInsights = async (userId) => {
     volatility,
     tier,
     burnout
+  };
+};
+export const getMonthlyAggregate = async (userId) => {
+  const today = new Date();
+  const monthStart = new Date(today.getFullYear(), today.getMonth(), 1);
+
+  const startDate = monthStart.toISOString().split("T")[0];
+  const endDate = today.toISOString().split("T")[0];
+
+  const history = await DisciplineHistory.find({
+    userId,
+    date: { $gte: startDate, $lte: endDate }
+  }).lean();
+
+  if (!history.length) {
+    return {
+      month: startDate.slice(0, 7),
+      averageCompletionRate: 0,
+      averageDisciplineScore: 0,
+      dominantTier: "No Data",
+      daysTracked: 0
+    };
+  }
+
+  const totalCompletion = history.reduce(
+    (sum, day) => sum + day.completionRate,
+    0
+  );
+
+  const totalScore = history.reduce(
+    (sum, day) => sum + day.disciplineScore,
+    0
+  );
+
+  const tierCount = {};
+
+  history.forEach(day => {
+    tierCount[day.tier] = (tierCount[day.tier] || 0) + 1;
+  });
+
+  const dominantTier = Object.keys(tierCount).reduce((a, b) =>
+    tierCount[a] > tierCount[b] ? a : b
+  );
+
+  return {
+    month: startDate.slice(0, 7),
+    averageCompletionRate: Number(
+      (totalCompletion / history.length).toFixed(1)
+    ),
+    averageDisciplineScore: Number(
+      (totalScore / history.length).toFixed(1)
+    ),
+    dominantTier,
+    daysTracked: history.length
   };
 };

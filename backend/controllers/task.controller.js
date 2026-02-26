@@ -5,6 +5,8 @@ import { smartReschedule } from "./smartReschedule.js";
 import sendResponse from "../utils/apiResponse.js";
 import { calculateDisciplineChange } from "../services/disciplineService.js";
 import { updateMissedTasks } from "../services/taskLifecycleService.js";
+import { completeTask } from "../services/task.service.js";
+
 /* =========================
    CREATE TASK
 ========================= */
@@ -20,23 +22,25 @@ export const createTask = async (req, res, next) => {
       endTime,
     } = req.body;
 
+    const userId = req.user.id;
+
     if (!title || !dueDate || !startTime || !endTime) {
-  const error = new Error("Missing required fields");
-  error.statusCode = 400;
-  return next(error);
-}
+      const error = new Error("Missing required fields");
+      error.statusCode = 400;
+      return next(error);
+    }
 
-if (priority && !["low", "medium", "high"].includes(priority)) {
-  const error = new Error("Invalid priority value");
-  error.statusCode = 400;
-  return next(error);
-}
+    if (priority && !["low", "medium", "high"].includes(priority)) {
+      const error = new Error("Invalid priority value");
+      error.statusCode = 400;
+      return next(error);
+    }
 
-if (isNaN(new Date(dueDate))) {
-  const error = new Error("Invalid due date");
-  error.statusCode = 400;
-  return next(error);
-}
+    if (isNaN(new Date(dueDate))) {
+      const error = new Error("Invalid due date");
+      error.statusCode = 400;
+      return next(error);
+    }
 
     const task = await Task.create({
       title,
@@ -46,22 +50,20 @@ if (isNaN(new Date(dueDate))) {
       dueDate: new Date(dueDate),
       startTime,
       endTime,
-      userId: req.userId,
+      userId,
     });
 
-    // ---- DailyStats Update ----
     const today = new Date().toISOString().split("T")[0];
 
-    let stats = await DailyStats.findOne({
-      userId: req.userId,
-      date: today,
-    });
+    let stats = await DailyStats.findOne({ userId, date: today });
 
     if (!stats) {
       stats = new DailyStats({
-        userId: req.userId,
+        userId,
         date: today,
         totalTasks: 1,
+        completed: 0,
+        missed: 0,
       });
     } else {
       stats.totalTasks += 1;
@@ -77,23 +79,22 @@ if (isNaN(new Date(dueDate))) {
       task,
       null
     );
-
   } catch (err) {
-  next(err);
-}
+    next(err);
+  }
 };
-
-
-
 
 /* =========================
    GET TASKS (AUTO CHECK)
 ========================= */
 export const getTasksByUser = async (req, res, next) => {
   try {
-    await updateMissedTasks(req.userId);
+    const userId = req.user.id;
 
-    const tasks = await Task.find({ userId: req.userId });
+    await updateMissedTasks(userId);
+
+    const tasks = await Task.find({ userId });
+
     return sendResponse(
       res,
       200,
@@ -102,10 +103,9 @@ export const getTasksByUser = async (req, res, next) => {
       tasks,
       null
     );
-
   } catch (err) {
-  next(err);
-}
+    next(err);
+  }
 };
 
 /* =========================
@@ -113,8 +113,8 @@ export const getTasksByUser = async (req, res, next) => {
 ========================= */
 export const getTasksByDate = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const { date } = req.params;
-    const userId = req.userId;
 
     await smartReschedule(userId, new Date(date));
 
@@ -136,8 +136,8 @@ export const getTasksByDate = async (req, res, next) => {
       null
     );
   } catch (err) {
-  next(err);
-}
+    next(err);
+  }
 };
 
 /* =========================
@@ -145,48 +145,47 @@ export const getTasksByDate = async (req, res, next) => {
 ========================= */
 export const updateTaskStatus = async (req, res, next) => {
   try {
+    const userId = req.user.id;
+
     const task = await Task.findOne({
       _id: req.params.taskId,
-      userId: req.userId,
+      userId,
     });
 
     if (!task) {
-     return sendResponse(
-      res,
-      404,
-      false,
-      "Task not found",
-      null,
-      "TASK_NOT_FOUND"
-    );
-
+      return sendResponse(
+        res,
+        404,
+        false,
+        "Task not found",
+        null,
+        "TASK_NOT_FOUND"
+      );
     }
 
-    // 🚨 LOCK MISSED TASKS
-  if (task.status === "missed") {
-  return sendResponse(
-    res,
-    400,
-    false,
-    "Missed tasks cannot be modified.",
-    null,
-    "TASK_LOCKED"
-  );
-}
+    if (task.status === "missed") {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "Missed tasks cannot be modified.",
+        null,
+        "TASK_LOCKED"
+      );
+    }
 
-if (req.body.status === "completed" && task.status === "missed") {
-  return sendResponse(
-    res,
-    400,
-    false,
-    "You cannot complete a missed task.",
-    null,
-    "INVALID_STATUS_CHANGE"
-  );
-}
+    if (req.body.status === "completed" && task.status === "missed") {
+      return sendResponse(
+        res,
+        400,
+        false,
+        "You cannot complete a missed task.",
+        null,
+        "INVALID_STATUS_CHANGE"
+      );
+    }
 
     task.status = req.body.status || task.status;
-
     await task.save();
 
     return sendResponse(
@@ -198,8 +197,8 @@ if (req.body.status === "completed" && task.status === "missed") {
       null
     );
   } catch (err) {
-  next(err);
-}
+    next(err);
+  }
 };
 
 /* =========================
@@ -207,9 +206,11 @@ if (req.body.status === "completed" && task.status === "missed") {
 ========================= */
 export const deleteTask = async (req, res, next) => {
   try {
+    const userId = req.user.id;
+
     await Task.findOneAndDelete({
       _id: req.params.taskId,
-      userId: req.userId,
+      userId,
     });
 
     return sendResponse(
@@ -220,21 +221,20 @@ export const deleteTask = async (req, res, next) => {
       null,
       null
     );
-
   } catch (err) {
-  next(err);
-}
+    next(err);
+  }
 };
 
-
+/* =========================
+   END DAY
+========================= */
 export const endDayTasks = async (req, res, next) => {
   try {
-    const userId = req.userId;
+    const userId = req.user.id;
 
-    // 1️⃣ Update missed tasks first
-    await updateMissedTasks(req.userId);
+    await updateMissedTasks(userId);
 
-    // 2️⃣ Get today's tasks
     const todayStart = new Date();
     todayStart.setHours(0, 0, 0, 0);
 
@@ -246,7 +246,6 @@ export const endDayTasks = async (req, res, next) => {
       dueDate: { $gte: todayStart, $lte: todayEnd },
     });
 
-    // 3️⃣ Count completed & missed
     let completed = 0;
     let missed = 0;
 
@@ -255,21 +254,20 @@ export const endDayTasks = async (req, res, next) => {
       if (task.status === "missed") missed++;
     });
 
-    // 4️⃣ Update discipline score
     const user = await User.findById(userId);
 
-const { newScore, newStreak } =
-  calculateDisciplineChange({
-    tasks,
-    currentScore: user.disciplineScore,
-    currentStreak: user.streak
-  });
+    const { newScore, newStreak } =
+      calculateDisciplineChange({
+        tasks,
+        currentScore: user.disciplineScore,
+        currentStreak: user.streak,
+      });
 
-user.disciplineScore = newScore;
-user.streak = newStreak;
+    user.disciplineScore = newScore;
+    user.streak = newStreak;
 
-await user.save();
-      
+    await user.save();
+
     return sendResponse(
       res,
       200,
@@ -282,19 +280,21 @@ await user.save();
       },
       null
     );
-
-
   } catch (err) {
-  next(err);
-}
+    next(err);
+  }
 };
 
+/* =========================
+   GET NEXT TASK
+========================= */
 export const getNextTask = async (req, res, next) => {
   try {
+    const userId = req.user.id;
     const now = new Date();
 
     const tasks = await Task.find({
-      userId: req.userId,
+      userId,
       status: "pending",
     });
 
@@ -305,7 +305,6 @@ export const getNextTask = async (req, res, next) => {
       if (!task.startTime || !task.dueDate) continue;
 
       const [hours, minutes] = task.startTime.split(":").map(Number);
-
       if (isNaN(hours) || isNaN(minutes)) continue;
 
       const taskDateTime = new Date(task.dueDate);
@@ -327,10 +326,26 @@ export const getNextTask = async (req, res, next) => {
       upcomingTask || null,
       null
     );
-
-
   } catch (err) {
-  next(err);
-}
+    next(err);
+  }
 };
 
+/* =========================
+   COMPLETE TASK (SERVICE)
+========================= */
+export const completeTaskController = async (req, res, next) => {
+  try {
+    const task = await completeTask(req.params.id, req.user.id);
+    return sendResponse(
+      res,
+      200,
+      true,
+      "Task completed successfully",
+      task,
+      null
+    );
+  } catch (error) {
+    next(error);
+  }
+};
