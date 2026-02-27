@@ -10,7 +10,8 @@ const disciplineHistorySchema = new mongoose.Schema(
     },
     date: {
       type: String,
-      required: true
+      required: true,
+      index: true
     },
     completionRate: {
       type: Number,
@@ -22,6 +23,7 @@ const disciplineHistorySchema = new mongoose.Schema(
     },
     tier: {
       type: String,
+      enum: ["Bronze", "Silver", "Gold", "Elite"],
       required: true
     }
   },

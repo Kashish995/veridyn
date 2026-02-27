@@ -6,6 +6,7 @@ import sendResponse from "../utils/apiResponse.js";
 import { calculateDisciplineChange } from "../services/disciplineService.js";
 import { updateMissedTasks } from "../services/taskLifecycleService.js";
 import { completeTask } from "../services/task.service.js";
+import { endDay } from "../services/task.service.js";
 
 /* =========================
    CREATE TASK
@@ -346,6 +347,21 @@ export const completeTaskController = async (req, res, next) => {
       task,
       null
     );
+  } catch (error) {
+    next(error);
+  }
+};
+export const endDayHandler = async (req, res, next) => {
+  try {
+    const result = await endDay(req.userId);
+
+    return res.status(200).json({
+      success: true,
+      message: "Day finalized successfully",
+      data: result,
+      error: null
+    });
+
   } catch (error) {
     next(error);
   }
