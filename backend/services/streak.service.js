@@ -48,9 +48,9 @@ export const checkAndPersistStreakBreak = async (userId) => {
         if (tempLength > 0) {
           await StreakHistory.create({
             userId,
-            startDate,
-            endDate,
-            length: tempLength
+            startDate: previousStreakStart,
+            endDate: yesterdayDate,
+            length: previousStreakLength
           });
         }
 
