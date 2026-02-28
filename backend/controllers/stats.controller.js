@@ -105,3 +105,11 @@ export const getPerformanceTrendController = async (req, res, next) => {
     next(err);
   }
 };
+export const getLongestStreak = async (req, res, next) => {
+  try {
+    const data = await performanceService.getLongestStreak(req.userId);
+    return res.success(data);
+  } catch (error) {
+    next(error);
+  }
+};

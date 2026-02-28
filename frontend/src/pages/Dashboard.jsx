@@ -32,6 +32,9 @@ const Dashboard = () => {
   const [weeklyPerformance, setWeeklyPerformance] = useState(null);
   const [insights, setInsights] = useState(null);
   const [history, setHistory] = useState([]);
+  const [longestStreak, setLongestStreak] = useState(null);
+  const [disciplineHistory, setDisciplineHistory] = useState([]);
+  const [monthlyAggregate, setMonthlyAggregate] = useState(null);
   /* =========================
      FETCH DASHBOARD
   ========================= */
@@ -116,6 +119,50 @@ const fetchHistory = async () => {
     setHistory([]);
   }
 };
+const fetchLongestStreak = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/stats/longest-streak",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (res.data.success) {
+      setLongestStreak(res.data.data);
+    }
+  } catch (err) {
+    console.error("Longest streak error:", err.message);
+  }
+};
+
+const fetchDisciplineHistory = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/stats/discipline-history",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (res.data.success) {
+      setDisciplineHistory(res.data.data);
+    }
+  } catch (err) {
+    console.error("History error:", err.message);
+  }
+};
+
+const fetchMonthlyAggregate = async () => {
+  try {
+    const res = await axios.get(
+      "http://localhost:5000/api/stats/monthly-aggregate",
+      { headers: { Authorization: `Bearer ${token}` } }
+    );
+
+    if (res.data.success) {
+      setMonthlyAggregate(res.data.data);
+    }
+  } catch (err) {
+    console.error("Monthly aggregate error:", err.message);
+  }
+};
 
   useEffect(() => {
     fetchDashboard();
@@ -124,6 +171,10 @@ const fetchHistory = async () => {
     fetchWeeklyPerformance();
     fetchInsights();
     fetchHistory();
+
+    fetchLongestStreak();
+    fetchDisciplineHistory();
+    fetchMonthlyAggregate();
   }, []);
 
   if (!data) {
@@ -138,7 +189,7 @@ const fetchHistory = async () => {
      CHART DATA
   ========================= */
   const safeStats = Array.isArray(weeklyStats) ? weeklyStats : [];
-const safeHistory = Array.isArray(history) ? history : [];
+  const safeHistory = Array.isArray(history) ? history : [];
 
 const chartData = {
   labels: safeStats.map((d) => d.date?.slice(5) || ""),
@@ -354,7 +405,21 @@ const endDay = async () => {
             </div>
           </div>
         )}
+        {longestStreak && (
+          <div style={styles.card}>
+            <h2 style={styles.sectionTitle}>🏆 Longest Streak</h2>
 
+            <div style={{ fontSize: "28px", fontWeight: "700" }}>
+              {longestStreak.longestStreak} Days
+            </div>
+
+            {longestStreak.startDate && (
+              <div style={{ fontSize: "14px", marginTop: "8px" }}>
+                {longestStreak.startDate} → {longestStreak.endDate}
+              </div>
+            )}
+          </div>
+        )}
         {/* Upcoming Task */}
         {nextTask && (
           <div style={styles.card}>
@@ -397,7 +462,38 @@ const endDay = async () => {
           )}
         </div>
 
-        {/* Discipline History */}
+          {disciplineHistory.length > 0 && (
+            <div style={styles.card}>
+              <h2 style={styles.sectionTitle}>📈 Discipline History</h2>
+
+              <Line
+                data={{
+                  labels: disciplineHistory.map(d => d.date.slice(5)),
+                  datasets: [
+                    {
+                      label: "Discipline Score",
+                      data: disciplineHistory.map(d => d.disciplineScore),
+                      borderColor: "#4f46e5",
+                      backgroundColor: "rgba(79,70,229,0.2)",
+                      tension: 0.3
+                    }
+                  ]
+                }}
+              />
+            </div>
+          )}
+          {monthlyAggregate && (
+            <div style={styles.card}>
+              <h2 style={styles.sectionTitle}>📅 Monthly Performance</h2>
+
+              <div>Average Completion: {monthlyAggregate.averageCompletionRate}%</div>
+              <div>Average Discipline: {monthlyAggregate.averageDisciplineScore}</div>
+              <div>Dominant Tier: {monthlyAggregate.dominantTier}</div>
+              <div>Days Tracked: {monthlyAggregate.daysTracked}</div>
+            </div>
+          )}
+          
+                  {/* Discipline History */}
         <div style={styles.card}>
           <h2 style={styles.sectionTitle}>Discipline History</h2>
 

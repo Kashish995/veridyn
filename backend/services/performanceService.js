@@ -484,3 +484,23 @@ export const calculateBehavioralAdjustment = async (userId) => {
 
   return adjustment;
 };
+
+export const getLongestStreak = async (userId) => {
+  const longest = await StreakHistory.findOne({ userId })
+    .sort({ length: -1 })
+    .lean();
+
+  if (!longest) {
+    return {
+      longestStreak: 0,
+      startDate: null,
+      endDate: null
+    };
+  }
+
+  return {
+    longestStreak: longest.length,
+    startDate: longest.startDate,
+    endDate: longest.endDate
+  };
+};
