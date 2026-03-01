@@ -10,6 +10,7 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import logo from "./assets/vlogo.png"; // ✅ MUST be at top
 import "./App.css";
+import ErrorBoundary from "./ui/ErrorBoundary";
 
 function App() {
   const token = localStorage.getItem("token");
@@ -95,7 +96,9 @@ function App() {
 
         <Route path="*" element={<Login />} />
       </Routes>
-
+          <ErrorBoundary>
+            <Routes />
+          </ErrorBoundary>
       {/* PROFILE FLOAT BUTTON */}
       {token && (
         <div style={profileStyles.container}>
@@ -127,6 +130,7 @@ function App() {
         </div>
       )}
     </Router>
+    
   );
 }
 

@@ -169,35 +169,46 @@ const fetchMonthlyAggregate = async () => {
   }
 };
 
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDashboard();
-    fetchWeeklyStats();
-    fetchNextTask();
-    fetchWeeklyPerformance();
-    fetchInsights();
-    fetchHistory();
+ useEffect(() => {
+   console.log("Dashboard useEffect triggered");
 
-    fetchLongestStreak();
-    fetchDisciplineHistory();
-    fetchMonthlyAggregate();
-  }, []);
+  const fetchAllData = async () => {
+    try {
+      setLoading(true);
 
-if (!data) {
-  return (
-    <div className="dashboard-loading">
-      <p>Loading Dashboard...</p>
-    </div>
-  );
-}
+      await Promise.all([
+        fetchDashboard(),
+        fetchWeeklyStats(),
+        fetchNextTask(),
+        fetchWeeklyPerformance(),
+        fetchInsights(),
+        fetchHistory(),
+        fetchLongestStreak(),
+        fetchDisciplineHistory(),
+        fetchMonthlyAggregate(),
+      ]);
+
+    } catch (error) {
+      console.error("Dashboard loading failed:", error);
+    } finally {
+      await new Promise(resolve => setTimeout(resolve, 3000));
+      setLoading(false);
+    }
+  };
+
+  fetchAllData();
+}, []);
+
 
   /* =========================
      CHART DATA
   ========================= */
   const safeStats = Array.isArray(weeklyStats) ? weeklyStats : [];
   const safeHistory = Array.isArray(history) ? history : [];
-
+  console.log("Loading:", loading);
+  
 const chartData = {
   labels: safeStats.map((d) => d.date?.slice(5) || ""),
   datasets: [
@@ -255,15 +266,24 @@ const endDay = async () => {
     <div className="dashboard-grid">
 
       {/* Discipline Summary */}
-      <Card title="Discipline">
-        <div className="score-box">
-          <span className="score-number">
-            {data?.disciplineScore ?? 50}
-          </span>
-          <span className="score-total"> / 100</span>
-        </div>
-        <p>🔥 Streak: {data?.streak ?? 0} days</p>
-      </Card>
+    <Card title="Discipline">
+  {loading ? (
+    <>
+      <Skeleton height="32px" width="80px" />
+      <Skeleton height="16px" width="120px" />
+    </>
+  ) : (
+    <>
+      <div className="score-number">
+        {data?.today?.completionRate ?? 0}%
+      </div>
+
+      <p>
+        Tasks: {data?.today?.completed ?? 0} / {data?.today?.totalTasks ?? 0}
+      </p>
+    </>
+  )}
+</Card>
 
       {/* Today's Summary */}
       <Card title="Today's Summary">
@@ -276,10 +296,19 @@ const endDay = async () => {
 
       {/* 7-Day Performance Chart */}
       <Card title="7-Day Performance">
-        {Array.isArray(weeklyStats) && weeklyStats.length > 0 ? (
-          <Line data={chartData} />
+        {loading ? (
+          <Skeleton height="220px" />
         ) : (
-          <p className="center-text">No weekly data yet</p>
+          <Line data={chartData} />
+        )}
+      </Card>
+      
+           {/* Discipline History */}
+      <Card title="Discipline History">
+        {Array.isArray(history) && history.length > 0 ? (
+          <Line data={historyChartData} />
+        ) : (
+          <p className="center-text">No history yet</p>
         )}
       </Card>
 
@@ -305,27 +334,7 @@ const endDay = async () => {
         </Card>
       )}
 
-      {/* Longest Streak */}
-      {longestStreak && (
-        <Card title="Longest Streak">
-          <p>{longestStreak.longestStreak} Days</p>
-          {longestStreak.startDate && (
-            <p>
-              {longestStreak.startDate} → {longestStreak.endDate}
-            </p>
-          )}
-        </Card>
-      )}
-
-      {/* Discipline History */}
-      <Card title="Discipline History">
-        {Array.isArray(history) && history.length > 0 ? (
-          <Line data={historyChartData} />
-        ) : (
-          <p className="center-text">No history yet</p>
-        )}
-      </Card>
-
+ 
       {/* Monthly Performance */}
       {monthlyAggregate && (
         <Card title="Monthly Performance">
@@ -340,6 +349,19 @@ const endDay = async () => {
         </Card>
       )}
 
+      {/* Longest Streak */}
+      {longestStreak && (
+        <Card title="Longest Streak">
+          <p>{longestStreak.longestStreak} Days</p>
+          {longestStreak.startDate && (
+            <p>
+              {longestStreak.startDate} → {longestStreak.endDate}
+            </p>
+          )}
+        </Card>
+      )}
+
+    
       {/* Upcoming Task */}
       {nextTask && (
         <Card title="Upcoming Task">

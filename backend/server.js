@@ -39,12 +39,11 @@ const app = express();
 
 /* ---------------- GLOBAL MIDDLEWARE ---------------- */
 
-app.use(
-  cors({
-    origin: "*",
-    methods: ["GET", "POST", "PATCH", "DELETE"],
-  })
-);
+
+app.use(cors({
+  origin: "http://localhost:5173",
+  credentials: true
+}));
 
 app.use(express.json());
 

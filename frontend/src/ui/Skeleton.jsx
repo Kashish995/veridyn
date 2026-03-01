@@ -1,11 +1,12 @@
-
 import "../styles/skeleton.css";
 
-export default function Skeleton({ width = "100%", height = "20px" }) {
+const Skeleton = ({ height = "20px", width = "100%" }) => {
   return (
     <div
       className="skeleton"
-      style={{ width, height }}
+      style={{ height, width }}
     />
   );
-}
+};
+
+export default Skeleton;

@@ -1,29 +1,49 @@
-.dashboard {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 20px;
-  padding: 24px;
-}
-
-@media (max-width: 768px) {
-  .dashboard {
-    grid-template-columns: 1fr;
-  }
-}
-.actions {
-  display: flex;
-  gap: 12px;
-}
+/* ===== Main Dashboard Grid ===== */
 
 .dashboard-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
-  gap: 20px;
+  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  gap: 24px;
+  padding: 24px;
 }
+
+/* ===== Desktop Enhancements ===== */
+
+@media (min-width: 1024px) {
+  .dashboard-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  /* Cards that should span wider */
+  .dashboard-grid .wide {
+    grid-column: span 2;
+  }
+}
+
+/* ===== Mobile Adjustments ===== */
+
+@media (max-width: 768px) {
+  .dashboard-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+    gap: 16px;
+  }
+}
+
+/* ===== Utility Classes ===== */
 
 .center-text {
   text-align: center;
 }
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+
+/* ===== Loading State ===== */
+
 .dashboard-loading {
   display: flex;
   justify-content: center;
