@@ -1,0 +1,5 @@
+.badge { padding: 4px 8px; border-radius: 12px; font-size: 0.8rem; }
+.badge-bronze { background: #cd7f32; color: #fff; }
+.badge-silver { background: #c0c0c0; color: #000; }
+.badge-gold { background: #ffd700; color: #000; }
+.badge-elite { background: #4b0082; color: #fff; }
