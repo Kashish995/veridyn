@@ -2,6 +2,7 @@ import express from "express";
 import StudyLog from "../models/StudyLog.js";
 import authMiddleware from "../middleware/auth.middleware.js";
 import { useStreakFreeze } from "../controllers/streak.controller.js";
+import { getToday } from "../utils/date.util.js";
 
 const router = express.Router();
 
@@ -15,7 +16,7 @@ router.get("/", authMiddleware, async (req, res) => {
     }
 
     let streak = 0;
-    let currentDate = new Date().toISOString().split("T")[0];
+    let currentDate = getToday();
 
     for (let log of logs) {
       if (log.date === currentDate) {

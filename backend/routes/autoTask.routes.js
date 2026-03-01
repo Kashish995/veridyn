@@ -2,7 +2,7 @@ import express from "express";
 import Subject from "../models/Subject.js";
 import Task from "../models/Task.js";
 import authMiddleware from "../middleware/auth.middleware.js";
-
+import { getToday } from "../utils/date.util.js";
 const router = express.Router();
 
 // AUTO GENERATE today's task for a subject
@@ -17,7 +17,7 @@ router.post("/:subjectId", authMiddleware, async (req, res) => {
       return res.status(404).json({ message: "Subject not found" });
     }
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
     const todayDate = new Date();
     const examDate = new Date(subject.examDate);
 

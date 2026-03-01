@@ -2,13 +2,14 @@ import express from "express";
 import Task from "../models/Task.js";
 import StudyLog from "../models/StudyLog.js";
 import authMiddleware from "../middleware/auth.middleware.js";
+import { getToday } from "../utils/date.util.js";
 
 const router = express.Router();
 
 // TODAY SUMMARY
 router.get("/today", authMiddleware, async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const totalTasks = await Task.countDocuments({
       userId: req.userId,

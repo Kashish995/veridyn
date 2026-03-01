@@ -10,8 +10,11 @@ import {
   getDisciplineHistoryController,
   getStreakRecordsController,
   getTierProgressionController,
-  getPerformanceTrendController
+  getPerformanceTrendController,
+  getLongestStreak,
 } from "../controllers/stats.controller.js";
+import { getHistory } from "../controllers/stats.controller.js";
+
 const router = express.Router();
 
 // Weekly
@@ -39,4 +42,7 @@ router.get(
   authMiddleware,
   getPerformanceTrendController
 );
+router.get("/longest-streak", authMiddleware, getLongestStreak);
+router.get("/history", getHistory);
+
 export default router;

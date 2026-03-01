@@ -30,4 +30,5 @@ const disciplineHistorySchema = new mongoose.Schema(
   { timestamps: true }
 );
 
+disciplineHistorySchema.index({ userId: 1, date: 1 });
 export default mongoose.model("DisciplineHistory", disciplineHistorySchema);

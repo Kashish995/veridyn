@@ -374,16 +374,9 @@ export const getMonthlyAggregate = async (userId) => {
   };
 };
 export const getDisciplineHistory = async (userId) => {
-  const history = await DisciplineHistory.find({ userId })
+  return await DisciplineHistory.find({ userId })
     .sort({ date: 1 })
     .lean();
-
-  return history.map(day => ({
-    date: day.date,
-    completionRate: day.completionRate,
-    disciplineScore: day.disciplineScore,
-    tier: day.tier
-  }));
 };
 export const getStreakRecords = async (userId) => {
   const records = await StreakHistory.find({ userId })
@@ -486,21 +479,9 @@ export const calculateBehavioralAdjustment = async (userId) => {
 };
 
 export const getLongestStreak = async (userId) => {
-  const longest = await StreakHistory.findOne({ userId })
+  const streak = await StreakHistory.findOne({ userId })
     .sort({ length: -1 })
     .lean();
 
-  if (!longest) {
-    return {
-      longestStreak: 0,
-      startDate: null,
-      endDate: null
-    };
-  }
-
-  return {
-    longestStreak: longest.length,
-    startDate: longest.startDate,
-    endDate: longest.endDate
-  };
+  return streak || { length: 0 };
 };

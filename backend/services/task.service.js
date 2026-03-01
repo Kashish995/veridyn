@@ -1,16 +1,13 @@
-// backend/services/task.service.js
-
+import { getToday } from "../utils/date.util.js";
 import Task from "../models/Task.js";
 import DailyStats from "../models/DailyStats.js";
 import DisciplineHistory from "../models/DisciplineHistory.js";
 import { getPerformanceTier } from "./performanceService.js";
-import { checkAndPersistStreakBreak } from "./streak.service.js";
-
 /* =========================================================
    CREATE TASK
 ========================================================= */
 export const createTask = async (taskData, userId) => {
-  const today = new Date().toISOString().split("T")[0];
+  const today = getToday();
 
   const task = await Task.create({
     ...taskData,
@@ -45,7 +42,7 @@ export const completeTask = async (taskId, userId) => {
     task.completed = true;
     await task.save();
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     await DailyStats.findOneAndUpdate(
       { userId, date: today },
@@ -64,22 +61,32 @@ export const completeTask = async (taskId, userId) => {
    END DAY (PHASE 3 CORE LOGIC)
 ========================================================= */
 export const endDay = async (userId) => {
-  const today = new Date().toISOString().split("T")[0];
+
+  const today = getToday();
 
   const tasks = await Task.find({ userId, date: today });
+
+  if (!tasks.length) {
+    return {
+      totalTasks: 0,
+      completed: 0,
+      missed: 0,
+      completionRate: 0,
+      disciplineScore: 0,
+      tier: "Bronze"
+    };
+  }
 
   const totalTasks = tasks.length;
   const completed = tasks.filter(t => t.completed).length;
   const missed = totalTasks - completed;
 
-  // Persist DailyStats (final authoritative write)
   await DailyStats.findOneAndUpdate(
     { userId, date: today },
     { totalTasks, completed, missed },
     { upsert: true }
   );
 
-  // Calculate discipline metrics
   const completionRate =
     totalTasks === 0 ? 0 : (completed / totalTasks) * 100;
 
@@ -87,19 +94,11 @@ export const endDay = async (userId) => {
 
   const tier = getPerformanceTier(completionRate);
 
-  // Persist historical discipline snapshot
   await DisciplineHistory.findOneAndUpdate(
     { userId, date: today },
-    {
-      completionRate,
-      disciplineScore,
-      tier
-    },
+    { completionRate, disciplineScore, tier },
     { upsert: true }
   );
-
-  // Update streak AFTER final numbers are known
-  await checkAndPersistStreakBreak(userId);
 
   return {
     totalTasks,

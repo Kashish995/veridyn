@@ -1,10 +1,10 @@
 import StudyLog from "../models/StudyLog.js";
 import Task from "../models/Task.js";
-
+import { getToday } from "../utils/date.util.js";
 export const getTodaySummary = async (req, res) => {
   try {
     const userId = req.userId; // ✅ correct now
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const studyLogs = await StudyLog.find({ userId, date: today });
     const totalChapters = studyLogs.reduce(

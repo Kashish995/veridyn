@@ -1,6 +1,7 @@
 import Task from "../models/Task.js";
 import User from "../models/User.js";
 import DailyStats from "../models/DailyStats.js";
+import { getToday } from "../utils/date.util.js";
 
 export const updateMissedTasks = async (userId) => {
   const now = new Date();
@@ -27,7 +28,7 @@ export const updateMissedTasks = async (userId) => {
       if (user.disciplineScore < 0) user.disciplineScore = 0;
       await user.save();
 
-      const today = new Date().toISOString().split("T")[0];
+      const today = getToday();
 
       let stats = await DailyStats.findOne({
         userId,

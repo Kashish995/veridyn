@@ -1,8 +1,8 @@
 import DailyStats from "../models/DailyStats.js";
-
+import { getToday } from "../utils/date.util.js";
 const todaySummaryMiddleware = async (req, res, next) => {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const stats = await DailyStats.findOne({
       userId: req.userId,

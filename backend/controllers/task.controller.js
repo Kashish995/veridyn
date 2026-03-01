@@ -7,7 +7,7 @@ import { calculateDisciplineChange } from "../services/disciplineService.js";
 import { updateMissedTasks } from "../services/taskLifecycleService.js";
 import { completeTask } from "../services/task.service.js";
 import { endDay } from "../services/task.service.js";
-
+import { getToday } from "../utils/date.util.js";
 /* =========================
    CREATE TASK
 ========================= */
@@ -54,7 +54,7 @@ export const createTask = async (req, res, next) => {
       userId,
     });
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     let stats = await DailyStats.findOne({ userId, date: today });
 

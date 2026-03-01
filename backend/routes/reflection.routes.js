@@ -1,6 +1,7 @@
 import express from "express";
 import Reflection from "../models/Reflection.js";
 import authMiddleware from "../middleware/auth.middleware.js";
+import { getToday } from "../utils/date.util.js";
 
 const router = express.Router();
 
@@ -9,7 +10,7 @@ router.post("/", authMiddleware, async (req, res) => {
   try {
     const { reason, note } = req.body;
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const reflection = await Reflection.create({
       userId: req.userId,
@@ -27,7 +28,7 @@ router.post("/", authMiddleware, async (req, res) => {
 // GET today reflection
 router.get("/today", authMiddleware, async (req, res) => {
   try {
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const reflection = await Reflection.findOne({
       userId: req.userId,

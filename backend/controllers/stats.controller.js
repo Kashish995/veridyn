@@ -4,11 +4,11 @@ import {
   getFullInsights,
   getMonthlyPerformance,
   getMonthlyAggregate,
-  getDisciplineHistory,
   getStreakRecords,
   getTierProgression,
   getPerformanceTrend
 } from "../services/performanceService.js";
+import * as performanceService from "../services/performanceService.js";
 
 /* =========================
    WEEKLY
@@ -73,7 +73,7 @@ export const getMonthlyAggregateController = async (req, res, next) => {
 
 export const getDisciplineHistoryController = async (req, res, next) => {
   try {
-    const history = await getDisciplineHistory(req.userId);
+    const history = await performanceService.getDisciplineHistory(req.user.id);
     res.success(history);
   } catch (error) {
     next(error);
@@ -107,9 +107,17 @@ export const getPerformanceTrendController = async (req, res, next) => {
 };
 export const getLongestStreak = async (req, res, next) => {
   try {
-    const data = await performanceService.getLongestStreak(req.userId);
+   const data = await performanceService.getLongestStreak(req.user.id);
     return res.success(data);
   } catch (error) {
     next(error);
+  }
+};
+
+export const getHistory = async (req, res) => {
+  try {
+    res.status(200).json({ message: "History working" });
+  } catch (error) {
+    res.status(500).json({ message: "Error" });
   }
 };

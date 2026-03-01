@@ -13,7 +13,7 @@ const StudyPlanner = () => {
 
   const [tasks, setTasks] = useState([]);
   const [selectedDate, setSelectedDate] = useState(
-    new Date().toISOString().split("T")[0]
+    getToday()
   );
   const [calendarDate, setCalendarDate] = useState(new Date());
 

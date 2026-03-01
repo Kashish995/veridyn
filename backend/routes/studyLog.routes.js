@@ -2,6 +2,7 @@ import express from "express";
 import StudyLog from "../models/StudyLog.js";
 import Subject from "../models/Subject.js";
 import authMiddleware from "../middleware/auth.middleware.js";
+import { getToday } from "../utils/date.util.js";
 
 const router = express.Router();
 
@@ -10,7 +11,7 @@ router.post("/", authMiddleware, async (req, res) => {
   try {
     const { subjectId, chaptersStudied } = req.body;
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const userId = req.user.id; // ✅ FIXED
 

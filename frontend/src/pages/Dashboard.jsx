@@ -137,7 +137,7 @@ const fetchLongestStreak = async () => {
 const fetchDisciplineHistory = async () => {
   try {
     const res = await axios.get(
-      "http://localhost:5000/api/stats/discipline-history",
+      "http://localhost:5000/api/stats/history",
       { headers: { Authorization: `Bearer ${token}` } }
     );
 

@@ -1,11 +1,12 @@
 import Reflection from "../models/Reflection.js";
+import { getToday } from "../utils/date.util.js";
 
 export const saveReflection = async (req, res) => {
   try {
     const userId = req.userId;
     const { reason, note } = req.body;
 
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const existing = await Reflection.findOne({ userId, date: today });
 
@@ -36,7 +37,7 @@ export const saveReflection = async (req, res) => {
 export const getTodayReflection = async (req, res) => {
   try {
     const userId = req.userId;
-    const today = new Date().toISOString().split("T")[0];
+    const today = getToday();
 
     const reflection = await Reflection.findOne({ userId, date: today });
 
