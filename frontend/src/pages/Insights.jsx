@@ -1,7 +1,10 @@
 import { useEffect, useState } from "react";
 import api from "../api/api";
 import WeeklyChart from "../components/WeeklyChart";
-
+import Layout from "../components/Layout";
+import PageHeader from "../components/PageHeader";
+import Card from "../ui/Card";
+import Button from "../ui/Button";
 function Insights() {
   const [today, setToday] = useState(null);
   const [weekly, setWeekly] = useState(null);
@@ -52,113 +55,119 @@ function Insights() {
   };
 
   return (
-  <div style={styles.page}>
-    <h1 style={styles.heading}>📊 Insights</h1>
+  <Layout>
+    <PageHeader
+      title="Insights"
+      subtitle="Analyze trends and performance intelligence"
+    />
 
-    {/* TODAY CARD */}
-    <div style={styles.card}>
-      <h3>Today</h3>
-      <p>
-        Tasks: <b>{today.completedTasks}</b> / {today.totalTasks}
-      </p>
-      <p>
-        Streak: 🔥 <b>{today.streakStatus}</b>
-      </p>
-      <p
-        style={{
-          color: today.feedback.includes("low") ? "#ef4444" : "#22c55e",
-          fontWeight: "bold",
-        }}
-      >
-        Feedback: {today.feedback}
-      </p>
-    </div>
+    <div className="dashboard-grid">
 
-    {/* SMART SUGGESTION */}
-    {suggestion && (
-      <div style={{ ...styles.card, background: "#eef6ff" }}>
-        <h3>🤖 Smart Suggestion</h3>
-        <p style={{ fontWeight: "bold" }}>{suggestion.suggestion}</p>
-        <p style={{ color: "#555" }}>Reason: {suggestion.reason}</p>
-      </div>
-    )}
-
-    {/* WEEKLY */}
-    <div style={styles.card}>
-      <h3>Weekly Progress</h3>
-      <WeeklyChart weekly={weekly} />
-    </div>
-
-    {/* GOAL */}
-    <div style={styles.card}>
-      <h3>Goal</h3>
-      <p style={{ fontSize: "18px", fontWeight: "bold" }}>
-        Daily target: {goal.dailyTarget}
-      </p>
-      <button
-        style={styles.blueButton}
-        onClick={async () => {
-          const res = await api.post("/goals/auto-adjust");
-          alert(res.data.message);
-          setGoal({ ...goal, dailyTarget: res.data.dailyTarget });
-        }}
-      >
-        Auto Adjust Goal
-      </button>
-    </div>
-
-    {/* PATTERNS */}
-    {patterns.length > 0 && (
-      <div style={styles.card}>
-        <h3>Patterns</h3>
-        {patterns.map((p, i) => (
-          <p key={i}>• {p}</p>
-        ))}
-      </div>
-    )}
-
-    {/* REFLECTION */}
-    <div style={styles.card}>
-      <h3>Reflection</h3>
-      {reflection ? (
+      {/* TODAY CARD */}
+      <Card title="Today">
         <p>
-          Today’s blocker: <b>{reflection.reason}</b> — {reflection.note}
+          Tasks: <b>{today.completedTasks}</b> / {today.totalTasks}
         </p>
-      ) : (
-        <div>
-          <select
-            style={styles.input}
-            value={reason}
-            onChange={(e) => setReason(e.target.value)}
-          >
-            <option value="">Select reason</option>
-            <option value="distraction">Distraction</option>
-            <option value="fatigue">Fatigue</option>
-            <option value="poor planning">Poor planning</option>
-            <option value="lack of motivation">Lack of motivation</option>
-            <option value="other">Other</option>
-          </select>
+        <p>
+          Streak: 🔥 <b>{today.streakStatus}</b>
+        </p>
+        <p
+          style={{
+            color: today.feedback?.includes("low")
+              ? "var(--danger)"
+              : "var(--success)",
+            fontWeight: "600",
+          }}
+        >
+          Feedback: {today.feedback}
+        </p>
+      </Card>
 
-          <input
-            style={styles.input}
-            placeholder="Optional note"
-            value={note}
-            onChange={(e) => setNote(e.target.value)}
-          />
-
-          <button
-            style={styles.greenButton}
-            onClick={async () => {
-              await api.post("/reflection", { reason, note });
-              fetchData();
-            }}
-          >
-            Save Reflection
-          </button>
-        </div>
+      {/* SMART SUGGESTION */}
+      {suggestion && (
+        <Card title="Smart Suggestion" className="wide">
+          <p style={{ fontWeight: 600 }}>{suggestion.suggestion}</p>
+          <p style={{ color: "var(--text-muted)" }}>
+            Reason: {suggestion.reason}
+          </p>
+        </Card>
       )}
+
+      {/* WEEKLY */}
+      <Card title="Weekly Progress" className="wide">
+        <WeeklyChart weekly={weekly} />
+      </Card>
+
+      {/* GOAL */}
+      <Card title="Goal">
+        <p style={{ fontSize: "18px", fontWeight: 600 }}>
+          Daily target: {goal.dailyTarget}
+        </p>
+
+        <Button
+          variant="primary"
+          onClick={async () => {
+            const res = await api.post("/goals/auto-adjust");
+            alert(res.data.message);
+            setGoal({ ...goal, dailyTarget: res.data.dailyTarget });
+          }}
+        >
+          Auto Adjust Goal
+        </Button>
+      </Card>
+
+      {/* PATTERNS */}
+      {patterns.length > 0 && (
+        <Card title="Patterns">
+          {patterns.map((p, i) => (
+            <p key={i}>• {p}</p>
+          ))}
+        </Card>
+      )}
+
+      {/* REFLECTION */}
+      <Card title="Reflection">
+        {reflection ? (
+          <p>
+            Today’s blocker: <b>{reflection.reason}</b> — {reflection.note}
+          </p>
+        ) : (
+          <>
+            <select
+              className="input"
+              value={reason}
+              onChange={(e) => setReason(e.target.value)}
+            >
+              <option value="">Select reason</option>
+              <option value="distraction">Distraction</option>
+              <option value="fatigue">Fatigue</option>
+              <option value="poor planning">Poor planning</option>
+              <option value="lack of motivation">Lack of motivation</option>
+              <option value="other">Other</option>
+            </select>
+
+            <input
+              className="input"
+              placeholder="Optional note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+            />
+
+            <Button
+              variant="success"
+              onClick={async () => {
+                await api.post("/reflection", { reason, note });
+                fetchData();
+              }}
+            >
+              Save Reflection
+            </Button>
+          </>
+        )}
+      </Card>
+
     </div>
-  </div>
+  </Layout>
 );
 }
 

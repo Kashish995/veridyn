@@ -16,53 +16,41 @@ function App() {
   const token = localStorage.getItem("token");
   const [showProfile, setShowProfile] = useState(false);
 
-  return (
-    <Router>
-      {/* NAVBAR (only when logged in) */}
-      {token && (
-        <nav style={styles.navbar}>
-          {/* LEFT: Logo + App Name */}
-          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <img
-              src={logo}
-              alt="Veridyn Logo"
-              style={{
-                width: "42px",
-                height: "42px",
-                objectFit: "contain",
-                filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.4))",
-              }}
-            />
-            <span
-              style={{
-                fontSize: "20px",
-                fontWeight: "600",
-                letterSpacing: "1px",
-              }}
-            >
-              Veridyn
-            </span>
-          </div>
+ return (
+  <Router>
+    {token && (
+      <nav style={styles.navbar}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <img
+            src={logo}
+            alt="Veridyn Logo"
+            style={{
+              width: "42px",
+              height: "42px",
+              objectFit: "contain",
+              filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.4))",
+            }}
+          />
+          <span
+            style={{
+              fontSize: "20px",
+              fontWeight: "600",
+              letterSpacing: "1px",
+            }}
+          >
+            Veridyn
+          </span>
+        </div>
 
-          {/* RIGHT: Navigation Links */}
-          <div>
-            <Link to="/dashboard" style={styles.link}>
-              <span className="nav-icon">📊</span> Dashboard
-            </Link>
+        <div>
+          <Link to="/dashboard" style={styles.link}>📊 Dashboard</Link>
+          <Link to="/tasks" style={styles.link}>📝 Tasks</Link>
+          <Link to="/insights" style={styles.link}>📈 Insights</Link>
+        </div>
+      </nav>
+    )}
 
-            <Link to="/tasks" style={styles.link}>
-              <span className="nav-icon">📝</span> Tasks
-            </Link>
-
-            <Link to="/insights" style={styles.link}>
-              <span className="nav-icon">📈</span> Insights
-            </Link>
-          </div>
-        </nav>
-)}
-
-
-      {/* ROUTES */}
+    <ErrorBoundary>
       <Routes>
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
@@ -96,42 +84,38 @@ function App() {
 
         <Route path="*" element={<Login />} />
       </Routes>
-          <ErrorBoundary>
-            <Routes />
-          </ErrorBoundary>
-      {/* PROFILE FLOAT BUTTON */}
-      {token && (
-        <div style={profileStyles.container}>
-          <div
-            style={profileStyles.circle}
-            onClick={() => setShowProfile(!showProfile)}
-          >
-            👤
-          </div>
+    </ErrorBoundary>
 
-          {showProfile && (
-            <div style={profileStyles.menu}>
-              <p style={{ margin: "0 0 10px 0", fontWeight: "bold" }}>My Profile</p>
-              <button
-                style={profileStyles.logoutBtn}
-                onClick={() => {
-                  localStorage.removeItem("token");
-                  window.location.href = "/login";
-                }}
-              >
-                Logout
-              </button>
-              <button style={styles.endDayBtn}>End Day</button>
-                <button style={styles.taskBtn}>Go to Tasks</button>
-                <button style={styles.logoutBtn}>Logout</button>
-
-            </div>
-          )}
+    {token && (
+      <div style={profileStyles.container}>
+        <div
+          style={profileStyles.circle}
+          onClick={() => setShowProfile(!showProfile)}
+        >
+          👤
         </div>
-      )}
-    </Router>
-    
-  );
+
+        {showProfile && (
+          <div style={profileStyles.menu}>
+            <p style={{ margin: "0 0 10px 0", fontWeight: "bold" }}>
+              My Profile
+            </p>
+
+            <button
+              style={profileStyles.logoutBtn}
+              onClick={() => {
+                localStorage.removeItem("token");
+                window.location.href = "/login";
+              }}
+            >
+              Logout
+            </button>
+          </div>
+        )}
+      </div>
+    )}
+  </Router>
+);
 }
 
 const styles = {

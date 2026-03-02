@@ -3,8 +3,8 @@
 .dashboard-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-  padding: 24px;
+  gap: 28px;
+  margin-top: 40px;
 }
 
 /* ===== Desktop Enhancements ===== */
@@ -16,17 +16,15 @@
 
   /* Cards that should span wider */
   .dashboard-grid .wide {
-    grid-column: span 2;
-  }
+  grid-column: span 2;
+}
 }
 
 /* ===== Mobile Adjustments ===== */
 
-@media (max-width: 768px) {
-  .dashboard-grid {
-    grid-template-columns: 1fr;
-    padding: 16px;
-    gap: 16px;
+@media (max-width: 1024px) {
+  .dashboard-grid .wide {
+    grid-column: span 1;
   }
 }
 

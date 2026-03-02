@@ -1,36 +1,48 @@
-.card {
-  border: 1px solid #ddd;
-  border-radius: 8px;
-  padding: 16px;
-  background: #fff;
-}
-.card-title { font-size: 1.2rem; font-weight: bold; }
-.card-subtitle { color: #666; margin-bottom: 8px; }
+/* ==============================
+   Card Component
+============================== */
 
 .card {
-  background: #ffffff;
-  border-radius: 16px;
-  padding: 20px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.card:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.08);
-}
-
-.card-title {
-  font-size: 18px;
-  font-weight: 600;
-  margin-bottom: 12px;
-}
-.card {
+  background: var(--bg-card);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.06);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  
+  /* Entry animation */
   opacity: 0;
-  transform: translateY(8px);
+  transform: translateY(10px);
   animation: fadeInCard 0.4s ease forwards;
 }
 
+/* Hover Elevation */
+.card:hover {
+  transform: translateY(-6px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12);
+}
+
+/* Title */
+.card-title {
+  font-size: 20px;
+  font-weight: 600;
+  margin-bottom: 14px;
+  color: var(--text-main);
+}
+
+/* Subtitle */
+.card-subtitle {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 10px;
+}
+
+/* Content */
+.card-content {
+  font-size: 15px;
+  color: var(--text-muted);
+}
+
+/* Fade-in animation */
 @keyframes fadeInCard {
   to {
     opacity: 1;
