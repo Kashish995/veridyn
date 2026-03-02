@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { useState } from "react";
 
 import Insights from "./pages/Insights";
@@ -7,48 +7,19 @@ import Register from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-import logo from "./assets/vlogo.png"; // ✅ MUST be at top
-import "./App.css";
 import ErrorBoundary from "./ui/ErrorBoundary";
+
+import Navbar from "./components/Navbar";
+import ProfileMenu from "./components/ProfileMenu";
+
+import "./App.css";
 
 function App() {
   const token = localStorage.getItem("token");
-  const [showProfile, setShowProfile] = useState(false);
-
+  
  return (
   <Router>
-    {token && (
-      <nav style={styles.navbar}>
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <img
-            src={logo}
-            alt="Veridyn Logo"
-            style={{
-              width: "42px",
-              height: "42px",
-              objectFit: "contain",
-              filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.4))",
-            }}
-          />
-          <span
-            style={{
-              fontSize: "20px",
-              fontWeight: "600",
-              letterSpacing: "1px",
-            }}
-          >
-            Veridyn
-          </span>
-        </div>
-
-        <div>
-          <Link to="/dashboard" style={styles.link}>📊 Dashboard</Link>
-          <Link to="/tasks" style={styles.link}>📝 Tasks</Link>
-          <Link to="/insights" style={styles.link}>📈 Insights</Link>
-        </div>
-      </nav>
-    )}
+    {token && <Navbar />}
 
     <ErrorBoundary>
       <Routes>
@@ -86,34 +57,7 @@ function App() {
       </Routes>
     </ErrorBoundary>
 
-    {token && (
-      <div style={profileStyles.container}>
-        <div
-          style={profileStyles.circle}
-          onClick={() => setShowProfile(!showProfile)}
-        >
-          👤
-        </div>
-
-        {showProfile && (
-          <div style={profileStyles.menu}>
-            <p style={{ margin: "0 0 10px 0", fontWeight: "bold" }}>
-              My Profile
-            </p>
-
-            <button
-              style={profileStyles.logoutBtn}
-              onClick={() => {
-                localStorage.removeItem("token");
-                window.location.href = "/login";
-              }}
-            >
-              Logout
-            </button>
-          </div>
-        )}
-      </div>
-    )}
+    {token && <ProfileMenu />}
   </Router>
 );
 }

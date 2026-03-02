@@ -1,5 +1,41 @@
-.btn { padding: 8px 16px; border-radius: 4px; cursor: pointer; }
-.btn-primary { background: #007bff; color: #fff; }
-.btn-secondary { background: #6c757d; color: #fff; }
-.btn-danger { background: #dc3545; color: #fff; }
-.btn:disabled { opacity: 0.6; cursor: not-allowed; }
+.btn {
+  padding: 10px 16px;
+  border-radius: 12px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.btn-full {
+  width: 100%;
+}
+
+/* Variants */
+
+.btn-primary {
+  background: #6366f1;
+  color: white;
+}
+
+.btn-primary:hover {
+  background: #4f46e5;
+}
+
+.btn-secondary {
+  background: #e5e7eb;
+  color: #1f2937;
+}
+
+.btn-secondary:hover {
+  background: #d1d5db;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}

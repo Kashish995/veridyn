@@ -7,6 +7,7 @@ import Skeleton from "../ui/Skeleton";
 import useDashboardData from "../hooks/useDashboardData";
 import "../styles/dashboard.css";
 import PageHeader from "../components/PageHeader";
+import Badge from "../ui/Badge";
 
 export default function Dashboard() {
   const {
@@ -23,7 +24,7 @@ export default function Dashboard() {
 
   const safeStats = Array.isArray(weeklyStats) ? weeklyStats : [];
   const safeHistory = Array.isArray(history) ? history : [];
-
+ 
   /* =========================
      MEMOIZED CHART DATA
   ========================= */
@@ -67,6 +68,68 @@ export default function Dashboard() {
     [safeHistory]
   );
 
+  const completionRate = data?.today?.completionRate ?? 0;
+
+const performanceTier =
+  completionRate >= 85
+    ? "Elite"
+    : completionRate >= 70
+    ? "Gold"
+    : completionRate >= 50
+    ? "Silver"
+    : "Bronze";
+
+
+    const sortedHistory = [...safeHistory].sort(
+      (a, b) => new Date(a.date) - new Date(b.date)
+    );
+
+    const difference =
+      sortedHistory.length >= 2
+        ? sortedHistory[sortedHistory.length - 1].disciplineScore -
+          sortedHistory[sortedHistory.length - 2].disciplineScore
+        : 0;
+
+    const trend =
+      difference > 0
+        ? "Improving"
+        : difference < 0
+        ? "Declining"
+        : "Stable";
+
+        const chartOptions = {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: "top",
+            },
+          },
+        };
+
+        const volatility = monthlyAggregate?.volatility || 0;
+const change = difference;
+
+let performanceMessage = "";
+let performanceTone = "neutral";
+
+if (volatility > 0.35) {
+  performanceMessage = "High inconsistency detected. Stabilize your daily execution.";
+  performanceTone = "danger";
+} else if (volatility > 0.2) {
+  performanceMessage = "Moderate fluctuations. Improve consistency.";
+  performanceTone = "warning";
+} else if (change > 5) {
+  performanceMessage = "Strong upward momentum. Keep pushing.";
+  performanceTone = "success";
+} else if (change < -5) {
+  performanceMessage = "Performance dropping. Refocus immediately.";
+  performanceTone = "danger";
+} else {
+  performanceMessage = "Stable performance. Maintain discipline.";
+  performanceTone = "neutral";
+}
+
   return (
     <Layout>
         <PageHeader
@@ -77,23 +140,66 @@ export default function Dashboard() {
 
         {/* ===== Discipline ===== */}
         <Card title="Discipline" className="wide">
-          {loading ? (
-            <>
-              <Skeleton height="32px" width="80px" />
-              <Skeleton height="16px" width="120px" />
-            </>
-          ) : (
-            <>
-              <div className="score-number">
-                {data?.today?.completionRate ?? 0}%
-              </div>
-              <p>
-                Tasks: {data?.today?.completed ?? 0} /{" "}
-                {data?.today?.totalTasks ?? 0}
-              </p>
-            </>
-          )}
-        </Card>
+  {loading ? (
+    <>
+      <Skeleton height="32px" width="80px" />
+      <Skeleton height="16px" width="120px" />
+    </>
+  ) : (
+    <>
+      <div style={{ fontSize: "40px", fontWeight: "700" }}>
+        {completionRate}%
+      </div>
+
+     <Badge variant={performanceTier.toLowerCase()}>
+  {performanceTier}
+</Badge>
+
+      <p style={{ marginTop: "12px" }}>
+        Tasks: {data?.today?.completed ?? 0} /{" "}
+        {data?.today?.totalTasks ?? 0}
+      </p>
+    </>
+  )}
+</Card>
+<Card title="Trend">
+  <div style={{ fontSize: "28px", fontWeight: "700" }}>
+    {trend === "Improving" ? "📈" : "📉"}
+  </div>
+
+  <div
+    style={{
+      marginTop: "8px",
+      fontWeight: "600",
+      color: trend === "Improving" ? "#22c55e" : "#ef4444",
+    }}
+  >
+    {trend}
+  </div>
+
+  <p style={{ fontSize: "14px", marginTop: "6px" }}>
+    Change: {difference > 0 ? "+" : ""}
+    {difference}
+  </p>
+</Card>
+
+<Card title="Performance Insight">
+  <p
+    style={{
+      fontWeight: 500,
+      color:
+        performanceTone === "danger"
+          ? "#ef4444"
+          : performanceTone === "warning"
+          ? "#f59e0b"
+          : performanceTone === "success"
+          ? "#22c55e"
+          : "#6b7280",
+    }}
+  >
+    {performanceMessage}
+  </p>
+</Card>
 
         {/* ===== Upcoming Task ===== */}
         <Card title="Upcoming Task">
@@ -115,7 +221,14 @@ export default function Dashboard() {
           {loading ? (
             <Skeleton height="220px" />
           ) : safeStats.length > 0 ? (
-            <Line data={chartData} />
+           <div
+              style={{
+                height: window.innerWidth < 768 ? "240px" : "300px",
+                marginTop: "16px",
+              }}
+            >
+            <Line data={chartData} options={chartOptions} />
+          </div>
           ) : (
             <p className="center-text">No weekly data</p>
           )}

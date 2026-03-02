@@ -1,14 +1,19 @@
-
 import "../styles/button.css";
 
-export default function Button({ children, variant = "primary", loading = false, disabled = false, ...props }) {
+export default function Button({
+  children,
+  variant = "primary",
+  onClick,
+  type = "button",
+  fullWidth = false,
+}) {
   return (
     <button
-      className={`btn btn-${variant}`}
-      disabled={disabled || loading}
-      {...props}
+      type={type}
+      onClick={onClick}
+      className={`btn btn-${variant} ${fullWidth ? "btn-full" : ""}`}
     >
-      {loading ? <span className="btn-loader">...</span> : children}
+      {children}
     </button>
   );
 }

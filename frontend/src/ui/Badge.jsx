@@ -1,10 +1,5 @@
-
 import "../styles/badge.css";
 
-export default function Badge({ label, tier }) {
-  return (
-    <span className={`badge badge-${tier.toLowerCase()}`}>
-      {label || tier}
-    </span>
-  );
+export default function Badge({ children, variant = "default" }) {
+  return <span className={`badge badge-${variant}`}>{children}</span>;
 }
