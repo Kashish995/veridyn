@@ -12,6 +12,7 @@ import {
   getTierProgressionController,
   getPerformanceTrendController,
   getLongestStreak,
+  getCalendarHeatmapController,
 } from "../controllers/stats.controller.js";
 import { getHistory } from "../controllers/stats.controller.js";
 
@@ -30,6 +31,7 @@ router.get("/monthly-aggregate", authMiddleware, getMonthlyAggregateController);
 
 // Historical
 router.get("/history", authMiddleware, getDisciplineHistoryController);
+router.get("/calendar", authMiddleware, getCalendarHeatmapController);
 router.get("/streak-records", authMiddleware, getStreakRecordsController);
 
 router.get(
@@ -43,6 +45,6 @@ router.get(
   getPerformanceTrendController
 );
 router.get("/longest-streak", authMiddleware, getLongestStreak);
-router.get("/history", getHistory);
+
 
 export default router;

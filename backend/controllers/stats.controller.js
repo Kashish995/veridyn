@@ -9,6 +9,7 @@ import {
   getPerformanceTrend
 } from "../services/performanceService.js";
 import * as performanceService from "../services/performanceService.js";
+import { getCalendarHeatmapData } from "../services/analyticsService.js";
 
 /* =========================
    WEEKLY
@@ -119,5 +120,23 @@ export const getHistory = async (req, res) => {
     res.status(200).json({ message: "History working" });
   } catch (error) {
     res.status(500).json({ message: "Error" });
+  }
+};
+
+export const getCalendarHeatmapController = async (req, res) => {
+  try {
+    const year = parseInt(req.query.year);
+    const userId = req.user.id;
+
+    if (!year) {
+      return res.status(400).json({ message: "Year is required" });
+    }
+
+    const data = await getCalendarHeatmapData(userId, year);
+
+    return res.status(200).json(data);
+  } catch (error) {
+    console.error("Calendar heatmap error:", error);
+    return res.status(500).json({ message: "Failed to fetch calendar data" });
   }
 };

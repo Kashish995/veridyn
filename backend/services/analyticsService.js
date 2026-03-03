@@ -1,4 +1,5 @@
 import DailyStats from "../models/DailyStats.js";
+import DisciplineHistory from "../models/DisciplineHistory.js";
 
 export const calculateWeeklyPerformance = async (userId) => {
   const sevenDaysAgo = new Date();
@@ -50,4 +51,20 @@ export const calculateWeeklyPerformance = async (userId) => {
     streakImpact,
     category
   };
+};
+
+
+export const getCalendarHeatmapData = async (userId, year) => {
+  const startDate = `${year}-01-01`;
+  const endDate = `${year}-12-31`;
+
+  const records = await DisciplineHistory.find({
+    userId: userId,
+    date: { $gte: startDate, $lte: endDate }
+  }).select("date completionRate -_id");
+
+  return records.map((record) => ({
+    date: record.date,
+    score: record.completionRate
+  }));
 };

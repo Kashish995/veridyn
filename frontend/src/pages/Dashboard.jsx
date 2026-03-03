@@ -9,6 +9,7 @@ import "../styles/dashboard.css";
 import PageHeader from "../components/PageHeader";
 import Badge from "../ui/Badge";
 import { motion } from "framer-motion";
+import ProductivityHeatmap from "../components/ProductivityHeatmap";
 
 export default function Dashboard() {
   const {
@@ -391,6 +392,18 @@ return (
           <Button variant="primary" onClick={refreshDashboard}>
             Refresh
           </Button>
+        </Card>
+      </motion.div>
+      {/* ===== Productivity Heatmap ===== */}
+      <motion.div
+        variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+      >
+        <Card title="Productivity Heatmap" className="wide">
+          {loading ? (
+            <Skeleton height="220px" />
+          ) : (
+            <ProductivityHeatmap />
+          )}
         </Card>
       </motion.div>
     </motion.div>
