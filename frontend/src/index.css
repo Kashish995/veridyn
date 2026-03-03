@@ -64,10 +64,10 @@ input::placeholder,
 textarea::placeholder {
   color: #9ca3af;
 }
-/* ===== Page Header ===== */
+/* ===== Dashboard Page Header ===== */
 
 .page-header {
-  margin-bottom: 36px;
+  margin-bottom: 40px;
 }
 
 .page-title {
@@ -89,4 +89,65 @@ textarea::placeholder {
   border: 1px solid #e5e7eb;
   margin-bottom: 12px;
   font-size: 14px;
+}
+/* ===== Typography Hierarchy ===== */
+
+.dashboard-title {
+  font-size: 32px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.card-title {
+  font-size: 18px;
+  font-weight: 600;
+}
+
+.muted-text {
+  color: #6b7280;
+  font-size: 14px;
+}
+.metric-value {
+  font-size: 40px;
+  font-weight: 700;
+  margin-bottom: 8px;
+}
+
+.trend-icon {
+  font-size: 28px;
+  font-weight: 700;
+}
+
+.trend-label {
+  margin-top: 8px;
+  font-weight: 600;
+}
+
+.trend-up {
+  color: #22c55e;
+}
+
+.trend-down {
+  color: #ef4444;
+}
+
+.chart-container {
+  height: 300px;
+  margin-top: 16px;
+}
+
+.tone-danger {
+  color: #ef4444;
+}
+
+.tone-warning {
+  color: #f59e0b;
+}
+
+.tone-success {
+  color: #22c55e;
+}
+
+.tone-neutral {
+  color: #6b7280;
 }

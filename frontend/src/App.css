@@ -162,3 +162,11 @@ input[type="date"]:hover::-webkit-calendar-picker-indicator {
   margin: 40px auto;
   padding: 0 24px;
 }
+body {
+  background: radial-gradient(
+    circle at top,
+    #f5f7ff,
+    #eef1ff 40%,
+    #f9fafc
+  );
+}

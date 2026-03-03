@@ -8,6 +8,7 @@ import useDashboardData from "../hooks/useDashboardData";
 import "../styles/dashboard.css";
 import PageHeader from "../components/PageHeader";
 import Badge from "../ui/Badge";
+import { motion } from "framer-motion";
 
 export default function Dashboard() {
   const {
@@ -68,7 +69,13 @@ export default function Dashboard() {
     [safeHistory]
   );
 
-  const completionRate = data?.today?.completionRate ?? 0;
+  /* =========================
+   PERFORMANCE METRICS
+========================= */
+
+const completionRate = data?.today?.completionRate ?? 0;
+
+/* ---------- Tier Classification ---------- */
 
 const performanceTier =
   completionRate >= 85
@@ -79,222 +86,314 @@ const performanceTier =
     ? "Silver"
     : "Bronze";
 
+/* ---------- Sort History ---------- */
 
-    const sortedHistory = [...safeHistory].sort(
-      (a, b) => new Date(a.date) - new Date(b.date)
-    );
+const sortedHistory = [...safeHistory].sort(
+  (a, b) => new Date(a.date) - new Date(b.date)
+);
 
-    const difference =
-      sortedHistory.length >= 2
-        ? sortedHistory[sortedHistory.length - 1].disciplineScore -
-          sortedHistory[sortedHistory.length - 2].disciplineScore
-        : 0;
+const scores = sortedHistory.map((h) => h.disciplineScore);
 
-    const trend =
-      difference > 0
-        ? "Improving"
-        : difference < 0
-        ? "Declining"
-        : "Stable";
+/* ---------- Intelligent Trend (3-day average vs previous 3-day average) ---------- */
 
-        const chartOptions = {
-          responsive: true,
-          maintainAspectRatio: false,
-          plugins: {
-            legend: {
-              position: "top",
-            },
-          },
-        };
+let difference = 0;
 
-        const volatility = monthlyAggregate?.volatility || 0;
-const change = difference;
+if (scores.length >= 6) {
+  const recent = scores.slice(-3);
+  const previous = scores.slice(-6, -3);
+
+  const recentAvg =
+    recent.reduce((a, b) => a + b, 0) / recent.length;
+
+  const previousAvg =
+    previous.reduce((a, b) => a + b, 0) / previous.length;
+
+  difference = Math.round(recentAvg - previousAvg);
+} else if (scores.length >= 2) {
+  // fallback if not enough data
+  difference =
+    scores[scores.length - 1] - scores[scores.length - 2];
+}
+
+/* ---------- Trend Classification ---------- */
+
+let trend = "Stable";
+
+if (difference >= 5) {
+  trend = "Strong Improvement";
+} else if (difference > 0) {
+  trend = "Improving";
+} else if (difference <= -5) {
+  trend = "Strong Decline";
+} else if (difference < 0) {
+  trend = "Declining";
+}
+
+/* ---------- Real Volatility (Standard Deviation) ---------- */
+
+const average =
+  scores.length > 0
+    ? scores.reduce((a, b) => a + b, 0) / scores.length
+    : 0;
+
+const variance =
+  scores.length > 0
+    ? scores.reduce(
+        (sum, val) => sum + Math.pow(val - average, 2),
+        0
+      ) / scores.length
+    : 0;
+
+const volatility = Number(Math.sqrt(variance).toFixed(2));
+
+/* ---------- Risk Level ---------- */
+
+let riskLevel = "Low";
+
+if (volatility > 20) {
+  riskLevel = "High";
+} else if (volatility > 10) {
+  riskLevel = "Moderate";
+}
+
+/* ---------- Performance Intelligence Message ---------- */
 
 let performanceMessage = "";
 let performanceTone = "neutral";
 
-if (volatility > 0.35) {
-  performanceMessage = "High inconsistency detected. Stabilize your daily execution.";
+if (riskLevel === "High") {
+  performanceMessage =
+    "High behavioral instability detected. Prioritize consistency.";
   performanceTone = "danger";
-} else if (volatility > 0.2) {
-  performanceMessage = "Moderate fluctuations. Improve consistency.";
+} else if (riskLevel === "Moderate") {
+  performanceMessage =
+    "Moderate fluctuations. Stabilize daily execution.";
   performanceTone = "warning";
-} else if (change > 5) {
-  performanceMessage = "Strong upward momentum. Keep pushing.";
+} else if (trend === "Strong Improvement") {
+  performanceMessage =
+    "Strong upward momentum. Maintain this execution pattern.";
   performanceTone = "success";
-} else if (change < -5) {
-  performanceMessage = "Performance dropping. Refocus immediately.";
+} else if (trend === "Strong Decline") {
+  performanceMessage =
+    "Performance declining sharply. Immediate correction needed.";
   performanceTone = "danger";
+} else if (trend === "Improving") {
+  performanceMessage =
+    "Gradual improvement detected. Keep building consistency.";
+  performanceTone = "success";
+} else if (trend === "Declining") {
+  performanceMessage =
+    "Slight downward trend. Refocus and tighten execution.";
+  performanceTone = "warning";
 } else {
-  performanceMessage = "Stable performance. Maintain discipline.";
+  performanceMessage =
+    "Stable performance. Maintain structured discipline.";
   performanceTone = "neutral";
 }
+const chartOptions = {
+  responsive: true,
+  maintainAspectRatio: false,
+  plugins: {
+    legend: {
+      position: "top",
+    },
+  },
+};
 
-  return (
-    <Layout>
-        <PageHeader
-    title="Dashboard"
-    subtitle="Track your discipline and performance"
-  />
-      <div className="dashboard-grid">
+return (
+  <Layout>
+    <PageHeader
+      title="Dashboard"
+      subtitle="Track your discipline and performance"
+    />
 
-        {/* ===== Discipline ===== */}
+    <motion.div
+      className="dashboard-grid"
+      initial="hidden"
+      animate="visible"
+      variants={{
+        hidden: {},
+        visible: {
+          transition: {
+            staggerChildren: 0.08,
+          },
+        },
+      }}
+    >
+      {/* ===== Discipline ===== */}
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
         <Card title="Discipline" className="wide">
-  {loading ? (
-    <>
-      <Skeleton height="32px" width="80px" />
-      <Skeleton height="16px" width="120px" />
-    </>
-  ) : (
-    <>
-      <div style={{ fontSize: "40px", fontWeight: "700" }}>
-        {completionRate}%
-      </div>
+          {loading ? (
+            <>
+              <Skeleton height="32px" width="80px" />
+              <Skeleton height="16px" width="120px" />
+            </>
+          ) : (
+            <>
+              <div className="metric-value">
+                {completionRate}%
+              </div>
 
-     <Badge variant={performanceTier.toLowerCase()}>
-  {performanceTier}
-</Badge>
+              <Badge variant={performanceTier.toLowerCase()}>
+                {performanceTier}
+              </Badge>
 
-      <p style={{ marginTop: "12px" }}>
-        Tasks: {data?.today?.completed ?? 0} /{" "}
-        {data?.today?.totalTasks ?? 0}
-      </p>
-    </>
-  )}
-</Card>
-<Card title="Trend">
-  <div style={{ fontSize: "28px", fontWeight: "700" }}>
-    {trend === "Improving" ? "📈" : "📉"}
-  </div>
+              <p className="muted-text">
+                Tasks: {data?.today?.completed ?? 0} /{" "}
+                {data?.today?.totalTasks ?? 0}
+              </p>
+            </>
+          )}
+        </Card>
+      </motion.div>
 
-  <div
-    style={{
-      marginTop: "8px",
-      fontWeight: "600",
-      color: trend === "Improving" ? "#22c55e" : "#ef4444",
-    }}
-  >
-    {trend}
-  </div>
+      {/* ===== Trend ===== */}
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <Card title="Trend">
+          <div className="trend-icon">
+            {trend === "Improving" ? "📈" : "📉"}
+          </div>
 
-  <p style={{ fontSize: "14px", marginTop: "6px" }}>
-    Change: {difference > 0 ? "+" : ""}
-    {difference}
-  </p>
-</Card>
+          <div
+            className={`trend-label ${
+              trend === "Improving" ? "trend-up" : "trend-down"
+            }`}
+          >
+            {trend}
+          </div>
 
-<Card title="Performance Insight">
-  <p
-    style={{
-      fontWeight: 500,
-      color:
-        performanceTone === "danger"
-          ? "#ef4444"
-          : performanceTone === "warning"
-          ? "#f59e0b"
-          : performanceTone === "success"
-          ? "#22c55e"
-          : "#6b7280",
-    }}
-  >
-    {performanceMessage}
-  </p>
-</Card>
+          <p className="muted-text">
+            Change: {difference > 0 ? "+" : ""}
+            {difference}
+          </p>
+        </Card>
+      </motion.div>
 
-        {/* ===== Upcoming Task ===== */}
+      {/* ===== Performance Insight ===== */}
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <Card title="Performance Insight">
+          <p className={`tone-${performanceTone}`}>
+            {performanceMessage}
+          </p>
+        </Card>
+      </motion.div>
+
+      {/* ===== Upcoming Task ===== */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
         <Card title="Upcoming Task">
           {loading ? (
             <Skeleton height="20px" />
           ) : nextTask ? (
             <>
               <p><strong>{nextTask.title}</strong></p>
-              <p>{nextTask.startTime} – {nextTask.endTime}</p>
-              <p>Priority: {nextTask.priority}</p>
+              <p className="muted-text">
+                {nextTask.startTime} – {nextTask.endTime}
+              </p>
+              <p className="muted-text">
+                Priority: {nextTask.priority}
+              </p>
             </>
           ) : (
             <p className="center-text">No upcoming task</p>
           )}
         </Card>
+      </motion.div>
 
-        {/* ===== 7-Day Performance ===== */}
+      {/* ===== 7-Day Performance ===== */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
         <Card title="7-Day Performance" className="wide">
           {loading ? (
             <Skeleton height="220px" />
           ) : safeStats.length > 0 ? (
-           <div
-              style={{
-                height: window.innerWidth < 768 ? "240px" : "300px",
-                marginTop: "16px",
-              }}
-            >
-            <Line data={chartData} options={chartOptions} />
-          </div>
+            <div className="chart-container">
+              <Line data={chartData} options={chartOptions} />
+            </div>
           ) : (
             <p className="center-text">No weekly data</p>
           )}
         </Card>
+      </motion.div>
 
-        {/* ===== Discipline History ===== */}
+      {/* ===== Discipline History ===== */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
         <Card title="Discipline History" className="wide">
           {loading ? (
             <Skeleton height="220px" />
           ) : safeHistory.length > 0 ? (
-            <Line data={historyChartData} />
+            <div className="chart-container">
+              <Line data={historyChartData} />
+            </div>
           ) : (
             <p className="center-text">No history data</p>
           )}
         </Card>
+      </motion.div>
 
-        {/* ===== Insights ===== */}
-        {insights && (
+      {/* ===== Performance Intelligence ===== */}
+      {insights && (
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
           <Card title="Performance Intelligence">
             <p><strong>Tier:</strong> {insights.tier?.tier}</p>
-            <p>
-              <strong>Monthly Completion:</strong>{" "}
-              {insights.monthly?.completionRate ?? 0}%
-            </p>
+            <p><strong>Monthly Completion:</strong> {insights.monthly?.completionRate ?? 0}%</p>
             <p>
               <strong>Volatility:</strong>{" "}
               {insights.volatility?.stabilityLevel} (
               {insights.volatility?.volatilityScore})
             </p>
           </Card>
-        )}
+        </motion.div>
+      )}
 
-        {/* ===== Monthly Aggregate ===== */}
-        {monthlyAggregate && (
+      {/* ===== Monthly Performance ===== */}
+      {monthlyAggregate && (
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
           <Card title="Monthly Performance">
-            <p>
-              Average Completion: {monthlyAggregate.averageCompletionRate ?? 0}%
-            </p>
-            <p>
-              Average Discipline: {monthlyAggregate.averageDisciplineScore ?? 0}
-            </p>
+            <p>Average Completion: {monthlyAggregate.averageCompletionRate ?? 0}%</p>
+            <p>Average Discipline: {monthlyAggregate.averageDisciplineScore ?? 0}</p>
             <p>Dominant Tier: {monthlyAggregate.dominantTier}</p>
             <p>Days Tracked: {monthlyAggregate.daysTracked}</p>
           </Card>
-        )}
+        </motion.div>
+      )}
 
-        {/* ===== Longest Streak ===== */}
-        {longestStreak && (
+      {/* ===== Longest Streak ===== */}
+      {longestStreak && (
+        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
           <Card title="Longest Streak">
             <p>{longestStreak.longestStreak} Days</p>
             {longestStreak.startDate && (
-              <p>
+              <p className="muted-text">
                 {longestStreak.startDate} → {longestStreak.endDate}
               </p>
             )}
           </Card>
-        )}
+        </motion.div>
+      )}
 
-        {/* ===== Actions ===== */}
+      {/* ===== Actions ===== */}
+      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
         <Card title="Actions">
           <Button variant="primary" onClick={refreshDashboard}>
             Refresh
           </Button>
         </Card>
-
-      </div>
-    </Layout>
-  );
+      </motion.div>
+    </motion.div>
+  </Layout>
+);
 }
