@@ -128,10 +128,6 @@ export const getCalendarHeatmapController = async (req, res) => {
     const year = parseInt(req.query.year);
     const userId = req.user.id;
 
-    if (!year) {
-      return res.status(400).json({ message: "Year is required" });
-    }
-
     const data = await getCalendarHeatmapData(userId, year);
 
     return res.status(200).json(data);

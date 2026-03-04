@@ -398,12 +398,8 @@ return (
       <motion.div
         variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
       >
-        <Card title="Productivity Heatmap" className="wide">
-          {loading ? (
-            <Skeleton height="220px" />
-          ) : (
-            <ProductivityHeatmap />
-          )}
+        <Card title="Productivity Calendar" className="wide heatmap-card">
+          <ProductivityHeatmap />
         </Card>
       </motion.div>
     </motion.div>

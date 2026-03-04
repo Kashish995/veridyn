@@ -50,3 +50,9 @@
   height: 60vh;
   font-size: 18px;
 }
+.heatmap-card {
+  overflow-x: auto;
+}
+.dashboard-container {
+  overflow-x: hidden;
+}

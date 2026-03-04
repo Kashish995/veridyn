@@ -53,15 +53,13 @@ export const calculateWeeklyPerformance = async (userId) => {
   };
 };
 
-
 export const getCalendarHeatmapData = async (userId, year) => {
-  const startDate = `${year}-01-01`;
-  const endDate = `${year}-12-31`;
+  console.log("SERVICE USERID:", userId);
+  console.log("SERVICE YEAR:", year);
 
-  const records = await DisciplineHistory.find({
-    userId: userId,
-    date: { $gte: startDate, $lte: endDate }
-  }).select("date completionRate -_id");
+  const records = await DisciplineHistory.find({});
+
+  console.log("ALL RECORDS:", records);
 
   return records.map((record) => ({
     date: record.date,

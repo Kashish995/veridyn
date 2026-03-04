@@ -1,51 +1,76 @@
-import { useMemo } from "react";
+import React, { useEffect, useState } from "react";
 import "../styles/heatmap.css";
-import useCalendarData from "../hooks/useCalendarData";
-import { buildYearMatrix, getColorByScore } from "../utils/heatmap.utils";
-import Skeleton from "../ui/Skeleton";
 
-const ProductivityHeatmap = ({ year = new Date().getFullYear() }) => {
-  const { data, loading, error } = useCalendarData(year);
+const API = "http://localhost:5000/api/stats/calendar?year=2026";
 
-  const matrix = useMemo(() => {
-    return buildYearMatrix(year, data);
-  }, [year, data]);
+const getColor = (score) => {
+  if (!score) return "#1b1b1b";
+  if (score < 40) return "#7f1d1d";
+  if (score < 60) return "#b91c1c";
+  if (score < 80) return "#16a34a";
+  return "#22c55e";
+};
 
-  if (loading) return <Skeleton height="200px" />;
-  if (error) return <p className="center-text">{error}</p>;
+const ProductivityHeatmap = () => {
+  const [dataMap, setDataMap] = useState({});
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const token = localStorage.getItem("token");
+
+      const res = await fetch(API, {
+        headers: {
+          Authorization: `Bearer ${token}`
+        }
+      });
+
+      const data = await res.json();
+
+      const map = {};
+      data.forEach((d) => {
+        map[d.date] = d.score;
+      });
+
+      setDataMap(map);
+    };
+
+    fetchData();
+  }, []);
+
+  const cells = [];
+
+const start = new Date("2026-01-01");
+
+for (let i = 0; i < 365; i++) {
+  const date = new Date(start);
+  date.setDate(start.getDate() + i);
+
+  const key = date.toISOString().split("T")[0];
+  const day = date.getDay(); // 0–6 (Sun–Sat)
+
+  cells.push({
+    key,
+    score: dataMap[key] || 0,
+    day
+  });
+}
 
   return (
-    <div className="heatmap-wrapper">
-      <div className="heatmap-grid">
-        {matrix.map((week, weekIndex) =>
-          week.map((day, dayIndex) => (
-            <div
-              key={`${weekIndex}-${dayIndex}`}
-              className="heatmap-cell"
-              style={{
-                backgroundColor: day
-                  ? getColorByScore(day.score)
-                  : "#1e293b",
-              }}
-              title={
-                day
-                  ? `${day.date} — Score: ${day.score}`
-                  : "No data"
-              }
-            />
-          ))
-        )}
-      </div>
+<div className="heatmap-container">
+  <h3>Productivity Calendar</h3>
 
-      <div className="heatmap-legend">
-        <span>Low</span>
-        <div className="legend-box" style={{ background: "#163d2a" }} />
-        <div className="legend-box" style={{ background: "#2ea043" }} />
-        <div className="legend-box" style={{ background: "#56f97a" }} />
-        <span>High</span>
-      </div>
-    </div>
-  );
+  <div className="heatmap-grid">
+    {cells.map((cell) => (
+      <div
+        key={cell.key}
+        className="heatmap-cell"
+        style={{ backgroundColor: getColor(cell.score) }}
+        title={`${cell.key}: ${cell.score}`}
+      />
+    ))}
+  </div>
+</div>
+);
 };
 
 export default ProductivityHeatmap;
