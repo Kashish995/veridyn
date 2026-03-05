@@ -1,8 +1,7 @@
-.dashboard-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 24px;
-  padding: 24px;
+.dashboard-grid{
+  display:grid;
+  grid-template-columns: repeat(3, minmax(0,1fr));
+  gap:20px;
 }
 
 @media (min-width: 1024px) {
@@ -55,4 +54,7 @@
 }
 .dashboard-container {
   overflow-x: hidden;
+}
+.calendar-card{
+  grid-column: 1 / -1;
 }

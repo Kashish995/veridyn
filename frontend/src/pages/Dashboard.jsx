@@ -396,9 +396,13 @@ return (
       </motion.div>
       {/* ===== Productivity Heatmap ===== */}
       <motion.div
-        variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
+        className="calendar-card"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
       >
-        <Card title="Productivity Calendar" className="wide heatmap-card">
+        <Card title="Productivity Calendar">
           <ProductivityHeatmap />
         </Card>
       </motion.div>

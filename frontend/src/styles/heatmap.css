@@ -17,3 +17,22 @@
   border-radius:3px;
   background:#1f1f1f;
 }
+.react-calendar-heatmap .color-empty {
+  fill: #2d2d2d;
+}
+
+.react-calendar-heatmap .color-github-1 {
+  fill: #0e4429;
+}
+
+.react-calendar-heatmap .color-github-2 {
+  fill: #006d32;
+}
+
+.react-calendar-heatmap .color-github-3 {
+  fill: #26a641;
+}
+
+.react-calendar-heatmap .color-github-4 {
+  fill: #39d353;
+}

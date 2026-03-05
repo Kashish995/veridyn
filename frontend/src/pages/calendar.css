@@ -22,3 +22,6 @@
 .react-calendar__month-view__days__day--weekend {
   color: #ff6666;
 }
+.react-calendar-heatmap{
+  width:100%;
+}
