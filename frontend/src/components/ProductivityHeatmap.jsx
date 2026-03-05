@@ -38,21 +38,23 @@ const ProductivityHeatmap = () => {
   }, []);
 
   const cells = [];
-
 const start = new Date("2026-01-01");
+const days = [];
 
 for (let i = 0; i < 365; i++) {
   const date = new Date(start);
   date.setDate(start.getDate() + i);
 
   const key = date.toISOString().split("T")[0];
-  const day = date.getDay(); // 0–6 (Sun–Sat)
 
-  cells.push({
-    key,
-    score: dataMap[key] || 0,
-    day
-  });
+  days.push(
+    <div
+      key={key}
+      className="heatmap-cell"
+      style={{ backgroundColor: getColor(dataMap[key]) }}
+      title={`${key}: ${dataMap[key] || 0}`}
+    />
+  );
 }
 
   return (
