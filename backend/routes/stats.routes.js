@@ -15,6 +15,7 @@ import {
   getCalendarHeatmapController,
 } from "../controllers/stats.controller.js";
 import { getHistory } from "../controllers/stats.controller.js";
+import { calculateStreaks } from "../utils/streakCalculator.js";
 
 const router = express.Router();
 
