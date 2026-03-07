@@ -201,6 +201,10 @@ const chartOptions = {
   },
 };
 
+const calendarValues = Array.isArray(data?.calendar)
+  ? data.calendar
+  : [];
+
 return (
   <Layout>
     <PageHeader
@@ -403,7 +407,9 @@ return (
         }}
       >
         <Card title="Productivity Calendar">
-          <ProductivityHeatmap />
+          <ProductivityHeatmap
+            values={Array.isArray(data?.calendar) ? data.calendar : []}
+          />
         </Card>
       </motion.div>
     </motion.div>

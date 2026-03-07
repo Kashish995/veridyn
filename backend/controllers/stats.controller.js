@@ -9,7 +9,7 @@ import {
   getPerformanceTrend
 } from "../services/performanceService.js";
 import * as performanceService from "../services/performanceService.js";
-import { getCalendarHeatmapData } from "../services/analyticsService.js";
+import { getCalendarHeatmapData } from "../services/history.service.js";
 
 /* =========================
    WEEKLY

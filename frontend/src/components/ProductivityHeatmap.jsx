@@ -19,7 +19,9 @@ const ProductivityHeatmap = () => {
       );
 
       const result = await res.json();
-      setData(result);
+
+      // FIX
+      setData(result.calendar || []);
     };
 
     fetchCalendar();
