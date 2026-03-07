@@ -389,6 +389,17 @@ return (
           </Card>
         </motion.div>
       )}
+      {/* ===== Current Streak ===== */}
+      <motion.div
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <Card title="Current Streak">
+          <p>{data?.currentStreak ?? 0} Days</p>
+        </Card>
+      </motion.div>
 
       {/* ===== Actions ===== */}
       <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
