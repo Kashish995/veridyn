@@ -52,5 +52,9 @@
 .legend-box {
   width: 14px;
   height: 14px;
-  border-radius: 3px;
+  border-radius: 2px;
+}
+.react-calendar-heatmap rect {
+  rx: 2;
+  ry: 2;
 }

@@ -64,21 +64,24 @@ const ProductivityHeatmap = () => {
         values={data}
         classForValue={getClass}
         tooltipDataAttrs={(value) => {
-          if (!value || !value.date) return null;
-          return {
-            "data-tip": `${value.date} — ${value.score}%`
-          };
-        }}
+        if (!value || !value.date) return null;
+
+        return {
+          "data-tip": `${value.date} — ${value.score ?? 0}%`
+        };
+      }}
       />
       <div className="heatmap-legend">
-        <span>Less</span>
-        <div className="legend-box color-empty"></div>
-        <div className="legend-box color-github-1"></div>
-        <div className="legend-box color-github-2"></div>
-        <div className="legend-box color-github-3"></div>
-        <div className="legend-box color-github-4"></div>
-        <span>More</span>
-      </div>
+  <span>Less</span>
+
+  <div className="legend-box color-empty"></div>
+  <div className="legend-box color-github-1"></div>
+  <div className="legend-box color-github-2"></div>
+  <div className="legend-box color-github-3"></div>
+  <div className="legend-box color-github-4"></div>
+
+  <span>More</span>
+</div>
     </div>
   );
 };
