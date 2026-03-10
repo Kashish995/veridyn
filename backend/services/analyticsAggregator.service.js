@@ -8,17 +8,14 @@ export const getUserAnalyticsForAI = async (userId) => {
     .sort({ date: -1 })
     .limit(30);
 
-  if (!history.length) {
-    return null;
-  }
+  if (!history.length) return null;
 
   const latest = history[0];
 
-  const disciplineScores = history.map(d => d.disciplineScore);
+  const scores = history.map(item => item.disciplineScore);
 
   const avgScore =
-    disciplineScores.reduce((a, b) => a + b, 0) /
-    disciplineScores.length;
+    scores.reduce((a, b) => a + b, 0) / scores.length;
 
   const { currentStreak, longestStreak } =
     calculateStreaks(history);
@@ -30,6 +27,6 @@ export const getUserAnalyticsForAI = async (userId) => {
     monthlyAverage: avgScore.toFixed(2),
     currentStreak,
     longestStreak,
-    history: disciplineScores
+    history: scores
   };
 };

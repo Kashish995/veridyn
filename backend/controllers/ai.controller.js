@@ -1,51 +1,47 @@
-import { generateAIResponse } from "../services/ai.service.js";
-import { buildAIPrompt } from "../services/promptBuilder.js";
-import DisciplineHistory from "../models/DisciplineHistory.js";
+import { getUserAnalyticsForAI } from "../services/analyticsAggregator.service.js";
+import { buildBehaviorPrompt } from "../services/promptBuilder.js";
+import { runAIAnalysis } from "../services/ai.service.js";
 
-export const getAIRecommendations = async (req, res) => {
+export const getAIInsights = async (req, res) => {
 
   try {
 
     const userId = req.user.id;
 
-    const latest = await DisciplineHistory
-      .find({ userId })
-      .sort({ date: -1 })
-      .limit(7);
+    const analytics = await getUserAnalyticsForAI(userId);
 
-    if (!latest.length) {
-      return res.status(404).json({
-        message: "Not enough data for AI analysis"
+    if (!analytics) {
+      return res.status(400).json({
+        error: "Not enough productivity data"
       });
     }
 
-    const disciplineScore = latest[0].disciplineScore;
-    const completionRate = latest[0].completionRate;
-    const tier = latest[0].tier;
+    const prompt = buildBehaviorPrompt(analytics);
 
-    const data = {
-      disciplineScore,
-      completionRate,
-      tier,
-      trend: "Improving", // from your analytics
-      volatility: "Moderate",
-      currentStreak: 4,
-      longestStreak: 9,
-      monthlyAvgScore: 72
-    };
+    const aiRaw = await runAIAnalysis(prompt);
 
-    const prompt = buildAIPrompt(data);
+    let result;
 
-    const aiResponse = await generateAIResponse(prompt);
+    try {
+      result = JSON.parse(aiRaw);
+    } catch {
+      result = {
+        explanation: aiRaw,
+        recommendations: [],
+        improvementPlan: []
+      };
+    }
 
-    const parsed = JSON.parse(aiResponse);
+    res.json(result);
 
-    res.json(parsed);
+  } catch (error) {
 
-  } catch (err) {
+    console.error(error);
+
     res.status(500).json({
       error: "AI analysis failed"
     });
-  }
 
+  }
 };
+console.log("Logged user:", req.user.id);

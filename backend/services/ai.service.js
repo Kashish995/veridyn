@@ -1,3 +1,6 @@
+import dotenv from "dotenv";
+dotenv.config();
+
 import OpenAI from "openai";
 
 const client = new OpenAI({
@@ -5,15 +8,12 @@ const client = new OpenAI({
 });
 
 export const runAIAnalysis = async (prompt) => {
-
   const response = await client.chat.completions.create({
     model: "gpt-4.1-mini",
-    temperature: 0.4,
     messages: [
       {
         role: "system",
-        content:
-          "You analyze productivity behavior and give structured insights."
+        content: "You analyze productivity behavior."
       },
       {
         role: "user",
@@ -24,3 +24,4 @@ export const runAIAnalysis = async (prompt) => {
 
   return response.choices[0].message.content;
 };
+console.log("API KEY:", process.env.OPENAI_API_KEY);

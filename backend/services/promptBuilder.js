@@ -3,32 +3,30 @@ export const buildBehaviorPrompt = (analytics) => {
   return `
 You are a behavioral productivity analyst.
 
-A user's productivity analytics data is given below.
+User productivity data:
 
 Discipline Score: ${analytics.disciplineScore}
 Completion Rate: ${analytics.completionRate}
 Tier: ${analytics.tier}
-Monthly Average: ${analytics.monthlyAverage}
+Monthly Average Score: ${analytics.monthlyAverage}
 Current Streak: ${analytics.currentStreak}
 Longest Streak: ${analytics.longestStreak}
 
-Recent Discipline Scores:
+Recent discipline scores:
 ${analytics.history.join(", ")}
 
-Analyze the user's discipline behavior.
+Analyze the user's productivity behavior.
 
-Provide:
-
-1. Behavioral explanation
-2. Three personalized productivity recommendations
-3. A structured 7-day improvement plan
-
-Respond ONLY in JSON:
+Return JSON only in this format:
 
 {
- "explanation": "",
- "recommendations": [],
- "improvementPlan": []
+  "explanation": "",
+  "recommendations": [],
+  "improvementPlan": []
 }
+
+Rules:
+- recommendations must contain 3 items
+- improvementPlan must contain 7 days
 `;
 };

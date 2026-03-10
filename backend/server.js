@@ -3,6 +3,8 @@ import dotenv from "dotenv";
 import mongoose from "mongoose";
 import cors from "cors";
 
+dotenv.config();
+
 /* Middleware */
 import authMiddleware from "./middleware/auth.middleware.js";
 import errorHandler from "./middleware/errorHandler.js";
@@ -32,8 +34,8 @@ import insightsRoutes from "./routes/insightsRoutes.js";
 import suggestionRoutes from "./routes/suggestion.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
+import aiRoutes from "./routes/ai.routes.js";
 
-dotenv.config();
 
 const app = express();
 
@@ -101,6 +103,7 @@ app.use("/api/health", authMiddleware, healthRoutes);
 
 /* Stats route (already protected inside file if needed) */
 app.use("/api/stats", authMiddleware, statsRoutes);
+app.use("/api/ai", aiRoutes);
 
 /* Root */
 app.get("/", (req, res) => {
