@@ -8,6 +8,9 @@ export const getAIInsights = async (req, res) => {
 
     const userId = req.user.id;
 
+    console.log("Logged user:", userId);  // ✔ allowed here
+    console.log("User from token:", req.user.id);
+    
     const analytics = await getUserAnalyticsForAI(userId);
 
     if (!analytics) {
@@ -44,4 +47,3 @@ export const getAIInsights = async (req, res) => {
 
   }
 };
-console.log("Logged user:", req.user.id);

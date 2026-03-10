@@ -1,12 +1,13 @@
 import DisciplineHistory from "../models/DisciplineHistory.js";
 import { calculateStreaks } from "../utils/streakCalculator.js";
+import mongoose from "mongoose";
 
 export const getUserAnalyticsForAI = async (userId) => {
 
   const history = await DisciplineHistory
-    .find({ userId })
-    .sort({ date: -1 })
-    .limit(30);
+  .find({ userId: new mongoose.Types.ObjectId(userId) })
+  .sort({ date: -1 })
+  .limit(30);
 
   if (!history.length) return null;
 
