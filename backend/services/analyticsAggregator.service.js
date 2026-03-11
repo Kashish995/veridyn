@@ -4,10 +4,16 @@ import mongoose from "mongoose";
 
 export const getUserAnalyticsForAI = async (userId) => {
 
-  const history = await DisciplineHistory
+  const allDocs = await DisciplineHistory.find();
+console.log("ALL DOCS IN COLLECTION:", allDocs);
+
+const history = await DisciplineHistory
   .find({ userId: new mongoose.Types.ObjectId(userId) })
   .sort({ date: -1 })
   .limit(30);
+ 
+  console.log("UserId used in query:", userId);
+  console.log("History found:", history);
 
   if (!history.length) return null;
 
