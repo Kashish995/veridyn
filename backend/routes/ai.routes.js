@@ -6,4 +6,9 @@ const router = express.Router();
 
 router.post("/insights", authMiddleware, getAIInsights);
 
+router.post("/insights", authMiddleware, (req,res,next)=>{
+  console.log("AI ROUTE HIT");
+  next();
+}, getAIInsights);
+
 export default router;

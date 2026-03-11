@@ -110,6 +110,10 @@ app.get("/", (req, res) => {
   res.send("API RUNNING");
 });
 
+app.get("/test", (req, res) => {
+  res.json({ message: "API working" });
+});
+
 /* ---------------- ERROR HANDLER ---------------- */
 
 app.use(errorHandler);
