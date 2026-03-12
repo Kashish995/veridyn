@@ -1,15 +1,17 @@
 import DisciplineHistory from "../models/DisciplineHistory.js";
 import { calculateStreaks } from "../utils/streakCalculator.js";
+import mongoose from "mongoose";
 
 export const getUserAnalyticsForAI = async (userId) => {
 
-  // Fetch user discipline history
+  const objectUserId = new mongoose.Types.ObjectId(userId);
+
   const history = await DisciplineHistory
-    .find({ userId })   // let mongoose cast automatically
+    .find({ userId: objectUserId })
     .sort({ date: -1 })
     .limit(30);
 
-  console.log("UserId used in query:", userId);
+  console.log("UserId used in query:", objectUserId);
   console.log("History found:", history);
 
   if (!history.length) return null;

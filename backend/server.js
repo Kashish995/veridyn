@@ -1,9 +1,9 @@
-import express from "express";
 import dotenv from "dotenv";
+dotenv.config();
+import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
 
-dotenv.config();
 
 /* Middleware */
 import authMiddleware from "./middleware/auth.middleware.js";
@@ -121,6 +121,9 @@ app.use(errorHandler);
 /* ---------------- DATABASE + SERVER START ---------------- */
 
 const PORT = 5000;
+
+
+console.log("OPENAI KEY:", process.env.OPENAI_API_KEY);
 
 mongoose
   .connect(process.env.MONGO_URI)
