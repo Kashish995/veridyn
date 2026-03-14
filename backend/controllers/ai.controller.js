@@ -1,17 +1,24 @@
 import aiService from "../services/ai.service.js";
 
-// Helper to clean JSON
 function cleanJSON(text) {
-  return text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  let cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+  // Remove any leading/trailing whitespace or newlines
+  cleaned = cleaned.replace(/^\s+|\s+$/g, '');
+  return cleaned;
 }
 
-// Get AI Recommendations
 export const getAIRecommendations = async (req, res) => {
   try {
-    const userData = req.body;
+    console.log("📥 Recommendations request:", req.body);
     
+    const userData = req.body;
     const rawResponse = await aiService.generateRecommendations(userData);
+    
+    console.log("🤖 Raw AI Response:", rawResponse);
+    
     const cleaned = cleanJSON(rawResponse);
+    console.log("🧹 Cleaned Response:", cleaned);
+    
     const recommendations = JSON.parse(cleaned);
     
     return res.success(
@@ -19,19 +26,23 @@ export const getAIRecommendations = async (req, res) => {
       "Recommendations generated successfully"
     );
   } catch (error) {
-    console.error('Recommendations error:', error);
-    return res.fail("Failed to generate recommendations", 500);
+    console.error('❌ Recommendations error:', error);
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    return res.fail(`Failed to generate recommendations: ${error.message}`, 500);
   }
 };
 
-// Get AI Explanation
 export const getAIExplanation = async (req, res) => {
   try {
-    const { metric, currentValue, trend, context } = req.body;
+    console.log("📥 Explanation request:", req.body);
     
+    const { metric, currentValue, trend, context } = req.body;
     const rawResponse = await aiService.generateExplanation({
       metric, currentValue, trend, context
     });
+    
+    console.log("🤖 Raw AI Response:", rawResponse);
     
     const cleaned = cleanJSON(rawResponse);
     const explanation = JSON.parse(cleaned);
@@ -41,17 +52,21 @@ export const getAIExplanation = async (req, res) => {
       "Explanation generated successfully"
     );
   } catch (error) {
-    console.error('Explanation error:', error);
-    return res.fail("Failed to generate explanation", 500);
+    console.error('❌ Explanation error:', error);
+    console.error('Error message:', error.message);
+    return res.fail(`Failed to generate explanation: ${error.message}`, 500);
   }
 };
 
-// Get AI 7-Day Plan
 export const getAI7DayPlan = async (req, res) => {
   try {
-    const { userData, goals } = req.body;
+    console.log("📥 7-Day Plan request:", req.body);
     
+    const { userData, goals } = req.body;
     const rawResponse = await aiService.generate7DayPlan(userData, goals);
+    
+    console.log("🤖 Raw AI Response:", rawResponse);
+    
     const cleaned = cleanJSON(rawResponse);
     const plan = JSON.parse(cleaned);
     
@@ -60,15 +75,14 @@ export const getAI7DayPlan = async (req, res) => {
       "7-day plan generated successfully"
     );
   } catch (error) {
-    console.error('7-Day plan error:', error);
-    return res.fail("Failed to generate plan", 500);
+    console.error('❌ 7-Day plan error:', error);
+    console.error('Error message:', error.message);
+    return res.fail(`Failed to generate plan: ${error.message}`, 500);
   }
 };
 
-// Your existing insights controller (keep if you want)
 export const getAIInsights = async (req, res) => {
   try {
-    // Your existing logic here
     return res.success({ message: "Insights endpoint" });
   } catch (error) {
     return res.fail("Failed to get insights", 500);
