@@ -1,49 +1,76 @@
-import { getUserAnalyticsForAI } from "../services/analyticsAggregator.service.js";
-import { buildBehaviorPrompt } from "../services/promptBuilder.js";
-import { runAIAnalysis } from "../services/ai.service.js";
+import aiService from "../services/ai.service.js";
 
-export const getAIInsights = async (req, res) => {
+// Helper to clean JSON
+function cleanJSON(text) {
+  return text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+}
 
+// Get AI Recommendations
+export const getAIRecommendations = async (req, res) => {
   try {
-
-    const userId = req.user.id;
-
-    console.log("Logged user:", userId);  // ✔ allowed here
-    console.log("User from token:", req.user.id);
+    const userData = req.body;
     
-    const analytics = await getUserAnalyticsForAI(userId);
-
-    if (!analytics) {
-      return res.status(400).json({
-        error: "Not enough productivity data"
-      });
-    }
-
-    const prompt = buildBehaviorPrompt(analytics);
-
-    const aiRaw = await runAIAnalysis(prompt);
-
-    let result;
-
-    try {
-      result = JSON.parse(aiRaw);
-    } catch {
-      result = {
-        explanation: aiRaw,
-        recommendations: [],
-        improvementPlan: []
-      };
-    }
-
-    res.json(result);
-
+    const rawResponse = await aiService.generateRecommendations(userData);
+    const cleaned = cleanJSON(rawResponse);
+    const recommendations = JSON.parse(cleaned);
+    
+    return res.success(
+      { recommendations, generatedAt: new Date() },
+      "Recommendations generated successfully"
+    );
   } catch (error) {
+    console.error('Recommendations error:', error);
+    return res.fail("Failed to generate recommendations", 500);
+  }
+};
 
-    console.error(error);
-
-    res.status(500).json({
-      error: "AI analysis failed"
+// Get AI Explanation
+export const getAIExplanation = async (req, res) => {
+  try {
+    const { metric, currentValue, trend, context } = req.body;
+    
+    const rawResponse = await aiService.generateExplanation({
+      metric, currentValue, trend, context
     });
+    
+    const cleaned = cleanJSON(rawResponse);
+    const explanation = JSON.parse(cleaned);
+    
+    return res.success(
+      { ...explanation },
+      "Explanation generated successfully"
+    );
+  } catch (error) {
+    console.error('Explanation error:', error);
+    return res.fail("Failed to generate explanation", 500);
+  }
+};
 
+// Get AI 7-Day Plan
+export const getAI7DayPlan = async (req, res) => {
+  try {
+    const { userData, goals } = req.body;
+    
+    const rawResponse = await aiService.generate7DayPlan(userData, goals);
+    const cleaned = cleanJSON(rawResponse);
+    const plan = JSON.parse(cleaned);
+    
+    return res.success(
+      { plan, generatedAt: new Date() },
+      "7-day plan generated successfully"
+    );
+  } catch (error) {
+    console.error('7-Day plan error:', error);
+    return res.fail("Failed to generate plan", 500);
+  }
+};
+
+// Your existing insights controller (keep if you want)
+export const getAIInsights = async (req, res) => {
+  try {
+    // Your existing logic here
+    return res.success({ message: "Insights endpoint" });
+  } catch (error) {
+    return res.fail("Failed to get insights", 500);
   }
 };

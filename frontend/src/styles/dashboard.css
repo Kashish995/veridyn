@@ -58,3 +58,12 @@
 .calendar-card{
   grid-column: 1 / -1;
 }
+.dashboard-grid .wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .dashboard-grid .wide {
+    grid-column: span 1;
+  }
+}

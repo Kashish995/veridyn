@@ -10,6 +10,9 @@ import PageHeader from "../components/PageHeader";
 import Badge from "../ui/Badge";
 import { motion } from "framer-motion";
 import ProductivityHeatmap from "../components/ProductivityHeatmap";
+import AIRecommendationPanel from '../components/AIRecommendationPanel';
+import AIExplanationPanel from '../components/AIExplanationPanel';
+import AI7DayPlan from '../components/AI7DayPlan';
 
 export default function Dashboard() {
   const {
@@ -23,6 +26,24 @@ export default function Dashboard() {
     loading,
     refreshDashboard,
   } = useDashboardData();
+
+
+  const aiUserData = {
+  completedTasks: data?.today?.completed || 0,
+  totalTasks: data?.today?.totalTasks || 0,
+  studyHours: monthlyAggregate?.totalStudyHours || 0,
+  productivityScore: completionRate || 0,
+  recentActivities: weeklyStats.slice(-3).map(d => `${d.date}: ${d.completed}/${d.completed + d.missed} tasks`) || [],
+  weakAreas: volatility > 15 ? ['Consistency', 'Daily Execution'] : trend === 'Declining' ? ['Task Completion', 'Focus'] : []
+};
+
+const planUserData = {
+  currentProductivity: completionRate || 0,
+  availableHoursPerDay: 5, // You can make this dynamic later
+  subjects: ['DSA', 'Web Development', 'DBMS', 'System Design'], // Replace with real subjects if you have them
+  examDates: [] // Add exam dates if you track them
+};
+
 
   const safeStats = Array.isArray(weeklyStats) ? weeklyStats : [];
   const safeHistory = Array.isArray(history) ? history : [];
@@ -422,6 +443,56 @@ return (
             values={Array.isArray(data?.calendar) ? data.calendar : []}
           />
         </Card>
+      </motion.div>
+      
+       <motion.div
+        className="wide"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <AIRecommendationPanel userData={aiUserData} />
+      </motion.div>
+
+      {/* ===== AI Performance Explanation ===== */}
+      <motion.div
+        className="wide"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <Card title="Performance Analysis">
+          <div className="mb-4">
+            <p className="text-lg">
+              <strong>Current Productivity:</strong> {completionRate}%
+            </p>
+            <p className="text-sm text-gray-600">
+              <strong>Trend:</strong> {trend} | <strong>Volatility:</strong> {volatility}
+            </p>
+          </div>
+          <AIExplanationPanel
+            metric="Overall Productivity Performance"
+            currentValue={completionRate}
+            trend={trend}
+            context={`Completion rate: ${completionRate}%, Volatility: ${volatility}, Risk Level: ${riskLevel}, Current streak: ${data?.currentStreak || 0} days`}
+          />
+        </Card>
+      </motion.div>
+
+      {/* ===== AI 7-Day Improvement Plan ===== */}
+      <motion.div
+        className="wide"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <AI7DayPlan 
+          userData={planUserData} 
+          goals="Improve task completion consistency, maintain 85%+ productivity score, and build study discipline for Adobe internship preparation"
+        />
       </motion.div>
     </motion.div>
   </Layout>
