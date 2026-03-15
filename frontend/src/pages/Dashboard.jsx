@@ -14,6 +14,9 @@ import AIRecommendationPanel from '../components/AIRecommendationPanel';
 import AIExplanationPanel from '../components/AIExplanationPanel';
 import AI7DayPlan from '../components/AI7DayPlan';
 import RiskPredictor from '../components/RiskPredictor';
+import StudyPatternAnalyzer from '../components/StudyPatternAnalyzer';
+import SmartTaskPrioritizer from '../components/SmartTaskPrioritizer';
+import WeeklyAIReport from '../components/WeeklyAIReport';
 
 export default function Dashboard() {
   const {
@@ -509,6 +512,42 @@ return (
           currentStreak={data?.currentStreak || 0}
           completionRate={completionRate}
           volatility={volatility}
+        />
+      </motion.div>
+      {/* ===== Study Pattern Analyzer ===== */}
+      <motion.div
+        className="wide"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <StudyPatternAnalyzer tasks={data?.tasks || []} />
+      </motion.div>
+
+      {/* ===== Smart Task Prioritizer ===== */}
+      <motion.div
+        className="wide"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <SmartTaskPrioritizer tasks={data?.tasks || []} />
+      </motion.div>
+
+      {/* ===== Weekly AI Report ===== */}
+      <motion.div
+        className="wide"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <WeeklyAIReport 
+          weeklyStats={safeStats}
+          history={safeHistory}
+          currentStreak={data?.currentStreak || 0}
         />
       </motion.div>
     </motion.div>

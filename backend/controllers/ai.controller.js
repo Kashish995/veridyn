@@ -1,5 +1,8 @@
 import aiService from "../services/ai.service.js";
 import riskAnalysisService from "../services/riskAnalysis.service.js";
+import patternAnalysisService from "../services/patternAnalysis.service.js";
+import taskPrioritizationService from "../services/taskPrioritization.service.js";
+import weeklyReportService from "../services/weeklyReport.service.js";
 
 function cleanJSON(text) {
   let cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -105,5 +108,51 @@ export const getRiskPrediction = async (req, res) => {
   } catch (error) {
     console.error('❌ Risk prediction error:', error);
     return res.fail(`Failed to predict risk: ${error.message}`, 500);
+  }
+};
+
+
+export const getStudyPatterns = async (req, res) => {
+  try {
+    const tasksData = req.body;
+    const patterns = patternAnalysisService.analyzeStudyPatterns(tasksData);
+    
+    return res.success(
+      { patterns, generatedAt: new Date() },
+      "Pattern analysis completed successfully"
+    );
+  } catch (error) {
+    console.error('❌ Pattern analysis error:', error);
+    return res.fail(`Failed to analyze patterns: ${error.message}`, 500);
+  }
+};
+
+export const getTaskPrioritization = async (req, res) => {
+  try {
+    const { tasks, userContext } = req.body;
+    const prioritization = taskPrioritizationService.prioritizeTasks(tasks, userContext);
+    
+    return res.success(
+      { prioritization, generatedAt: new Date() },
+      "Task prioritization completed successfully"
+    );
+  } catch (error) {
+    console.error('❌ Task prioritization error:', error);
+    return res.fail(`Failed to prioritize tasks: ${error.message}`, 500);
+  }
+};
+
+export const getWeeklyReport = async (req, res) => {
+  try {
+    const weekData = req.body;
+    const report = weeklyReportService.generateWeeklyReport(weekData);
+    
+    return res.success(
+      { report, generatedAt: new Date() },
+      "Weekly report generated successfully"
+    );
+  } catch (error) {
+    console.error('❌ Weekly report error:', error);
+    return res.fail(`Failed to generate report: ${error.message}`, 500);
   }
 };
