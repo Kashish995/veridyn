@@ -3,7 +3,8 @@ import {
   getAIRecommendations, 
   getAIExplanation, 
   getAI7DayPlan,
-  getAIInsights 
+  getAIInsights,
+  getRiskPrediction 
 } from "../controllers/ai.controller.js";
 import authMiddleware from "../middleware/auth.middleware.js";
 
@@ -16,5 +17,6 @@ router.post("/7day-plan", authMiddleware, getAI7DayPlan);
 
 // Your existing insights endpoint
 router.post("/insights", authMiddleware, getAIInsights);
+router.post("/risk-prediction", authMiddleware, getRiskPrediction);
 
 export default router;

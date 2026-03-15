@@ -13,6 +13,7 @@ import ProductivityHeatmap from "../components/ProductivityHeatmap";
 import AIRecommendationPanel from '../components/AIRecommendationPanel';
 import AIExplanationPanel from '../components/AIExplanationPanel';
 import AI7DayPlan from '../components/AI7DayPlan';
+import RiskPredictor from '../components/RiskPredictor';
 
 export default function Dashboard() {
   const {
@@ -491,6 +492,23 @@ return (
         <AI7DayPlan 
           userData={planUserData} 
           goals="Improve task completion consistency, maintain 85%+ productivity score, and build study discipline for Adobe internship preparation"
+        />
+      </motion.div>
+
+      {/* ===== AI Risk Predictor ===== */}
+      <motion.div
+        className="wide"
+        variants={{
+          hidden: { opacity: 0, y: 20 },
+          visible: { opacity: 1, y: 0 },
+        }}
+      >
+        <RiskPredictor
+          weeklyStats={safeStats}
+          history={safeHistory}
+          currentStreak={data?.currentStreak || 0}
+          completionRate={completionRate}
+          volatility={volatility}
         />
       </motion.div>
     </motion.div>

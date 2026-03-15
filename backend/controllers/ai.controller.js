@@ -1,4 +1,5 @@
 import aiService from "../services/ai.service.js";
+import riskAnalysisService from "../services/riskAnalysis.service.js";
 
 function cleanJSON(text) {
   let cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -86,5 +87,23 @@ export const getAIInsights = async (req, res) => {
     return res.success({ message: "Insights endpoint" });
   } catch (error) {
     return res.fail("Failed to get insights", 500);
+  }
+};
+
+
+export const getRiskPrediction = async (req, res) => {
+  try {
+    console.log("📥 Risk prediction request:", req.body);
+    
+    const userData = req.body;
+    const riskAnalysis = riskAnalysisService.calculateRisk(userData);
+    
+    return res.success(
+      { risk: riskAnalysis, generatedAt: new Date() },
+      "Risk analysis completed successfully"
+    );
+  } catch (error) {
+    console.error('❌ Risk prediction error:', error);
+    return res.fail(`Failed to predict risk: ${error.message}`, 500);
   }
 };
