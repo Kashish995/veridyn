@@ -17,6 +17,7 @@ import RiskPredictor from '../components/RiskPredictor';
 import StudyPatternAnalyzer from '../components/StudyPatternAnalyzer';
 import SmartTaskPrioritizer from '../components/SmartTaskPrioritizer';
 import WeeklyAIReport from '../components/WeeklyAIReport';
+import ProgressRing from '../components/ProgressRing';
 
 export default function Dashboard() {
   const {
@@ -256,7 +257,7 @@ return (
           visible: { opacity: 1, y: 0 },
         }}
       >
-        <Card title="Discipline" className="wide">
+        <div className="metric-card gradient-blue">
           {loading ? (
             <>
               <Skeleton height="32px" width="80px" />
@@ -264,48 +265,41 @@ return (
             </>
           ) : (
             <>
-              <div className="metric-value">
-                {completionRate}%
-              </div>
-
+              <div className="metric-label">Discipline Score</div>
+              <ProgressRing 
+                percentage={completionRate} 
+                color="#ffffff"
+              />
               <Badge variant={performanceTier.toLowerCase()}>
                 {performanceTier}
               </Badge>
-
-              <p className="muted-text">
-                Tasks: {data?.today?.completed ?? 0} /{" "}
-                {data?.today?.totalTasks ?? 0}
+              <p className="muted-text" style={{ marginTop: '1rem' }}>
+                Tasks: {data?.today?.completed ?? 0} / {data?.today?.totalTasks ?? 0}
               </p>
             </>
           )}
-        </Card>
+        </div>
       </motion.div>
 
-      {/* ===== Trend ===== */}
+     {/* ===== Trend ===== */}
       <motion.div
         variants={{
           hidden: { opacity: 0, y: 20 },
           visible: { opacity: 1, y: 0 },
         }}
       >
-        <Card title="Trend">
+        <div className="metric-card gradient-green">
+          <div className="metric-label">Performance Trend</div>
           <div className="trend-icon">
-            {trend === "Improving" ? "📈" : "📉"}
+            {trend === "Improving" || trend === "Strong Improvement" ? "📈" : "📉"}
           </div>
-
-          <div
-            className={`trend-label ${
-              trend === "Improving" ? "trend-up" : "trend-down"
-            }`}
-          >
+          <div className="metric-value" style={{ fontSize: '1.5rem' }}>
             {trend}
           </div>
-
           <p className="muted-text">
-            Change: {difference > 0 ? "+" : ""}
-            {difference}
+            Change: {difference > 0 ? "+" : ""}{difference} points
           </p>
-        </Card>
+        </div>
       </motion.div>
 
       {/* ===== Performance Insight ===== */}
@@ -315,37 +309,52 @@ return (
           visible: { opacity: 1, y: 0 },
         }}
       >
-        <Card title="Performance Insight">
-          <p className={`tone-${performanceTone}`}>
+        <div className={`metric-card ${
+          performanceTone === 'success' ? 'gradient-green' :
+          performanceTone === 'warning' ? 'gradient-orange' :
+          performanceTone === 'danger' ? 'gradient-pink' :
+          'gradient-purple'
+        }`}>
+          <div className="metric-label">Performance Intelligence</div>
+          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
+            {performanceTone === 'success' ? '✅' :
+             performanceTone === 'warning' ? '⚠️' :
+             performanceTone === 'danger' ? '🔴' : 'ℹ️'}
+          </div>
+          <p className="muted-text" style={{ fontSize: '1rem', lineHeight: '1.5' }}>
             {performanceMessage}
           </p>
-        </Card>
+        </div>
       </motion.div>
-
-      {/* ===== Upcoming Task ===== */}
+{/* ===== Upcoming Task ===== */}
       <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <Card title="Upcoming Task">
+        <div className="metric-card gradient-teal">
+          <div className="metric-label">Next Up</div>
           {loading ? (
             <Skeleton height="20px" />
           ) : nextTask ? (
             <>
-              <p><strong>{nextTask.title}</strong></p>
+              <div style={{ fontSize: '1.5rem', fontWeight: '700', marginTop: '1rem', marginBottom: '0.5rem' }}>
+                {nextTask.title}
+              </div>
               <p className="muted-text">
-                {nextTask.startTime} – {nextTask.endTime}
+                ⏰ {nextTask.startTime} – {nextTask.endTime}
               </p>
               <p className="muted-text">
-                Priority: {nextTask.priority}
+                Priority: <strong>{nextTask.priority}</strong>
               </p>
             </>
           ) : (
-            <p className="center-text">No upcoming task</p>
+            <p className="muted-text" style={{ textAlign: 'center', padding: '2rem 0' }}>
+              No upcoming task
+            </p>
           )}
-        </Card>
+        </div>
       </motion.div>
 
       {/* ===== 7-Day Performance ===== */}
       <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <Card title="7-Day Performance" className="wide">
+        <Card title="7-Day Performance" className="wide glass-card">
           {loading ? (
             <Skeleton height="220px" />
           ) : safeStats.length > 0 ? (
@@ -358,14 +367,14 @@ return (
         </Card>
       </motion.div>
 
-      {/* ===== Discipline History ===== */}
+     {/* ===== Discipline History ===== */}
       <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <Card title="Discipline History" className="wide">
+        <Card title="Discipline History" className="wide glass-card">
           {loading ? (
             <Skeleton height="220px" />
           ) : safeHistory.length > 0 ? (
             <div className="chart-container">
-              <Line data={historyChartData} />
+              <Line data={historyChartData} options={chartOptions} />
             </div>
           ) : (
             <p className="center-text">No history data</p>
@@ -376,43 +385,62 @@ return (
       {/* ===== Performance Intelligence ===== */}
       {insights && (
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card title="Performance Intelligence">
-            <p><strong>Tier:</strong> {insights.tier?.tier}</p>
-            <p><strong>Monthly Completion:</strong> {insights.monthly?.completionRate ?? 0}%</p>
-            <p>
-              <strong>Volatility:</strong>{" "}
-              {insights.volatility?.stabilityLevel} (
-              {insights.volatility?.volatilityScore})
-            </p>
-          </Card>
+          <div className="stat-card glass-card">
+            <div className="stat-card-label">TIER</div>
+            <div className="stat-card-value">{insights.tier?.tier}</div>
+            <div className="stat-card-label" style={{ marginTop: '1rem' }}>Monthly Completion</div>
+            <div className="stat-card-value" style={{ fontSize: '1.5rem' }}>
+              {insights.monthly?.completionRate ?? 0}%
+            </div>
+            <div className="stat-card-label" style={{ marginTop: '1rem' }}>Volatility</div>
+            <div className="stat-card-value" style={{ fontSize: '1.5rem' }}>
+              {insights.volatility?.stabilityLevel}
+            </div>
+          </div>
         </motion.div>
       )}
 
-      {/* ===== Monthly Performance ===== */}
+     {/* ===== Monthly Performance ===== */}
       {monthlyAggregate && (
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card title="Monthly Performance">
-            <p>Average Completion: {monthlyAggregate.averageCompletionRate ?? 0}%</p>
-            <p>Average Discipline: {monthlyAggregate.averageDisciplineScore ?? 0}</p>
-            <p>Dominant Tier: {monthlyAggregate.dominantTier}</p>
-            <p>Days Tracked: {monthlyAggregate.daysTracked}</p>
-          </Card>
+          <div className="stat-card glass-card">
+            <div className="stat-card-label">Monthly Average</div>
+            <ProgressRing 
+              percentage={monthlyAggregate.averageCompletionRate ?? 0}
+              size={100}
+              color="#667eea"
+            />
+            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+              <div className="stat-card-label">Dominant Tier</div>
+              <div className="stat-card-value" style={{ fontSize: '1.25rem' }}>
+                {monthlyAggregate.dominantTier}
+              </div>
+              <div className="stat-card-label" style={{ marginTop: '0.5rem' }}>
+                Days Tracked: {monthlyAggregate.daysTracked}
+              </div>
+            </div>
+          </div>
         </motion.div>
       )}
 
       {/* ===== Longest Streak ===== */}
       {longestStreak && (
         <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <Card title="Longest Streak">
-            <p>{longestStreak.longestStreak} Days</p>
+          <div className="metric-card gradient-pink">
+            <div className="metric-label">Longest Streak</div>
+            <div className="metric-value">
+              {longestStreak.longestStreak}
+              <span style={{ fontSize: '2rem', marginLeft: '0.5rem' }}>🏆</span>
+            </div>
             {longestStreak.startDate && (
               <p className="muted-text">
-                {longestStreak.startDate} → {longestStreak.endDate}
+                {new Date(longestStreak.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(longestStreak.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
               </p>
             )}
-          </Card>
+          </div>
         </motion.div>
       )}
+      
       {/* ===== Current Streak ===== */}
       <motion.div
         variants={{
@@ -420,19 +448,41 @@ return (
           visible: { opacity: 1, y: 0 },
         }}
       >
-        <Card title="Current Streak">
-          <p>{data?.currentStreak ?? 0} Days</p>
-        </Card>
+        <div className="metric-card gradient-orange">
+          <div className="metric-label">Current Streak</div>
+          <div className="metric-value">
+            {data?.currentStreak ?? 0}
+            <span style={{ fontSize: '2rem', marginLeft: '0.5rem' }}>🔥</span>
+          </div>
+          <p className="muted-text">Days in a row</p>
+        </div>
       </motion.div>
 
       {/* ===== Actions ===== */}
+     {/* ===== Actions ===== */}
       <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <Card title="Actions">
-          <Button variant="primary" onClick={refreshDashboard}>
-            Refresh
+        <div className="stat-card glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '150px' }}>
+          <Button 
+            variant="primary" 
+            onClick={refreshDashboard}
+            style={{
+              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              color: 'white',
+              padding: '1rem 2rem',
+              fontSize: '1rem',
+              fontWeight: '700',
+              border: 'none',
+              borderRadius: '0.75rem',
+              cursor: 'pointer',
+              boxShadow: '0 10px 25px rgba(102, 126, 234, 0.3)',
+              transition: 'all 0.3s ease'
+            }}
+          >
+            🔄 Refresh Dashboard
           </Button>
-        </Card>
+        </div>
       </motion.div>
+      
       {/* ===== Productivity Heatmap ===== */}
       <motion.div
         className="calendar-card"
