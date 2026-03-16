@@ -1,3 +1,10 @@
+/* ========== IMPORTS (MUST BE FIRST) ========== */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import './styles/designSystem.css';
+@import './styles/dashboard.css';
+
+/* ========== EXISTING STYLES BELOW ========== */
+
 :root {
   --primary: #4f46e5;
   --bg-main: #f8fafc;
@@ -18,10 +25,10 @@
 
 /* Body */
 body {
-  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
     Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
 
-  background: linear-gradient(135deg, #eef2ff 0%, #fdf2f8 50%, #ffffff 100%);
+  background: radial-gradient(circle at top, #f5f7ff, #eef1ff 40%, #f9fafc);
   color: var(--text-main);
   min-height: 100vh;
 }
@@ -64,8 +71,8 @@ input::placeholder,
 textarea::placeholder {
   color: #9ca3af;
 }
-/* ===== Dashboard Page Header ===== */
 
+/* Page Header */
 .page-header {
   margin-bottom: 40px;
 }
@@ -82,6 +89,7 @@ textarea::placeholder {
   font-size: 16px;
   color: var(--text-muted);
 }
+
 .form-input {
   width: 100%;
   padding: 10px 12px;
@@ -90,8 +98,8 @@ textarea::placeholder {
   margin-bottom: 12px;
   font-size: 14px;
 }
-/* ===== Typography Hierarchy ===== */
 
+/* Typography */
 .dashboard-title {
   font-size: 32px;
   font-weight: 700;
@@ -107,6 +115,7 @@ textarea::placeholder {
   color: #6b7280;
   font-size: 14px;
 }
+
 .metric-value {
   font-size: 40px;
   font-weight: 700;
@@ -150,4 +159,21 @@ textarea::placeholder {
 
 .tone-neutral {
   color: #6b7280;
+}
+
+/* Date input */
+input[type="date"] {
+  position: relative;
+  color: #1f2937;
+}
+
+input[type="date"]::-webkit-calendar-picker-indicator {
+  filter: invert(0.35);
+  opacity: 0.9;
+  cursor: pointer;
+}
+
+input[type="date"]:hover::-webkit-calendar-picker-indicator {
+  filter: invert(0.15);
+  opacity: 1;
 }

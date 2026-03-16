@@ -1,126 +1,147 @@
-import { useState } from "react";
-import axios from "axios";
-import { useNavigate, Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import '../styles/auth.css';
 
-const Login = () => {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function Login() {
+  const [formData, setFormData] = useState({ email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = async (e) => {
-    e.preventDefault(); 
-    try {
-      const res = await axios.post("http://localhost:5000/api/auth/login", {
-        email,
-        password,
-      });
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError(''); // Clear error on input
+  };
 
-      localStorage.setItem("token", res.data.token);
-      navigate("/dashboard");
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    try {
+      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
+      localStorage.setItem('token', response.data.data.token);
+      navigate('/dashboard');
     } catch (err) {
-      alert("Login failed");
+      setError(err.response?.data?.message || 'Login failed. Please try again.');
+    } finally {
+      setLoading(false);
     }
   };
 
- return (
-  <div style={styles.page}>
-    <div style={styles.card}>
-      <h1 style={styles.title}>Veridyn</h1>
-      <p style={styles.subtitle}>Login to continue</p>
+  return (
+    <div className="auth-wrapper">
+      <div className="auth-container">
+        <div className="auth-card">
+          {/* Header */}
+          <div className="auth-header">
+            <div className="auth-logo">✨</div>
+            <div className="auth-ai-badge">
+              <span>🤖</span>
+              <span>AI-Powered Productivity</span>
+            </div>
+            <h1 className="auth-title">Welcome to Veridyn</h1>
+            <p className="auth-subtitle">
+              Sign in to unlock intelligent productivity insights
+            </p>
+          </div>
 
-      <form onSubmit={handleLogin} style={styles.form}>
-        <input
-          style={styles.input}
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          required
-        />
+          {/* Error Message */}
+          {error && (
+            <div className="form-error-message" style={{ 
+              padding: '1rem', 
+              background: 'var(--danger-bg)', 
+              borderRadius: 'var(--radius-lg)',
+              marginBottom: '1.5rem',
+              border: '1px solid var(--danger)'
+            }}>
+              <span>⚠️</span>
+              <span>{error}</span>
+            </div>
+          )}
 
-        <input
-          style={styles.input}
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          required
-        />
+          {/* Login Form */}
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label" htmlFor="email">Email Address</label>
+              <div className="form-input-wrapper">
+                <span className="form-input-icon">📧</span>
+                <input
+                  id="email"
+                  type="email"
+                  name="email"
+                  className="form-input"
+                  placeholder="you@example.com"
+                  value={formData.email}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
 
-        <button type="submit" style={styles.loginBtn}>
-          Login
-        </button>
-      </form>
+            <div className="form-group">
+              <label className="form-label" htmlFor="password">Password</label>
+              <div className="form-input-wrapper">
+                <span className="form-input-icon">🔒</span>
+                <input
+                  id="password"
+                  type="password"
+                  name="password"
+                  className="form-input"
+                  placeholder="••••••••"
+                  value={formData.password}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+            </div>
 
-      <p style={styles.footerText}>
-        Don’t have an account? <Link to="/register">Register</Link>
-      </p>
+            <button 
+              type="submit" 
+              className="auth-submit-btn"
+              disabled={loading}
+            >
+              {loading ? (
+                <span className="auth-loading">
+                  <span className="auth-spinner"></span>
+                  Signing in...
+                </span>
+              ) : (
+                'Sign In'
+              )}
+            </button>
+          </form>
+
+          {/* Features */}
+          <div className="auth-features">
+            <div className="auth-feature-list">
+              <div className="auth-feature-item">
+                <div className="auth-feature-icon">✓</div>
+                <span>AI-powered productivity insights</span>
+              </div>
+              <div className="auth-feature-item">
+                <div className="auth-feature-icon">✓</div>
+                <span>Intelligent risk prediction</span>
+              </div>
+              <div className="auth-feature-item">
+                <div className="auth-feature-icon">✓</div>
+                <span>Personalized recommendations</span>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer */}
+          <div className="auth-footer">
+            <p className="auth-footer-text">
+              Don't have an account?{' '}
+              <Link to="/signup" className="auth-footer-link">
+                Create one now
+              </Link>
+            </p>
+          </div>
+        </div>
+      </div>
     </div>
-  </div>
-);
-};
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "radial-gradient(circle at top, #ede9fe, #fdf2f8, #fff)",
-  },
-
-  card: {
-    width: "360px",
-    background: "white",
-    padding: "30px",
-    borderRadius: "16px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-    textAlign: "center",
-  },
-
-  title: {
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "#4f46e5",
-    marginBottom: "6px",
-  },
-
-  subtitle: {
-    color: "#6b7280",
-    marginBottom: "20px",
-  },
-
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-  },
-
-  input: {
-    padding: "12px",
-    borderRadius: "10px",
-    border: "1px solid #d1d5db",
-    fontSize: "15px",
-    outline: "none",
-  },
-
-  loginBtn: {
-    marginTop: "10px",
-    padding: "12px",
-    borderRadius: "10px",
-    border: "none",
-    background: "#4f46e5",
-    color: "white",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-
-  footerText: {
-    marginTop: "16px",
-    fontSize: "14px",
-  },
-};
-
-
-export default Login;
+  );
+}

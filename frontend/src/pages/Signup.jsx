@@ -1,134 +1,101 @@
-import { useState } from "react";
-import axios from "axios";
-import { Link } from "react-router-dom";
+import React, { useState } from 'react';
+import { useNavigate, Link } from 'react-router-dom';
+import axios from 'axios';
+import '../styles/auth.css';
 
-const Signup = () => {
-  const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+export default function Signup() {
+  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+  const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
+  const navigate = useNavigate();
 
-  const handleSignup = async (e) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+    setError('');
+  };
+
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    try {
-      await axios.post("http://localhost:5000/api/auth/register", {
-        name,
-        email,
-        password,
-      });
+    setError('');
+    setLoading(true);
 
-      alert("Signup successful. Now login.");
+    if (formData.password.length < 6) {
+      setError('Password must be at least 6 characters');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      await axios.post('http://localhost:5000/api/auth/register', formData);
+      navigate('/login');
     } catch (err) {
-      alert("Signup failed");
+      setError(err.response?.data?.message || 'Registration failed');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h1 style={styles.title}>Veridyn</h1>
-        <p style={styles.subtitle}>Create your account</p>
+    <div className="auth-wrapper">
+      <div className="auth-container">
+        <div className="auth-card">
+          <div className="auth-header">
+            <div className="auth-logo">✨</div>
+            <div className="auth-ai-badge"><span>🤖</span><span>AI-Powered Productivity</span></div>
+            <h1 className="auth-title">Join Veridyn</h1>
+            <p className="auth-subtitle">Start your journey to peak productivity with AI</p>
+          </div>
 
-        <form onSubmit={handleSignup} style={styles.form}>
-          <input
-            style={styles.input}
-            type="text"
-            placeholder="Name"
-            value={name}
-            onChange={(e) => setName(e.target.value)}
-            required
-          />
+          {error && (
+            <div style={{ padding: '1rem', background: '#fee2e2', borderRadius: '0.75rem', marginBottom: '1.5rem', border: '1px solid #ef4444', color: '#dc2626' }}>
+              ⚠️ {error}
+            </div>
+          )}
 
-          <input
-            style={styles.input}
-            type="email"
-            placeholder="Email"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            required
-          />
+          <form className="auth-form" onSubmit={handleSubmit}>
+            <div className="form-group">
+              <label className="form-label">Username</label>
+              <div className="form-input-wrapper">
+                <span className="form-input-icon">👤</span>
+                <input type="text" name="username" className="form-input" placeholder="johndoe" value={formData.username} onChange={handleChange} required />
+              </div>
+            </div>
 
-          <input
-            style={styles.input}
-            type="password"
-            placeholder="Password"
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            required
-          />
+            <div className="form-group">
+              <label className="form-label">Email Address</label>
+              <div className="form-input-wrapper">
+                <span className="form-input-icon">📧</span>
+                <input type="email" name="email" className="form-input" placeholder="you@example.com" value={formData.email} onChange={handleChange} required />
+              </div>
+            </div>
 
-          <button type="submit" style={styles.signupBtn}>
-            Signup
-          </button>
-        </form>
+            <div className="form-group">
+              <label className="form-label">Password</label>
+              <div className="form-input-wrapper">
+                <span className="form-input-icon">🔒</span>
+                <input type="password" name="password" className="form-input" placeholder="••••••••" value={formData.password} onChange={handleChange} required minLength={6} />
+              </div>
+            </div>
 
-        <p style={styles.footerText}>
-          Already have an account? <Link to="/login">Login</Link>
-        </p>
+            <button type="submit" className="auth-submit-btn" disabled={loading}>
+              {loading ? <span className="auth-loading"><span className="auth-spinner"></span>Creating account...</span> : 'Create Account'}
+            </button>
+          </form>
+
+          <div className="auth-features">
+            <div className="auth-feature-list">
+              <div className="auth-feature-item"><div className="auth-feature-icon">✓</div><span>AI risk prediction</span></div>
+              <div className="auth-feature-item"><div className="auth-feature-icon">✓</div><span>Study patterns</span></div>
+              <div className="auth-feature-item"><div className="auth-feature-icon">✓</div><span>Smart prioritization</span></div>
+              <div className="auth-feature-item"><div className="auth-feature-icon">✓</div><span>Weekly reports</span></div>
+            </div>
+          </div>
+
+          <div className="auth-footer">
+            <p className="auth-footer-text">Already have an account? <Link to="/login" className="auth-footer-link">Sign in</Link></p>
+          </div>
+        </div>
       </div>
     </div>
   );
-};
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "center",
-    background: "radial-gradient(circle at top, #ede9fe, #fdf2f8, #fff)",
-  },
-
-  card: {
-    width: "360px",
-    background: "white",
-    padding: "30px",
-    borderRadius: "16px",
-    boxShadow: "0 10px 30px rgba(0,0,0,0.1)",
-    textAlign: "center",
-  },
-
-  title: {
-    fontSize: "28px",
-    fontWeight: "700",
-    color: "#4f46e5",
-    marginBottom: "6px",
-  },
-
-  subtitle: {
-    color: "#6b7280",
-    marginBottom: "20px",
-  },
-
-  form: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "14px",
-  },
-
-  input: {
-    padding: "12px",
-    borderRadius: "10px",
-    border: "1px solid #d1d5db",
-    fontSize: "15px",
-    outline: "none",
-  },
-
-  signupBtn: {
-    marginTop: "10px",
-    padding: "12px",
-    borderRadius: "10px",
-    border: "none",
-    background: "#4f46e5",
-    color: "white",
-    fontSize: "16px",
-    fontWeight: "600",
-    cursor: "pointer",
-  },
-
-  footerText: {
-    marginTop: "16px",
-    fontSize: "14px",
-  },
-};
-
-export default Signup;
+}
