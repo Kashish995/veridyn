@@ -24,8 +24,9 @@ export default function Login() {
       localStorage.setItem('token', response.data.data.token);
       navigate('/dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed. Please try again.');
-    } finally {
+  console.log('Login error:', err.response?.data); // ADD THIS
+  setError(err.response?.data?.message || 'Login failed. Please try again.');
+} finally {
       setLoading(false);
     }
   };
@@ -131,7 +132,7 @@ export default function Login() {
             </div>
           </div>
 
-          {/* Footer */}
+          {/* ADD THIS FOOTER IF MISSING */}
           <div className="auth-footer">
             <p className="auth-footer-text">
               Don't have an account?{' '}

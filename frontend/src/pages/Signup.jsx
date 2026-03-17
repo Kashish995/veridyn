@@ -4,7 +4,7 @@ import axios from 'axios';
 import '../styles/auth.css';
 
 export default function Signup() {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+  const [formData, setFormData] = useState({ name: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -25,12 +25,20 @@ export default function Signup() {
       return;
     }
 
+    setLoading(true);
+
+    console.log('Sending registration data:', formData);
     try {
-      await axios.post('http://localhost:5000/api/auth/register', formData);
-      navigate('/login');
+  await axios.post('http://localhost:5000/api/auth/register', formData, {
+    headers: {
+      'Content-Type': 'application/json'
+    }
+  });
+  navigate('/login');
     } catch (err) {
-      setError(err.response?.data?.message || 'Registration failed');
-    } finally {
+  console.log('Full error:', err.response?.data); // ADD THIS LINE
+  setError(err.response?.data?.message || 'Registration failed');
+} finally {
       setLoading(false);
     }
   };
@@ -57,7 +65,7 @@ export default function Signup() {
               <label className="form-label">Username</label>
               <div className="form-input-wrapper">
                 <span className="form-input-icon">👤</span>
-                <input type="text" name="username" className="form-input" placeholder="johndoe" value={formData.username} onChange={handleChange} required />
+                <input type="text" name="name" className="form-input" placeholder="johndoe" value={formData.name} onChange={handleChange} required />
               </div>
             </div>
 

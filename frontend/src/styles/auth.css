@@ -280,8 +280,16 @@
 /* Responsive */
 @media (max-width: 640px) {
   .auth-card {
-    padding: 2rem 1.5rem;
-  }
+  background: rgba(255, 255, 255, 0.98);
+  backdrop-filter: blur(20px);
+  border-radius: 2rem;
+  padding: 3rem;
+  box-shadow: 
+    0 25px 50px rgba(0, 0, 0, 0.2),
+    0 0 100px rgba(102, 126, 234, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  animation: fadeInUp 0.6s ease-out;
+ }
   
   .auth-title {
     font-size: 1.75rem;
