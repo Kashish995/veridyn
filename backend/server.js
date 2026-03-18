@@ -39,6 +39,7 @@ import aiRoutes from "./routes/ai.routes.js";
 
 const app = express();
 
+
 /* ---------------- GLOBAL MIDDLEWARE ---------------- */
 
 
@@ -48,6 +49,7 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 /* 🔥 GLOBAL RESPONSE WRAPPER (IMPORTANT) */
 app.use((req, res, next) => {

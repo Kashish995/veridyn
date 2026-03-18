@@ -21,7 +21,7 @@ export default function Login() {
 
     try {
       const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-      localStorage.setItem('token', response.data.data.token);
+      localStorage.setItem('token', response.data.token);  // Remove the extra .data
       navigate('/dashboard');
     } catch (err) {
   console.log('Login error:', err.response?.data); // ADD THIS
@@ -109,7 +109,7 @@ export default function Login() {
                   Signing in...
                 </span>
               ) : (
-                'Sign In'
+                'Log In'
               )}
             </button>
           </form>
