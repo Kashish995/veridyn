@@ -1,219 +1,208 @@
-import { useEffect, useState } from "react";
-import api from "../api/api";
-import WeeklyChart from "../components/WeeklyChart";
-import Layout from "../components/Layout";
-import PageHeader from "../components/PageHeader";
-import Card from "../ui/Card";
-import Button from "../ui/Button";
-function Insights() {
-  const [today, setToday] = useState(null);
-  const [weekly, setWeekly] = useState(null);
-  const [patterns, setPatterns] = useState([]);
-  const [goal, setGoal] = useState(null);
-  const [reflection, setReflection] = useState(null);
-  const [suggestion, setSuggestion] = useState(null);
+import { useState } from 'react';
+import RiskPredictor from '../components/RiskPredictor';
+import StudyPatternAnalyzer from '../components/StudyPatternAnalyzer';
+import SmartTaskPrioritizer from '../components/SmartTaskPrioritizer';
+import WeeklyAIReport from '../components/WeeklyAIReport';
+import AIRecommendationPanel from '../components/AIRecommendationPanel';
+import AIExplanationPanel from '../components/AIExplanationPanel';
+import AI7DayPlan from '../components/AI7DayPlan';
+import '../styles/insights.css';
 
-  const [reason, setReason] = useState("");
-  const [note, setNote] = useState("");
-  const [loading, setLoading] = useState(true);
+const Insights = () => {
+  const [activeTab, setActiveTab] = useState('overview');
 
-  const fetchData = async () => {
-    try {
-      const todayRes = await api.get("/summary/today");
-      const weeklyRes = await api.get("/summary/weekly");
-      const patternRes = await api.get("/patterns");
-      const goalRes = await api.get("/goals/dashboard");
-      const reflectionRes = await api.get("/reflection/today");
-      const suggestionRes = await api.get("/suggestions");
-
-      setToday(todayRes.data);
-      setWeekly(weeklyRes.data);
-      setPatterns(patternRes.data.patterns || []);
-      setGoal(goalRes.data);
-      setReflection(reflectionRes.data);
-      setSuggestion(suggestionRes.data);
-    } catch (err) {
-      console.error("Error loading insights", err);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchData();
-  }, []);
-
-  if (loading) return <p style={{ textAlign: "center" }}>Loading...</p>;
-  if (!today || !weekly || !goal) return <p>Failed to load insights.</p>;
-
-  const card = {
-    background: "white",
-    borderRadius: "18px",
-    padding: "20px",
-    marginBottom: "15px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.08)",
-  };
+  const tabs = [
+    { id: 'overview', label: '📊 Overview', icon: '📊' },
+    { id: 'risk', label: '⚠️ Risk Analysis', icon: '⚠️' },
+    { id: 'patterns', label: '📈 Study Patterns', icon: '📈' },
+    { id: 'prioritization', label: '🎯 Task Priority', icon: '🎯' },
+    { id: 'weekly', label: '📅 Weekly Report', icon: '📅' },
+    { id: 'recommendations', label: '💡 Recommendations', icon: '💡' },
+    { id: 'explanations', label: '🤔 Explanations', icon: '🤔' },
+    { id: 'plan', label: '📋 7-Day Plan', icon: '📋' },
+  ];
 
   return (
-  <Layout>
-    <PageHeader
-      title="Insights"
-      subtitle="Analyze trends and performance intelligence"
-    />
-
-    <div className="dashboard-grid">
-
-      {/* TODAY CARD */}
-      <Card title="Today">
-        <p>
-          Tasks: <b>{today.completedTasks}</b> / {today.totalTasks}
-        </p>
-        <p>
-          Streak: 🔥 <b>{today.streakStatus}</b>
-        </p>
-        <p
-          style={{
-            color: today.feedback?.includes("low")
-              ? "var(--danger)"
-              : "var(--success)",
-            fontWeight: "600",
-          }}
-        >
-          Feedback: {today.feedback}
-        </p>
-      </Card>
-
-      {/* SMART SUGGESTION */}
-      {suggestion && (
-        <Card title="Smart Suggestion" className="wide">
-          <p style={{ fontWeight: 600 }}>{suggestion.suggestion}</p>
-          <p style={{ color: "var(--text-muted)" }}>
-            Reason: {suggestion.reason}
+    <div className="insights-page">
+      <div className="insights-container">
+        
+        {/* Header */}
+        <div className="insights-header">
+          <h1>🤖 AI Insights Hub</h1>
+          <p className="insights-subtitle">
+            Unlock intelligent productivity insights powered by AI
           </p>
-        </Card>
-      )}
+          <div className="insights-ai-badge">
+            <span>✨</span>
+            <span>Powered by Advanced AI</span>
+          </div>
+        </div>
 
-      {/* WEEKLY */}
-      <Card title="Weekly Progress" className="wide">
-        <WeeklyChart weekly={weekly} />
-      </Card>
-
-      {/* GOAL */}
-      <Card title="Goal">
-        <p style={{ fontSize: "18px", fontWeight: 600 }}>
-          Daily target: {goal.dailyTarget}
-        </p>
-
-        <Button
-          variant="primary"
-          onClick={async () => {
-            const res = await api.post("/goals/auto-adjust");
-            alert(res.data.message);
-            setGoal({ ...goal, dailyTarget: res.data.dailyTarget });
-          }}
-        >
-          Auto Adjust Goal
-        </Button>
-      </Card>
-
-      {/* PATTERNS */}
-      {patterns.length > 0 && (
-        <Card title="Patterns">
-          {patterns.map((p, i) => (
-            <p key={i}>• {p}</p>
+        {/* Tabs */}
+        <div className="insights-tabs">
+          {tabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={`insights-tab ${activeTab === tab.id ? 'active' : ''}`}
+              onClick={() => setActiveTab(tab.id)}
+            >
+              {tab.label}
+            </button>
           ))}
-        </Card>
-      )}
+        </div>
 
-      {/* REFLECTION */}
-      <Card title="Reflection">
-        {reflection ? (
-          <p>
-            Today’s blocker: <b>{reflection.reason}</b> — {reflection.note}
-          </p>
-        ) : (
-          <>
-            <select
-              className="input"
-              value={reason}
-              onChange={(e) => setReason(e.target.value)}
-            >
-              <option value="">Select reason</option>
-              <option value="distraction">Distraction</option>
-              <option value="fatigue">Fatigue</option>
-              <option value="poor planning">Poor planning</option>
-              <option value="lack of motivation">Lack of motivation</option>
-              <option value="other">Other</option>
-            </select>
+        {/* Content */}
+        <div className="insights-content">
+          
+          {/* OVERVIEW TAB */}
+          {activeTab === 'overview' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>📊</span>
+                <span>AI Features Overview</span>
+              </h2>
+              <div className="insights-grid">
+                <div className="insights-card" onClick={() => setActiveTab('risk')}>
+                  <div className="insights-card-icon">⚠️</div>
+                  <h3 className="insights-card-title">Risk Predictor</h3>
+                  <p className="insights-card-description">
+                    Get early warnings about potential discipline drops and productivity risks.
+                  </p>
+                </div>
 
-            <input
-              className="input"
-              placeholder="Optional note"
-              value={note}
-              onChange={(e) => setNote(e.target.value)}
-            />
+                <div className="insights-card" onClick={() => setActiveTab('patterns')}>
+                  <div className="insights-card-icon">📈</div>
+                  <h3 className="insights-card-title">Study Pattern Analyzer</h3>
+                  <p className="insights-card-description">
+                    Discover your peak productivity hours and optimize your study schedule.
+                  </p>
+                </div>
 
-            <Button
-              variant="success"
-              onClick={async () => {
-                await api.post("/reflection", { reason, note });
-                fetchData();
-              }}
-            >
-              Save Reflection
-            </Button>
-          </>
-        )}
-      </Card>
+                <div className="insights-card" onClick={() => setActiveTab('prioritization')}>
+                  <div className="insights-card-icon">🎯</div>
+                  <h3 className="insights-card-title">Smart Task Prioritization</h3>
+                  <p className="insights-card-description">
+                    AI-ranked task list based on urgency, difficulty, and your energy levels.
+                  </p>
+                </div>
 
+                <div className="insights-card" onClick={() => setActiveTab('weekly')}>
+                  <div className="insights-card-icon">📅</div>
+                  <h3 className="insights-card-title">Weekly AI Report</h3>
+                  <p className="insights-card-description">
+                    Comprehensive weekly summary with achievements and improvement areas.
+                  </p>
+                </div>
+
+                <div className="insights-card" onClick={() => setActiveTab('recommendations')}>
+                  <div className="insights-card-icon">💡</div>
+                  <h3 className="insights-card-title">AI Recommendations</h3>
+                  <p className="insights-card-description">
+                    Personalized productivity tips based on your behavior patterns.
+                  </p>
+                </div>
+
+                <div className="insights-card" onClick={() => setActiveTab('explanations')}>
+                  <div className="insights-card-icon">🤔</div>
+                  <h3 className="insights-card-title">Metric Explanations</h3>
+                  <p className="insights-card-description">
+                    Understand what your discipline score and metrics really mean.
+                  </p>
+                </div>
+
+                <div className="insights-card" onClick={() => setActiveTab('plan')}>
+                  <div className="insights-card-icon">📋</div>
+                  <h3 className="insights-card-title">7-Day Action Plan</h3>
+                  <p className="insights-card-description">
+                    AI-generated weekly plan to boost your productivity and discipline.
+                  </p>
+                </div>
+              </div>
+            </>
+          )}
+
+          {/* RISK TAB */}
+          {activeTab === 'risk' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>⚠️</span>
+                <span>Risk Prediction Analysis</span>
+              </h2>
+              <RiskPredictor />
+            </>
+          )}
+
+          {/* PATTERNS TAB */}
+          {activeTab === 'patterns' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>📈</span>
+                <span>Study Pattern Analysis</span>
+              </h2>
+              <StudyPatternAnalyzer />
+            </>
+          )}
+
+          {/* PRIORITIZATION TAB */}
+          {activeTab === 'prioritization' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>🎯</span>
+                <span>Smart Task Prioritization</span>
+              </h2>
+              <SmartTaskPrioritizer />
+            </>
+          )}
+
+          {/* WEEKLY TAB */}
+          {activeTab === 'weekly' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>📅</span>
+                <span>Weekly AI Report</span>
+              </h2>
+              <WeeklyAIReport />
+            </>
+          )}
+
+          {/* RECOMMENDATIONS TAB */}
+          {activeTab === 'recommendations' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>💡</span>
+                <span>AI Recommendations</span>
+              </h2>
+              <AIRecommendationPanel />
+            </>
+          )}
+
+          {/* EXPLANATIONS TAB */}
+          {activeTab === 'explanations' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>🤔</span>
+                <span>Metric Explanations</span>
+              </h2>
+              <AIExplanationPanel />
+            </>
+          )}
+
+          {/* PLAN TAB */}
+          {activeTab === 'plan' && (
+            <>
+              <h2 className="insights-content-title">
+                <span>📋</span>
+                <span>7-Day Action Plan</span>
+              </h2>
+              <AI7DayPlan />
+            </>
+          )}
+
+        </div>
+
+      </div>
     </div>
-  </Layout>
-);
-}
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    padding: "30px",
-    background: "linear-gradient(135deg, #eef2ff, #f8fafc)",
-  },
-  heading: {
-    color: "#4f46e5",
-    marginBottom: "20px",
-    textAlign: "center",
-  },
-  card: {
-    background: "white",
-    borderRadius: "20px",
-    padding: "20px",
-    marginBottom: "15px",
-    boxShadow: "0 12px 30px rgba(0,0,0,0.08)",
-  },
-  input: {
-    width: "100%",
-    padding: "8px",
-    marginBottom: "8px",
-    borderRadius: "10px",
-    border: "1px solid #ccc",
-  },
-  blueButton: {
-    background: "#3b82f6",
-    color: "white",
-    padding: "8px 14px",
-    borderRadius: "10px",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "bold",
-  },
-  greenButton: {
-    background: "#22c55e",
-    color: "white",
-    padding: "8px 14px",
-    borderRadius: "10px",
-    border: "none",
-    cursor: "pointer",
-    fontWeight: "bold",
-  },
+  );
 };
 
 export default Insights;
