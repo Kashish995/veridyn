@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import axios from "axios";
+import '../styles/tasks.css';
 
 const Tasks = () => {
   const [tasks, setTasks] = useState([]);
@@ -12,26 +13,21 @@ const Tasks = () => {
   const token = localStorage.getItem("token");
 
   const fetchTasks = async () => {
-  try {
-    const res = await axios.get(
-      "http://localhost:5000/api/tasks",
-      {
+    try {
+      const res = await axios.get("http://localhost:5000/api/tasks", {
         headers: { Authorization: `Bearer ${token}` },
-      }
-    );
+      });
 
-    if (res.data.success) {
-      setTasks(res.data.data || []);
-    } else {
+      if (res.data.success) {
+        setTasks(res.data.data || []);
+      } else {
+        setTasks([]);
+      }
+    } catch (error) {
+      console.error("Fetch tasks error:", error);
       setTasks([]);
     }
-
-  } catch (error) {
-    console.error("Fetch tasks error:", error);
-    setTasks([]);
-  }
-};
-
+  };
 
   const addTask = async () => {
     if (!title || !dueDate || !startTime || !endTime) {
@@ -41,7 +37,7 @@ const Tasks = () => {
     try {
       await axios.post(
         "http://localhost:5000/api/tasks",
-       {
+        {
           title,
           dueDate,
           startTime,
@@ -49,7 +45,6 @@ const Tasks = () => {
           priority,
           estimatedTime: 30,
         },
-
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -85,143 +80,177 @@ const Tasks = () => {
   };
 
   useEffect(() => {
-  fetchTasks();
-}, []);
+    fetchTasks();
+  }, []);
 
+  // Calculate stats
+  const totalTasks = tasks.length;
+  const completedTasks = tasks.filter(t => t.status === "completed").length;
+  const pendingTasks = tasks.filter(t => t.status === "pending").length;
 
   return (
-    <div style={styles.page}>
-      <div style={styles.card}>
-        <h2 style={styles.title}>📝 Today’s Tasks</h2>
-
-        {/* INPUT ROW 1 */}
-        <div style={styles.inputRow}>
-          <input
-            style={styles.input}
-            placeholder="What will you study?"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-          />
-
-          <input
-            style={styles.input}
-            type="date"
-            value={dueDate}
-            onChange={(e) => setDueDate(e.target.value)}
-          />
+    <div className="tasks-page">
+      <div className="tasks-container">
+        
+        {/* Header Stats */}
+        <div className="tasks-header">
+          <h1>📝 My Tasks</h1>
+          <div className="tasks-stats-grid">
+            <div className="task-stat-card">
+              <div className="task-stat-value">{totalTasks}</div>
+              <div className="task-stat-label">Total</div>
+            </div>
+            <div className="task-stat-card">
+              <div className="task-stat-value">{completedTasks}</div>
+              <div className="task-stat-label">Completed</div>
+            </div>
+            <div className="task-stat-card">
+              <div className="task-stat-value">{pendingTasks}</div>
+              <div className="task-stat-label">Pending</div>
+            </div>
+          </div>
         </div>
 
-        {/* INPUT ROW 2 */}
-        <div style={styles.inputRow}>
-          <input
-            style={styles.input}
-            type="time"
-            value={startTime}
-            onChange={(e) => setStartTime(e.target.value)}
-          />
+        {/* Add Task Form */}
+        <div className="task-form-card">
+          <h2 className="task-form-title">
+            <span>✨</span>
+            <span>Create New Task</span>
+          </h2>
 
-          <input
-            style={styles.input}
-            type="time"
-            value={endTime}
-            onChange={(e) => setEndTime(e.target.value)}
-          />
+          <div className="task-input-grid">
+            <div className="task-input-group">
+              <label className="task-input-label">Task Title</label>
+              <input
+                className="task-input"
+                placeholder="What will you study?"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+            </div>
 
-          <select
-            style={styles.input}
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-          >
-            <option value="low">Low</option>
-            <option value="medium">Medium</option>
-            <option value="high">High</option>
-          </select>
-
-          <button style={styles.addBtn} onClick={addTask}>
-            ＋ Add
-          </button>
-        </div>
-
-        {/* TASK LIST */}
-        <div style={styles.list}>
-          {Array.isArray(tasks) &&
-            tasks.map((t) => {
-            const now = new Date();
-            const today = now.toISOString().split("T")[0];
-
-            const taskDate = t.dueDate
-              ? new Date(t.dueDate).toISOString().split("T")[0]
-              : null;
-
-            const taskEnd =
-              taskDate && t.endTime
-                ? new Date(`${taskDate}T${t.endTime}`)
-                : null;
-
-
-            const isMissed =
-              t.status === "pending" &&
-              taskEnd &&
-              now > taskEnd;
-
-            const displayStatus = isMissed ? "missed" : t.status;
-
-            return (
-              <div key={t._id} style={styles.taskItem}>
-                <div style={styles.taskLeft}>
-                  <div style={styles.taskTitle}>{t.title}</div>
-
-                  <div style={styles.timeRow}>
-                    🕒 {t.startTime || "--:--"} – {t.endTime || "--:--"}
-                  </div>
-
-                  <div
-                    style={{
-                      ...styles.status,
-                      color:
-                        displayStatus === "completed"
-                          ? "#16a34a"
-                          : displayStatus === "missed"
-                          ? "#ef4444"
-                          : "#f59e0b",
-                    }}
-                  >
-                    {displayStatus.toUpperCase()}
-                  </div>
-
-                  {displayStatus === "missed" && (
-                    <div
-                      style={{
-                        color: "#ef4444",
-                        fontSize: "12px",
-                        marginTop: "4px",
-                      }}
-                    >
-                      ⚠ You broke your schedule. Discipline is greater than motivation.
-                    </div>
-                  )}
-                </div>
-
-                <div style={styles.actionButtons}>
-                  {t.status === "pending" && (
-                    <button
-                      style={styles.doneBtn}
-                      onClick={() => markDone(t._id)}
-                    >
-                      ✔
-                    </button>
-                  )}
-
-                  <button
-                    style={styles.deleteBtn}
-                    onClick={() => deleteTask(t._id)}
-                  >
-                    🗑
-                  </button>
-                </div>
+            <div className="task-input-row">
+              <div className="task-input-group">
+                <label className="task-input-label">Due Date</label>
+                <input
+                  className="task-input"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                />
               </div>
-            );
-          })}
+
+              <div className="task-input-group">
+                <label className="task-input-label">Start Time</label>
+                <input
+                  className="task-input"
+                  type="time"
+                  value={startTime}
+                  onChange={(e) => setStartTime(e.target.value)}
+                />
+              </div>
+
+              <div className="task-input-group">
+                <label className="task-input-label">End Time</label>
+                <input
+                  className="task-input"
+                  type="time"
+                  value={endTime}
+                  onChange={(e) => setEndTime(e.target.value)}
+                />
+              </div>
+
+              <div className="task-input-group">
+                <label className="task-input-label">Priority</label>
+                <select
+                  className="task-priority-select"
+                  value={priority}
+                  onChange={(e) => setPriority(e.target.value)}
+                >
+                  <option value="low">Low</option>
+                  <option value="medium">Medium</option>
+                  <option value="high">High</option>
+                </select>
+              </div>
+            </div>
+
+            <button className="task-add-btn" onClick={addTask}>
+              ＋ Add Task
+            </button>
+          </div>
+        </div>
+
+        {/* Tasks List */}
+        <div className="tasks-list-card">
+          <h2 className="tasks-list-title">📋 All Tasks</h2>
+          
+          {tasks.length === 0 ? (
+            <div className="task-empty-state">
+              <div className="task-empty-state-icon">📭</div>
+              <p className="task-empty-state-text">No tasks yet. Create your first task above!</p>
+            </div>
+          ) : (
+            <div className="tasks-list">
+              {tasks.map((t) => {
+                const now = new Date();
+                const taskDate = t.dueDate
+                  ? new Date(t.dueDate).toISOString().split("T")[0]
+                  : null;
+                const taskEnd = taskDate && t.endTime
+                  ? new Date(`${taskDate}T${t.endTime}`)
+                  : null;
+                const isMissed = t.status === "pending" && taskEnd && now > taskEnd;
+                const displayStatus = isMissed ? "missed" : t.status;
+
+                return (
+                  <div key={t._id} className="task-item">
+                    <div className="task-item-left">
+                      <div className="task-item-header">
+                        <div className="task-item-title">{t.title}</div>
+                        <div className={`task-priority-badge task-priority-${t.priority}`}>
+                          {t.priority}
+                        </div>
+                      </div>
+
+                      <div className="task-item-time">
+                        🕒 {t.startTime || "--:--"} – {t.endTime || "--:--"}
+                      </div>
+
+                      <div className={`task-item-status task-status-${displayStatus}`}>
+                        {displayStatus === "completed" && "✓ COMPLETED"}
+                        {displayStatus === "pending" && "⏳ PENDING"}
+                        {displayStatus === "missed" && "❌ MISSED"}
+                      </div>
+
+                      {displayStatus === "missed" && (
+                        <div className="task-missed-warning">
+                          ⚠️ You broke your schedule. Discipline is greater than motivation.
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="task-item-actions">
+                      {t.status === "pending" && (
+                        <button
+                          className="task-action-btn task-done-btn"
+                          onClick={() => markDone(t._id)}
+                        >
+                          ✔
+                        </button>
+                      )}
+
+                      <button
+                        className="task-action-btn task-delete-btn"
+                        onClick={() => deleteTask(t._id)}
+                      >
+                        🗑
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </div>
@@ -229,95 +258,3 @@ const Tasks = () => {
 };
 
 export default Tasks;
-
-const styles = {
-  page: {
-    minHeight: "100vh",
-    background: "linear-gradient(to bottom, #eef2ff, #f8fafc)",
-    display: "flex",
-    justifyContent: "center",
-    alignItems: "flex-start",
-    paddingTop: "40px",
-  },
-  card: {
-    width: "420px",
-    background: "white",
-    padding: "20px",
-    borderRadius: "14px",
-    boxShadow: "0 10px 25px rgba(0,0,0,0.1)",
-  },
-  title: {
-    textAlign: "center",
-    marginBottom: "15px",
-  },
-  inputRow: {
-    display: "flex",
-    gap: "8px",
-    marginBottom: "15px",
-  },
-  input: {
-    flex: 1,
-    padding: "8px",
-    borderRadius: "6px",
-    border: "1px solid #ccc",
-  },
-  addBtn: {
-    background: "#4f46e5",
-    color: "white",
-    border: "none",
-    padding: "8px 12px",
-    borderRadius: "6px",
-    cursor: "pointer",
-  },
-  list: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "8px",
-  },
-  taskItem: {
-    background: "#f1f5f9",
-    padding: "12px",
-    borderRadius: "8px",
-    display: "flex",
-    justifyContent: "space-between",
-    alignItems: "center",
-  },
-  taskLeft: {
-    display: "flex",
-    flexDirection: "column",
-    gap: "4px",
-  },
-  taskTitle: {
-    fontWeight: "600",
-    fontSize: "14px",
-  },
-  timeRow: {
-    fontSize: "12px",
-    color: "#6b7280",
-  },
-  status: {
-    fontSize: "12px",
-    fontWeight: "600",
-  },
-  actionButtons: {
-    display: "flex",
-    gap: "6px",
-    alignItems: "center",
-  },
-  doneBtn: {
-    background: "#22c55e",
-    color: "white",
-    border: "none",
-    padding: "4px 8px",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-  deleteBtn: {
-    background: "#ef4444",
-    color: "white",
-    border: "none",
-    padding: "4px 8px",
-    borderRadius: "4px",
-    cursor: "pointer",
-  },
-};
