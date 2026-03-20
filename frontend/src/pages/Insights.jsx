@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import axios from 'axios';
 import RiskPredictor from '../components/RiskPredictor';
 import StudyPatternAnalyzer from '../components/StudyPatternAnalyzer';
 import SmartTaskPrioritizer from '../components/SmartTaskPrioritizer';
@@ -10,6 +11,41 @@ import '../styles/insights.css';
 
 const Insights = () => {
   const [activeTab, setActiveTab] = useState('overview');
+  const [dashboardData, setDashboardData] = useState(null);
+  const [tasks, setTasks] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const token = localStorage.getItem('token');
+
+  // Fetch dashboard data
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [statsRes, tasksRes] = await Promise.all([
+          axios.get('http://localhost:5000/api/stats/dashboard', {
+            headers: { Authorization: `Bearer ${token}` }
+          }),
+          axios.get('http://localhost:5000/api/tasks', {
+            headers: { Authorization: `Bearer ${token}` }
+          })
+        ]);
+
+        if (statsRes.data.success) {
+          setDashboardData(statsRes.data.data);
+        }
+
+        if (tasksRes.data.success) {
+          setTasks(tasksRes.data.data || []);
+        }
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   const tabs = [
     { id: 'overview', label: '📊 Overview', icon: '📊' },
@@ -21,6 +57,19 @@ const Insights = () => {
     { id: 'explanations', label: '🤔 Explanations', icon: '🤔' },
     { id: 'plan', label: '📋 7-Day Plan', icon: '📋' },
   ];
+
+  if (loading) {
+    return (
+      <div className="insights-page">
+        <div className="insights-container">
+          <div className="insights-loading">
+            <div className="insights-spinner"></div>
+            <p className="insights-loading-text">Loading AI insights...</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="insights-page">
@@ -122,13 +171,19 @@ const Insights = () => {
           )}
 
           {/* RISK TAB */}
-          {activeTab === 'risk' && (
+          {activeTab === 'risk' && dashboardData && (
             <>
               <h2 className="insights-content-title">
                 <span>⚠️</span>
                 <span>Risk Prediction Analysis</span>
               </h2>
-              <RiskPredictor />
+              <RiskPredictor 
+                weeklyStats={dashboardData.weeklyStats}
+                history={dashboardData.history}
+                currentStreak={dashboardData.currentStreak}
+                completionRate={dashboardData.completionRate}
+                volatility={dashboardData.volatility}
+              />
             </>
           )}
 
@@ -139,7 +194,7 @@ const Insights = () => {
                 <span>📈</span>
                 <span>Study Pattern Analysis</span>
               </h2>
-              <StudyPatternAnalyzer />
+              <StudyPatternAnalyzer tasks={tasks} />
             </>
           )}
 
@@ -150,18 +205,22 @@ const Insights = () => {
                 <span>🎯</span>
                 <span>Smart Task Prioritization</span>
               </h2>
-              <SmartTaskPrioritizer />
+              <SmartTaskPrioritizer tasks={tasks} />
             </>
           )}
 
           {/* WEEKLY TAB */}
-          {activeTab === 'weekly' && (
+          {activeTab === 'weekly' && dashboardData && (
             <>
               <h2 className="insights-content-title">
                 <span>📅</span>
                 <span>Weekly AI Report</span>
               </h2>
-              <WeeklyAIReport />
+              <WeeklyAIReport 
+                weeklyStats={dashboardData.weeklyStats}
+                history={dashboardData.history}
+                currentStreak={dashboardData.currentStreak}
+              />
             </>
           )}
 
