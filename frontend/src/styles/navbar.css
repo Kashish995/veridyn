@@ -1,39 +1,115 @@
+/* ==================== NAVBAR STYLES ==================== */
+
 .navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1000;
+  background: rgba(255, 255, 255, 0.95);
+  backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.navbar-container {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px 32px;
-  background: linear-gradient(90deg, #6366f1, #818cf8);
-  color: white;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
 
-.navbar-left {
+.navbar-brand {
   display: flex;
   align-items: center;
-  gap: 10px;
 }
 
-.navbar-logo {
-  width: 42px;
-  height: 42px;
-  object-fit: contain;
-}
-
-.navbar-title {
-  font-size: 20px;
-  font-weight: 600;
-  letter-spacing: 1px;
-}
-
-.navbar-right a {
-  margin-left: 24px;
-  color: white;
+.brand-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
   text-decoration: none;
-  font-weight: 600;
-  transition: opacity 0.2s ease;
+  transition: all 0.3s ease;
 }
 
-.navbar-right a:hover {
-  opacity: 0.8;
+.brand-link:hover {
+  transform: translateY(-2px);
+}
+
+.brand-icon {
+  font-size: 1.75rem;
+}
+
+.brand-text {
+  font-size: 1.5rem;
+  font-weight: 800;
+  background: var(--gradient-ai);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  border-radius: var(--radius-lg);
+  text-decoration: none;
+  color: var(--gray-600);
+  font-weight: 600;
+  font-size: 0.875rem;
+  transition: all 0.3s ease;
+  position: relative;
+}
+
+.nav-link:hover {
+  background: var(--gray-100);
+  color: var(--gray-900);
+  transform: translateY(-2px);
+}
+
+.nav-link.active {
+  background: var(--gradient-ai);
+  color: white;
+  box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);
+}
+
+.nav-link.active:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(99, 102, 241, 0.4);
+}
+
+.nav-icon {
+  font-size: 1.125rem;
+}
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+  .navbar-container {
+    padding: 0.75rem 1rem;
+  }
+
+  .navbar-links {
+    gap: 0.25rem;
+  }
+
+  .nav-link {
+    padding: 0.5rem 1rem;
+    font-size: 0.75rem;
+  }
+
+  .nav-link span:not(.nav-icon) {
+    display: none;
+  }
+
+  .brand-text {
+    font-size: 1.25rem;
+  }
 }

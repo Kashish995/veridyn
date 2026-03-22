@@ -12,6 +12,7 @@ import {
   completeTaskController,
   endDayHandler
 } from "../controllers/task.controller.js";
+import { validateTask } from '../middleware/validation.js';
 
 const router = Router();
 
@@ -25,6 +26,8 @@ router.delete("/:taskId", authMiddleware, deleteTask);
 router.post("/end-day", authMiddleware, endDayTasks);
 router.put("/complete/:id", authMiddleware, completeTaskController);
 router.put("/:taskId", authMiddleware, updateTaskStatus);
+
+router.post('/', authMiddleware, validateTask, createTask);
 router.post("/end-day", endDayHandler);
 
 export default router;

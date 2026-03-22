@@ -35,6 +35,8 @@ import suggestionRoutes from "./routes/suggestion.routes.js";
 import healthRoutes from "./routes/health.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
+import { apiLimiter, authLimiter, aiLimiter } from './middleware/rateLimiter.js';
+
 
 
 const app = express();
@@ -118,8 +120,13 @@ app.get("/test", (req, res) => {
 
 /* ---------------- ERROR HANDLER ---------------- */
 
-app.use(errorHandler);
+// Apply rate limiters
+app.use('/api', apiLimiter); // General API limit
+app.use('/api/auth/login', authLimiter); // Stricter for login
+app.use('/api/auth/register', authLimiter); // Stricter for register
+app.use('/api/ai', aiLimiter); // Stricter for AI endpoints
 
+app.use(errorHandler);
 /* ---------------- DATABASE + SERVER START ---------------- */
 
 const PORT = 5000;

@@ -1,20 +1,49 @@
-import { Link } from "react-router-dom";
-import "../styles/navbar.css";
-import logo from "../assets/vlogo.png";
+import { Link, useLocation } from 'react-router-dom';
+import '../styles/navbar.css';
 
-export default function Navbar() {
+const Navbar = () => {
+  const location = useLocation();
+
+  const isActive = (path) => location.pathname === path;
+
   return (
     <nav className="navbar">
-      <div className="navbar-left">
-        <img src={logo} alt="Veridyn Logo" className="navbar-logo" />
-        <span className="navbar-title">Veridyn</span>
-      </div>
+      <div className="navbar-container">
+        <div className="navbar-brand">
+          <Link to="/dashboard" className="brand-link">
+            <span className="brand-icon">✨</span>
+            <span className="brand-text">Veridyn</span>
+          </Link>
+        </div>
 
-      <div className="navbar-right">
-        <Link to="/dashboard">📊 Dashboard</Link>
-        <Link to="/tasks">📝 Tasks</Link>
-        <Link to="/insights">📈 Insights</Link>
+        <div className="navbar-links">
+          <Link 
+            to="/dashboard" 
+            className={`nav-link ${isActive('/dashboard') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">📊</span>
+            <span>Dashboard</span>
+          </Link>
+
+          <Link 
+            to="/tasks" 
+            className={`nav-link ${isActive('/tasks') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">📝</span>
+            <span>Tasks</span>
+          </Link>
+
+          <Link 
+            to="/insights" 
+            className={`nav-link ${isActive('/insights') ? 'active' : ''}`}
+          >
+            <span className="nav-icon">🤖</span>
+            <span>Insights</span>
+          </Link>
+        </div>
       </div>
     </nav>
   );
-}
+};
+
+export default Navbar;
