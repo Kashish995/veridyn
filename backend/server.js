@@ -46,7 +46,12 @@ const app = express();
 
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: [
+    'http://localhost:5173',
+    'https://veridyn.vercel.app',
+    'https://veridyn-kashish995s-projects.vercel.app', // Your Vercel domain
+    /https:\/\/veridyn-.*\.vercel\.app$/ // All preview deployments
+  ],
   credentials: true
 }));
 
