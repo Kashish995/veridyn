@@ -156,3 +156,45 @@ export const getWeeklyReport = async (req, res) => {
     return res.fail(`Failed to generate report: ${error.message}`, 500);
   }
 };
+
+export const chat = async (req, res) => {
+  try {
+    const { messages } = req.body;
+    const userId = req.user.userId;
+
+    if (!messages || !Array.isArray(messages)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Messages array is required'
+      });
+    }
+
+    // Get user data for context
+    const tasks = await Task.find({ userId });
+    const stats = await DailyStats.findOne({ userId }).sort({ date: -1 });
+    const streak = await StreakHistory.findOne({ userId }).sort({ date: -1 });
+
+    const userData = {
+      totalTasks: tasks.length,
+      completedTasks: tasks.filter(t => t.status === 'completed').length,
+      currentStreak: streak?.streakCount || 0,
+      disciplineScore: stats?.disciplineScore || 0
+    };
+
+    const aiService = new AIService();
+    const response = await aiService.chat(messages, userData);
+
+    res.json({
+      success: true,
+      data: {
+        message: response
+      }
+    });
+  } catch (error) {
+    console.error('Chat controller error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to process chat message'
+    });
+  }
+};

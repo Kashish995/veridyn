@@ -8,6 +8,8 @@ import AIRecommendationPanel from '../components/AIRecommendationPanel';
 import AIExplanationPanel from '../components/AIExplanationPanel';
 import AI7DayPlan from '../components/AI7DayPlan';
 import '../styles/insights.css';
+import ChatInterface from '../components/ChatInterface';
+import '../styles/chat.css';
 
 const Insights = () => {
   const [activeTab, setActiveTab] = useState('overview');
@@ -56,6 +58,7 @@ const Insights = () => {
     { id: 'recommendations', label: '💡 Recommendations', icon: '💡' },
     { id: 'explanations', label: '🤔 Explanations', icon: '🤔' },
     { id: 'plan', label: '📋 7-Day Plan', icon: '📋' },
+    { id: 'chat', label: '💬 AI Coach', icon: '💬' } 
   ];
 
   if (loading) {
@@ -257,6 +260,15 @@ const Insights = () => {
             </>
           )}
 
+          {activeTab === 'chat' && (
+              <div className="tab-content">
+                <h2>💬 AI Productivity Coach</h2>
+                <p className="tab-description">
+                  Chat with your personal AI productivity coach for guidance, motivation, and personalized advice.
+                </p>
+                <ChatInterface />
+              </div>
+            )}
         </div>
 
       </div>

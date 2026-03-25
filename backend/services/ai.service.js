@@ -380,6 +380,68 @@ Return ONLY valid JSON with 7 days (no markdown):
   "weeklyTarget": "target"
 }`;
   }
+
+  async chat(messages, userData) {
+  try {
+    // If mock mode, return mock response
+    if (this.useMockData) {
+      return this.getMockChatResponse(messages);
+    }
+
+    // Build context from user data
+    const context = userData ? `
+User Context:
+- Total Tasks: ${userData.totalTasks || 0}
+- Completed: ${userData.completedTasks || 0}
+- Current Streak: ${userData.currentStreak || 0} days
+- Discipline Score: ${userData.disciplineScore || 0}%
+` : '';
+
+    const systemPrompt = `You are a friendly and motivating AI productivity coach. 
+${context}
+Help the user stay productive, plan their day, analyze their habits, and provide personalized advice based on their data. 
+Keep responses concise (2-3 paragraphs max), actionable, and encouraging. Use a warm, supportive tone.`;
+
+    const response = await this.openai.chat.completions.create({
+      model: 'gpt-4o-mini',
+      messages: [
+        { role: 'system', content: systemPrompt },
+        ...messages
+      ],
+      temperature: 0.7,
+      max_tokens: 300
+    });
+
+    return response.choices[0].message.content;
+  } catch (error) {
+    console.error('AI Chat Error:', error);
+    return this.getMockChatResponse(messages);
+  }
 }
+
+getMockChatResponse(messages) {
+  const lastMessage = messages[messages.length - 1].content.toLowerCase();
+
+  if (lastMessage.includes('plan') || lastMessage.includes('today')) {
+    return "Great question! Here's a simple framework: Start with your top 3 priorities for today. Block 90-minute focus sessions for deep work, take 15-minute breaks between them, and leave buffer time for unexpected tasks. What's your most important task today?";
+  }
+
+  if (lastMessage.includes('motivation') || lastMessage.includes('tired')) {
+    return "I hear you! Remember why you started. Small progress is still progress. Try the 2-minute rule: commit to just 2 minutes of work. Often, starting is the hardest part. You've got this! 💪";
+  }
+
+  if (lastMessage.includes('habit') || lastMessage.includes('routine')) {
+    return "Building habits is all about consistency over intensity. Start small - just 5 minutes daily is better than 2 hours once a week. Stack new habits onto existing ones, and track your progress. What habit are you trying to build?";
+  }
+
+  if (lastMessage.includes('focus') || lastMessage.includes('distract')) {
+    return "Focus is a skill you can train! Try the Pomodoro Technique: 25 minutes of focused work, then a 5-minute break. Turn off notifications, close unnecessary tabs, and tell yourself you only need to focus for 25 minutes. What's distracting you most?";
+  }
+
+  return "That's a great question! I'm here to help you stay productive and achieve your goals. I can help with planning, motivation, habits, time management, and more. What specific challenge are you facing right now?";
+}
+
+}
+
 
 export default new AIService();
