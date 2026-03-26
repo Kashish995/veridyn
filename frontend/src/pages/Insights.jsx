@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react';
-import axios from 'axios';
 import RiskPredictor from '../components/RiskPredictor';
 import StudyPatternAnalyzer from '../components/StudyPatternAnalyzer';
 import SmartTaskPrioritizer from '../components/SmartTaskPrioritizer';
@@ -22,29 +21,34 @@ const Insights = () => {
   // Fetch dashboard data
   useEffect(() => {
     const fetchData = async () => {
-      try {
-        const [statsRes, tasksRes] = await Promise.all([
-          axios.get('http://localhost:5000/api/stats/dashboard', {
-            headers: { Authorization: `Bearer ${token}` }
-          }),
-          axios.get('http://localhost:5000/api/tasks', {
-            headers: { Authorization: `Bearer ${token}` }
-          })
-        ]);
-
-        if (statsRes.data.success) {
-          setDashboardData(statsRes.data.data);
-        }
-
-        if (tasksRes.data.success) {
-          setTasks(tasksRes.data.data || []);
-        }
-      } catch (error) {
-        console.error('Error fetching data:', error);
-      } finally {
-        setLoading(false);
+  setLoading(true);
+  try {
+    const token = localStorage.getItem('token');
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    
+    const response = await fetch(`${API_URL}/api/stats/dashboard`, {
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
       }
-    };
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to fetch dashboard data');
+    }
+
+    const data = await response.json();
+    
+    if (data.success) {
+      setDashboardData(data.data);
+    }
+  } catch (error) {
+    console.error('Error fetching dashboard data:', error);
+    setError('Failed to load data. Please try refreshing the page.');
+  } finally {
+    setLoading(false);
+  }
+};
 
     fetchData();
   }, []);

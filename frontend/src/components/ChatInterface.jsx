@@ -21,49 +21,51 @@ const ChatInterface = () => {
   }, [messages]);
 
   const handleSend = async () => {
-    if (!input.trim() || isLoading) return;
+  if (!input.trim() || isLoading) return;
 
-    const userMessage = { role: 'user', content: input };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
-    setIsLoading(true);
+  const userMessage = { role: 'user', content: input };
+  setMessages(prev => [...prev, userMessage]);
+  setInput('');
+  setIsLoading(true);
 
-    try {
-      const token = localStorage.getItem('token');
-      const response = await fetch('http://localhost:5000/api/ai/chat', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`
-        },
-        body: JSON.stringify({
-          messages: [...messages, userMessage]
-        })
-      });
+  try {
+    const token = localStorage.getItem('token');
+    const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+    
+    const response = await fetch(`${API_URL}/api/ai/chat`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${token}`
+      },
+      body: JSON.stringify({
+        messages: [...messages, userMessage]
+      })
+    });
 
-      const data = await response.json();
+    const data = await response.json();
 
-      if (data.success) {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: data.data.message
-        }]);
-      } else {
-        setMessages(prev => [...prev, {
-          role: 'assistant',
-          content: 'Sorry, I encountered an error. Please try again.'
-        }]);
-      }
-    } catch (error) {
-      console.error('Chat error:', error);
+    if (data.success) {
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: 'Sorry, I couldn\'t connect. Please check your connection and try again.'
+        content: data.data.message
       }]);
-    } finally {
-      setIsLoading(false);
+    } else {
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.'
+      }]);
     }
-  };
+  } catch (error) {
+    console.error('Chat error:', error);
+    setMessages(prev => [...prev, {
+      role: 'assistant',
+      content: 'Sorry, I couldn\'t connect. Please check your connection and try again.'
+    }]);
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const handleKeyPress = (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
