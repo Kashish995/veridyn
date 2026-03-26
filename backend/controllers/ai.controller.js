@@ -1,8 +1,12 @@
 import aiService from "../services/ai.service.js";
+import AIService from "../services/ai.service.js";
 import riskAnalysisService from "../services/riskAnalysis.service.js";
 import patternAnalysisService from "../services/patternAnalysis.service.js";
 import taskPrioritizationService from "../services/taskPrioritization.service.js";
 import weeklyReportService from "../services/weeklyReport.service.js";
+import Task from '../models/Task.js';
+import DailyStats from '../models/DailyStats.js';
+import StreakHistory from '../models/StreakHistory.js';
 
 function cleanJSON(text) {
   let cleaned = text.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
@@ -11,7 +15,7 @@ function cleanJSON(text) {
   return cleaned;
 }
 
-export const getAIRecommendations = async (req, res) => {
+export const getRecommendations = async (req, res) => {
   try {
     console.log("📥 Recommendations request:", req.body);
     
@@ -37,7 +41,7 @@ export const getAIRecommendations = async (req, res) => {
   }
 };
 
-export const getAIExplanation = async (req, res) => {
+export const getExplanation = async (req, res) => {
   try {
     console.log("📥 Explanation request:", req.body);
     
@@ -62,7 +66,7 @@ export const getAIExplanation = async (req, res) => {
   }
 };
 
-export const getAI7DayPlan = async (req, res) => {
+export const get7DayPlan = async (req, res) => {
   try {
     console.log("📥 7-Day Plan request:", req.body);
     
@@ -85,14 +89,13 @@ export const getAI7DayPlan = async (req, res) => {
   }
 };
 
-export const getAIInsights = async (req, res) => {
+export const getInsights = async (req, res) => {
   try {
     return res.success({ message: "Insights endpoint" });
   } catch (error) {
     return res.fail("Failed to get insights", 500);
   }
 };
-
 
 export const getRiskPrediction = async (req, res) => {
   try {
@@ -110,7 +113,6 @@ export const getRiskPrediction = async (req, res) => {
     return res.fail(`Failed to predict risk: ${error.message}`, 500);
   }
 };
-
 
 export const getStudyPatterns = async (req, res) => {
   try {
@@ -181,8 +183,8 @@ export const chat = async (req, res) => {
       disciplineScore: stats?.disciplineScore || 0
     };
 
-    const aiService = new AIService();
-    const response = await aiService.chat(messages, userData);
+    const service = new AIService();
+    const response = await service.chat(messages, userData);
 
     res.json({
       success: true,
