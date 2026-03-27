@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 import '../styles/tasks.css';
 
 const Tasks = () => {
@@ -10,13 +10,11 @@ const Tasks = () => {
   const [endTime, setEndTime] = useState("");
   const [priority, setPriority] = useState("medium");
 
-  const token = localStorage.getItem("token");
+  
 
   const fetchTasks = async () => {
     try {
-      const res = await axios.get("http://localhost:5000/api/tasks", {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await api.get("/tasks");
 
       if (res.data.success) {
         setTasks(res.data.data || []);
@@ -35,20 +33,14 @@ const Tasks = () => {
     }
 
     try {
-      await axios.post(
-        "http://localhost:5000/api/tasks",
-        {
-          title,
-          dueDate,
-          startTime,
-          endTime,
-          priority,
-          estimatedTime: 30,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
+      await api.post("/tasks", {
+      title,
+      dueDate,
+      startTime,
+      endTime,
+      priority,
+      estimatedTime: 30,
+    });
 
       setTitle("");
       setDueDate("");
@@ -64,18 +56,12 @@ const Tasks = () => {
   };
 
   const markDone = async (id) => {
-    await axios.patch(
-      `http://localhost:5000/api/tasks/${id}`,
-      { status: "completed" },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    await api.patch(`/tasks/${id}`, { status: "completed" });
     fetchTasks();
   };
 
   const deleteTask = async (id) => {
-    await axios.delete(`http://localhost:5000/api/tasks/${id}`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
+    await api.delete(`/tasks/${id}`);
     fetchTasks();
   };
 

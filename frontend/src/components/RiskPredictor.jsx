@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from '../api/api';
 
 const RiskPredictor = ({ weeklyStats, history, currentStreak, completionRate, volatility }) => {
   const [risk, setRisk] = useState(null);
@@ -9,20 +9,13 @@ const RiskPredictor = ({ weeklyStats, history, currentStreak, completionRate, vo
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/ai/risk-prediction',
-        {
-          weeklyStats,
-          history,
-          currentStreak,
-          completionRate,
-          volatility
-        },
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+      const response = await api.post('/ai/risk-prediction', {
+        weeklyStats,
+        history,
+        currentStreak,
+        completionRate,
+        volatility
+      });
       
       setRisk(response.data.data.risk);
     } catch (err) {

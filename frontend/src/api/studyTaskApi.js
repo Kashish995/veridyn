@@ -1,24 +1,21 @@
-import axios from "axios";
-
-const BASE_URL = "http://localhost:5000/api/study-tasks";
+import api from "./api";
 
 export const getStudyTasksByUser = async (userId) => {
-  const res = await axios.get(`${BASE_URL}/${userId}`);
+  const res = await api.get(`/study-tasks/${userId}`);
   return res.data;
 };
 
 export const createStudyTask = async (taskData) => {
-  const res = await axios.post(BASE_URL, taskData);
+  const res = await api.post("/study-tasks", taskData);
   return res.data;
 };
 
 export const updateStudyTask = async (id, updates) => {
-  const res = await axios.patch(`${BASE_URL}/${id}`, updates);
+  const res = await api.patch(`/study-tasks/${id}`, updates);
   return res.data;
 };
 
 export const deleteStudyTask = async (id) => {
-  const res = await axios.delete(`${BASE_URL}/${id}`);
+  const res = await api.delete(`/study-tasks/${id}`);
   return res.data;
 };
-

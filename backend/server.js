@@ -111,7 +111,7 @@ app.use("/api/health", authMiddleware, healthRoutes);
 
 /* Stats route (already protected inside file if needed) */
 app.use("/api/stats", authMiddleware, statsRoutes);
-app.use("/api/ai", aiRoutes);
+app.use("/api/ai", authMiddleware, aiRoutes);
 
 /* Root */
 app.get("/", (req, res) => {

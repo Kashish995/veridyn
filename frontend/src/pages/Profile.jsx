@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 
 const Profile = () => {
   const [user, setUser] = useState(null);

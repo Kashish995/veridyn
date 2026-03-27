@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import api from "../api/api";
 
 const StudyPatternAnalyzer = ({ tasks = [] }) => {
   const [patterns, setPatterns] = useState(null);

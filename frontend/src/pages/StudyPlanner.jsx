@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
+import api from "../api/api";
 import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Calendar from "react-calendar";

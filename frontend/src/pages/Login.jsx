@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import '../styles/auth.css';
 
 export default function Login() {
@@ -20,8 +20,11 @@ export default function Login() {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5000/api/auth/login', formData);
-      localStorage.setItem('token', response.data.token);  // Remove the extra .data
+      const response = await api.post('/auth/login', formData);
+
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('user', JSON.stringify(response.data.user));
+
       navigate('/dashboard');
     } catch (err) {
   console.log('Login error:', err.response?.data); // ADD THIS

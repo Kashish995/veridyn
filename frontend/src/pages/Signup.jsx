@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import axios from 'axios';
+import api from '../api/api';
 import '../styles/auth.css';
 
 export default function Signup() {
@@ -29,12 +29,8 @@ export default function Signup() {
 
     console.log('Sending registration data:', formData);
     try {
-  await axios.post('http://localhost:5000/api/auth/register', formData, {
-    headers: {
-      'Content-Type': 'application/json'
-    }
-  });
-  navigate('/login');
+  await api.post('/auth/register', formData);
+navigate('/login');
     } catch (err) {
   console.log('Full error:', err.response?.data); // ADD THIS LINE
   setError(err.response?.data?.message || 'Registration failed');

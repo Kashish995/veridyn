@@ -1,31 +1,20 @@
-const BASE_URL = "http://localhost:5000/api/tasks";
+import api from "./api";
 
 export const getTasksByUser = async (userId) => {
-  const res = await fetch(`${BASE_URL}/user/${userId}`);
-  return res.json();
+  const res = await api.get(`/tasks/user/${userId}`);
+  return res.data;
 };
 
 export const createTask = async (task) => {
-  const res = await fetch(BASE_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(task),
-  });
-  return res.json();
+  const res = await api.post("/tasks", task);
+  return res.data;
 };
 
 export const updateTaskStatus = async (taskId, body) => {
-  const res = await fetch(`${BASE_URL}/${taskId}`, {
-    method: "PATCH",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify(body),
-  });
-  return res.json();
+  const res = await api.patch(`/tasks/${taskId}`, body);
+  return res.data;
 };
 
 export const deleteTask = async (taskId) => {
-  await fetch(`${BASE_URL}/${taskId}`, {
-    method: "DELETE",
-  });
+  await api.delete(`/tasks/${taskId}`);
 };
-

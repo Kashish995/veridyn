@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import axios from 'axios';
+import api from "../api/api";
 
 const AI7DayPlan = ({ userData, goals }) => {
   const [plan, setPlan] = useState(null);
