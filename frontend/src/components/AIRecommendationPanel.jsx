@@ -11,14 +11,7 @@ const AIRecommendationPanel = ({ userData }) => {
     setError(null);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/ai/recommendations',
-        userData,
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+      const response = await api.post('/ai/recommendations', userData);
       
       setRecommendations(response.data.data.recommendations);
     } catch (err) {

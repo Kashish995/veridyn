@@ -9,14 +9,7 @@ const AIExplanationPanel = ({ metric, currentValue, trend, context }) => {
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/ai/explain',
-        { metric, currentValue, trend, context },
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+    const response = await api.post('/ai/explain', { metric, currentValue, trend, context });
       
       setExplanation(response.data.data);
     } catch (err) {

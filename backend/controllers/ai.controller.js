@@ -162,41 +162,35 @@ export const getWeeklyReport = async (req, res) => {
 export const chat = async (req, res) => {
   try {
     const { messages } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user.id;
 
     if (!messages || !Array.isArray(messages)) {
-      return res.status(400).json({
-        success: false,
-        message: 'Messages array is required'
-      });
+      return res.status(400).json({ success: false, message: 'Messages array is required' });
     }
 
-    // Get user data for context
-    const tasks = await Task.find({ userId });
-    const stats = await DailyStats.findOne({ userId }).sort({ date: -1 });
-    const streak = await StreakHistory.findOne({ userId }).sort({ date: -1 });
+    // ✅ Query fields that actually exist in the models
+    const [tasks, stats, streak] = await Promise.all([
+      Task.find({ userId }),
+      DailyStats.findOne({ userId }).sort({ date: -1 }),
+      StreakHistory.findOne({ userId }).sort({ length: -1 }) // ✅ sort by length, not date
+    ]);
 
     const userData = {
       totalTasks: tasks.length,
       completedTasks: tasks.filter(t => t.status === 'completed').length,
-      currentStreak: streak?.streakCount || 0,
-      disciplineScore: stats?.disciplineScore || 0
+      // ✅ StreakHistory has 'length' not 'streakCount'
+      currentStreak: streak?.length || 0,
+      // ✅ DailyStats has 'completed' and 'totalTasks', not 'disciplineScore'
+      disciplineScore: stats?.totalTasks > 0
+        ? Math.round((stats.completed / stats.totalTasks) * 100)
+        : 0
     };
 
-    const service = new AIService();
-    const response = await service.chat(messages, userData);
+    const response = await aiService.chat(messages, userData);
+    return res.json({ success: true, data: { message: response } });
 
-    res.json({
-      success: true,
-      data: {
-        message: response
-      }
-    });
   } catch (error) {
     console.error('Chat controller error:', error);
-    res.status(500).json({
-      success: false,
-      message: 'Failed to process chat message'
-    });
+    return res.status(500).json({ success: false, message: 'Failed to process chat message' });
   }
 };

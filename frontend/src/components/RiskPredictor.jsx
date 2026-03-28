@@ -9,13 +9,7 @@ const RiskPredictor = ({ weeklyStats, history, currentStreak, completionRate, vo
     setLoading(true);
     
     try {
-      const response = await api.post('/ai/risk-prediction', {
-        weeklyStats,
-        history,
-        currentStreak,
-        completionRate,
-        volatility
-      });
+const response = await api.post('/ai/risk-prediction', { weeklyStats, history, currentStreak, completionRate, volatility });
       
       setRisk(response.data.data.risk);
     } catch (err) {

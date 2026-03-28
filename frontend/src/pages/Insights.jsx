@@ -36,13 +36,12 @@ const Insights = () => {
 const fetchData = async () => {
   setLoading(true);
   try {
-    const response = await api.get("/stats/dashboard");
-
+    const response = await api.get('/stats/dashboard');
     if (response.data.success) {
       setDashboardData(response.data.data);
     }
   } catch (error) {
-    console.error("Error fetching dashboard data:", error);
+    console.error('Error fetching dashboard data:', error);
   } finally {
     setLoading(false);
   }

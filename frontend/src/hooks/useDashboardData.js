@@ -61,7 +61,6 @@ export default function useDashboardData() {
   const fetchAllData = async () => {
     try {
       setLoading(true);
-
       await Promise.all([
         fetchDashboard(),
         fetchWeeklyStats(),
@@ -84,10 +83,6 @@ export default function useDashboardData() {
     fetchAllData();
   }, []);
 
-  const refreshDashboard = () => {
-    fetchAllData();
-  };
-
   return {
     data,
     weeklyStats,
@@ -99,6 +94,6 @@ export default function useDashboardData() {
     disciplineHistory,
     monthlyAggregate,
     loading,
-    refreshDashboard,
+    refreshDashboard: fetchAllData,
   };
 }

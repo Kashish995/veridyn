@@ -9,19 +9,9 @@ const SmartTaskPrioritizer = ({ tasks = [] }) => {
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
       const currentHour = new Date().getHours();
       
-      const response = await axios.post(
-        'http://localhost:5000/api/ai/task-prioritization',
-        { 
-          tasks: tasks.filter(t => t.status !== 'completed'),
-          userContext: { currentHour, energyLevel: 'medium' }
-        },
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+      const response = await api.post('/ai/task-prioritization', { tasks: tasks.filter(t => t.status !== 'completed'), userContext: { currentHour, energyLevel: 'medium' } });
       
       setPrioritization(response.data.data.prioritization);
     } catch (err) {

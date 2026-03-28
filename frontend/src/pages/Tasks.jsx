@@ -10,12 +10,9 @@ const Tasks = () => {
   const [endTime, setEndTime] = useState("");
   const [priority, setPriority] = useState("medium");
 
-  
-
   const fetchTasks = async () => {
     try {
       const res = await api.get("/tasks");
-
       if (res.data.success) {
         setTasks(res.data.data || []);
       } else {
@@ -31,23 +28,20 @@ const Tasks = () => {
     if (!title || !dueDate || !startTime || !endTime) {
       return alert("Fill all fields");
     }
-
     try {
       await api.post("/tasks", {
-      title,
-      dueDate,
-      startTime,
-      endTime,
-      priority,
-      estimatedTime: 30,
-    });
-
+        title,
+        dueDate,
+        startTime,
+        endTime,
+        priority,
+        estimatedTime: 30,
+      });
       setTitle("");
       setDueDate("");
       setStartTime("");
       setEndTime("");
       setPriority("medium");
-
       fetchTasks();
     } catch (err) {
       console.error("ADD TASK ERROR:", err.response?.data || err.message);
@@ -69,7 +63,6 @@ const Tasks = () => {
     fetchTasks();
   }, []);
 
-  // Calculate stats
   const totalTasks = tasks.length;
   const completedTasks = tasks.filter(t => t.status === "completed").length;
   const pendingTasks = tasks.filter(t => t.status === "pending").length;
@@ -77,8 +70,7 @@ const Tasks = () => {
   return (
     <div className="tasks-page">
       <div className="tasks-container">
-        
-        {/* Header Stats */}
+
         <div className="tasks-header">
           <h1>📝 My Tasks</h1>
           <div className="tasks-stats-grid">
@@ -97,7 +89,6 @@ const Tasks = () => {
           </div>
         </div>
 
-        {/* Add Task Form */}
         <div className="task-form-card">
           <h2 className="task-form-title">
             <span>✨</span>
@@ -125,7 +116,6 @@ const Tasks = () => {
                   onChange={(e) => setDueDate(e.target.value)}
                 />
               </div>
-
               <div className="task-input-group">
                 <label className="task-input-label">Start Time</label>
                 <input
@@ -135,7 +125,6 @@ const Tasks = () => {
                   onChange={(e) => setStartTime(e.target.value)}
                 />
               </div>
-
               <div className="task-input-group">
                 <label className="task-input-label">End Time</label>
                 <input
@@ -145,7 +134,6 @@ const Tasks = () => {
                   onChange={(e) => setEndTime(e.target.value)}
                 />
               </div>
-
               <div className="task-input-group">
                 <label className="task-input-label">Priority</label>
                 <select
@@ -166,10 +154,9 @@ const Tasks = () => {
           </div>
         </div>
 
-        {/* Tasks List */}
         <div className="tasks-list-card">
           <h2 className="tasks-list-title">📋 All Tasks</h2>
-          
+
           {tasks.length === 0 ? (
             <div className="task-empty-state">
               <div className="task-empty-state-icon">📭</div>
@@ -179,12 +166,8 @@ const Tasks = () => {
             <div className="tasks-list">
               {tasks.map((t) => {
                 const now = new Date();
-                const taskDate = t.dueDate
-                  ? new Date(t.dueDate).toISOString().split("T")[0]
-                  : null;
-                const taskEnd = taskDate && t.endTime
-                  ? new Date(`${taskDate}T${t.endTime}`)
-                  : null;
+                const taskDate = t.dueDate ? new Date(t.dueDate).toISOString().split("T")[0] : null;
+                const taskEnd = taskDate && t.endTime ? new Date(`${taskDate}T${t.endTime}`) : null;
                 const isMissed = t.status === "pending" && taskEnd && now > taskEnd;
                 const displayStatus = isMissed ? "missed" : t.status;
 
@@ -197,24 +180,20 @@ const Tasks = () => {
                           {t.priority}
                         </div>
                       </div>
-
                       <div className="task-item-time">
                         🕒 {t.startTime || "--:--"} – {t.endTime || "--:--"}
                       </div>
-
                       <div className={`task-item-status task-status-${displayStatus}`}>
                         {displayStatus === "completed" && "✓ COMPLETED"}
                         {displayStatus === "pending" && "⏳ PENDING"}
                         {displayStatus === "missed" && "❌ MISSED"}
                       </div>
-
                       {displayStatus === "missed" && (
                         <div className="task-missed-warning">
                           ⚠️ You broke your schedule. Discipline is greater than motivation.
                         </div>
                       )}
                     </div>
-
                     <div className="task-item-actions">
                       {t.status === "pending" && (
                         <button
@@ -224,7 +203,6 @@ const Tasks = () => {
                           ✔
                         </button>
                       )}
-
                       <button
                         className="task-action-btn task-delete-btn"
                         onClick={() => deleteTask(t._id)}

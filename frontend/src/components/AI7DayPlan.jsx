@@ -10,14 +10,7 @@ const AI7DayPlan = ({ userData, goals }) => {
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/ai/7day-plan',
-        { userData, goals },
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+    const response = await api.post('/ai/7day-plan', { userData, goals });
       
       setPlan(response.data.data.plan);
     } catch (err) {

@@ -9,14 +9,7 @@ const StudyPatternAnalyzer = ({ tasks = [] }) => {
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/ai/study-patterns',
-        { tasks },
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+const response = await api.post('/ai/study-patterns', { tasks });
       
       setPatterns(response.data.data.patterns);
     } catch (err) {

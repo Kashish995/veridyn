@@ -9,14 +9,8 @@ const WeeklyAIReport = ({ weeklyStats = [], history = [], currentStreak = 0 }) =
     setLoading(true);
     
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        'http://localhost:5000/api/ai/weekly-report',
-        { weeklyStats, history, currentStreak },
-        {
-          headers: { 'Authorization': `Bearer ${token}` }
-        }
-      );
+    const response = await api.post('/ai/weekly-report', { weeklyStats, history, currentStreak });
+
       
       setReport(response.data.data.report);
     } catch (err) {
