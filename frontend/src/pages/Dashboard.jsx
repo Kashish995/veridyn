@@ -12,6 +12,9 @@ import {
 } from 'chart.js';
 import { Line } from "react-chartjs-2";
 
+import ProductivityCalendar from '../components/ProductivityCalendar';
+import '../styles/calendar.css';
+
 // Register Chart.js components
 ChartJS.register(
   CategoryScale,
@@ -508,18 +511,8 @@ return (
       </motion.div>
       
       {/* ===== Productivity Heatmap ===== */}
-      <motion.div
-        className="calendar-card"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <Card title="Productivity Calendar">
-          <ProductivityHeatmap
-            values={Array.isArray(data?.calendar) ? data.calendar : []}
-          />
-        </Card>
+      <motion.div className="calendar-card">
+        <ProductivityCalendar />
       </motion.div>
 
        <motion.div

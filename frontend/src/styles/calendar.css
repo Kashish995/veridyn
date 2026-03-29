@@ -1,0 +1,97 @@
+/* ==================== PRODUCTIVITY CALENDAR ==================== */
+
+.productivity-calendar {
+  background: white;
+  padding: 2rem;
+  border-radius: var(--radius-lg);
+  box-shadow: var(--shadow-md);
+}
+
+.productivity-calendar h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--gray-900);
+  margin-bottom: 1.5rem;
+}
+
+.calendar-months {
+  display: flex;
+  gap: 4px;
+  margin-bottom: 0.5rem;
+  padding-left: 20px;
+}
+
+.month-label {
+  font-size: 0.75rem;
+  color: var(--gray-600);
+  flex: 1;
+  text-align: left;
+}
+
+.calendar-grid {
+  display: flex;
+  gap: 4px;
+  overflow-x: auto;
+  padding-bottom: 1rem;
+}
+
+.calendar-week {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.calendar-day {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.calendar-day:hover {
+  transform: scale(1.5);
+  border: 2px solid var(--gray-700);
+}
+
+/* Color levels based on completion rate */
+.calendar-day.level-0 {
+  background: #ebedf0;
+}
+
+.calendar-day.level-1 {
+  background: #9be9a8;
+}
+
+.calendar-day.level-2 {
+  background: #40c463;
+}
+
+.calendar-day.level-3 {
+  background: #30a14e;
+}
+
+.calendar-day.level-4 {
+  background: #216e39;
+}
+
+.calendar-legend {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  font-size: 0.75rem;
+  color: var(--gray-600);
+}
+
+.legend-box {
+  width: 12px;
+  height: 12px;
+  border-radius: 2px;
+}
+
+.calendar-loading {
+  text-align: center;
+  padding: 2rem;
+  color: var(--gray-500);
+}
