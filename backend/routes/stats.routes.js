@@ -49,9 +49,9 @@ router.get("/dashboard", authMiddleware, async (req, res) => {
     const userId = req.user.id;
 
     const [tasks, dailyStats, streakData] = await Promise.all([
-      Task.find({ user: userId }),
-      DailyStats.find({ user: userId }).sort({ date: -1 }).limit(30),
-      StreakHistory.findOne({ user: userId }).sort({ date: -1 })
+      Task.find({ userId }),
+      DailyStats.find({ userId }).sort({ date: -1 }).limit(30),
+      StreakHistory.findOne({ userId }).sort({ length: -1 })
     ]);
 
     const totalTasks = tasks.length;
