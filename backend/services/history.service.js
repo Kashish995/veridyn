@@ -36,22 +36,22 @@ export const updateDailyDisciplineSnapshot = async (userId, date) => {
   );
 };
 export const getCalendarHeatmapData = async (userId, year) => {
-  const startDate = new Date(`${year}-01-01`);
-const endDate = new Date(`${year}-12-31`);
+  const startDate = `${year}-01-01`;
+  const endDate = `${year}-12-31`;
 
   const records = await DisciplineHistory.find({
     userId,
     date: { $gte: startDate, $lte: endDate }
   }).sort({ date: 1 });
 
-const streaks = calculateStreaks(records);
+  const streaks = calculateStreaks(records);
 
-return {
-  calendar: records.map((r) => ({
-    date: r.date,
-    score: r.completionRate
-  })),
-  currentStreak: streaks.currentStreak,
-  longestStreak: streaks.longestStreak
-};
+  return {
+    calendar: records.map((r) => ({
+      date: r.date,
+      score: r.completionRate
+    })),
+    currentStreak: streaks.currentStreak,
+    longestStreak: streaks.longestStreak
+  };
 };
