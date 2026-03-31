@@ -91,9 +91,59 @@ export const get7DayPlan = async (req, res) => {
 
 export const getInsights = async (req, res) => {
   try {
-    return res.success({ message: "Insights endpoint" });
+    const userId = req.user.id;
+
+    // Aggregate user analytics data
+    const analytics = await import('../services/analyticsAggregator.service.js')
+      .then(m => m.getUserAnalyticsForAI(userId));
+
+    if (!analytics) {
+      return res.success({
+        explanation: "Not enough data yet. Start completing tasks to unlock AI insights!",
+        recommendations: [
+          "Add tasks for today and mark them complete",
+          "Build a 3-day streak to unlock trend analysis",
+          "Complete at least 5 tasks to generate your first AI report"
+        ],
+        improvementPlan: Array.from({ length: 7 }, (_, i) => ({
+          day: i + 1,
+          task: `Day ${i + 1}: Complete at least 3 tasks and log your progress`
+        })),
+        risk: { riskLevel: "Low", reason: "Insufficient data — start tracking to get predictions" }
+      }, "No data yet — keep going!");
+    }
+
+    const { buildBehaviorPrompt } = await import('../services/promptBuilder.js');
+    const prompt = buildBehaviorPrompt(analytics);
+    const rawResponse = await aiService.generateResponse(prompt, 1500);
+
+    let insights;
+    try {
+      const cleaned = rawResponse.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      insights = JSON.parse(cleaned);
+    } catch {
+      insights = {
+        explanation: `Your discipline score is ${analytics.disciplineScore} with a ${analytics.completionRate}% completion rate. You're in the ${analytics.tier} tier.`,
+        recommendations: [
+          "Maintain consistency — complete tasks at the same time each day",
+          "Focus on high-priority tasks first to maximize your score",
+          "Review and adjust your goals weekly based on your performance data"
+        ],
+        improvementPlan: Array.from({ length: 7 }, (_, i) => ({
+          day: i + 1,
+          task: `Day ${i + 1}: Aim for ${Math.min(analytics.completionRate + (i + 1) * 3, 100)}% completion rate`
+        })),
+        risk: {
+          riskLevel: analytics.completionRate < 50 ? "High" : analytics.completionRate < 70 ? "Medium" : "Low",
+          reason: analytics.completionRate < 50 ? "Completion rate critically low" : analytics.completionRate < 70 ? "Performance below target threshold" : "Performing well — maintain momentum"
+        }
+      };
+    }
+
+    return res.success({ ...insights, generatedAt: new Date() }, "AI insights generated");
   } catch (error) {
-    return res.fail("Failed to get insights", 500);
+    console.error('❌ Insights error:', error);
+    return res.fail(`Failed to generate insights: ${error.message}`, 500);
   }
 };
 
