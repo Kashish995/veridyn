@@ -1,623 +1,408 @@
 import { useMemo } from "react";
 import {
   Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
+  CategoryScale, LinearScale,
+  PointElement, LineElement,
+  Title, Tooltip, Legend, Filler
 } from 'chart.js';
 import { Line } from "react-chartjs-2";
-
-import ProductivityCalendar from '../components/ProductivityCalendar';
-import '../styles/calendar.css';
-
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  PointElement,
-  LineElement,
-  Title,
-  Tooltip,
-  Legend,
-  Filler
-);
-
-import Layout from "../components/Layout";
-import Card from "../ui/Card";
-import Button from "../ui/Button";
-import Skeleton from "../ui/Skeleton";
 import useDashboardData from "../hooks/useDashboardData";
+import ProductivityCalendar from '../components/ProductivityCalendar';
 import "../styles/dashboard.css";
-import PageHeader from "../components/PageHeader";
-import Badge from "../ui/Badge";
-import { motion } from "framer-motion";
-import ProductivityHeatmap from "../components/ProductivityHeatmap";
-import AIRecommendationPanel from '../components/AIRecommendationPanel';
-import AIExplanationPanel from '../components/AIExplanationPanel';
-import AI7DayPlan from '../components/AI7DayPlan';
-import RiskPredictor from '../components/RiskPredictor';
-import StudyPatternAnalyzer from '../components/StudyPatternAnalyzer';
-import SmartTaskPrioritizer from '../components/SmartTaskPrioritizer';
-import WeeklyAIReport from '../components/WeeklyAIReport';
-import ProgressRing from '../components/ProgressRing';
+import "../styles/calendar.css";
 
-export default function Dashboard() {
-  const {
-    data,
-    weeklyStats,
-    nextTask,
-    insights,
-    history,
-    longestStreak,
-    monthlyAggregate,
-    loading,
-    refreshDashboard,
-  } = useDashboardData();
+ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
-  const safeStats = Array.isArray(weeklyStats) ? weeklyStats : [];
-  const safeHistory = Array.isArray(history) ? history : [];
- 
-  /* =========================
-     MEMOIZED CHART DATA
-  ========================= */
-
-  const chartData = useMemo(
-    () => ({
-      labels: safeStats.map((d) => d.date?.slice(5) || ""),
-      datasets: [
-        {
-          label: "Completed",
-          data: safeStats.map((d) => d.completed || 0),
-          borderColor: "#22c55e",
-          backgroundColor: "rgba(34,197,94,0.2)",
-          tension: 0.3,
-        },
-        {
-          label: "Missed",
-          data: safeStats.map((d) => d.missed || 0),
-          borderColor: "#ef4444",
-          backgroundColor: "rgba(239,68,68,0.2)",
-          tension: 0.3,
-        },
-      ],
-    }),
-    [safeStats]
-  );
-
-  const historyChartData = useMemo(
-    () => ({
-      labels: safeHistory.map((h) => h.date || ""),
-      datasets: [
-        {
-          label: "Discipline Score",
-          data: safeHistory.map((h) => h.disciplineScore || 0),
-          borderColor: "#6366f1",
-          backgroundColor: "rgba(99,102,241,0.2)",
-          tension: 0.3,
-        },
-      ],
-    }),
-    [safeHistory]
-  );
-
-  /* =========================
-   PERFORMANCE METRICS
-========================= */
-
-const completionRate = data?.today?.completionRate ?? 0;
-
-/* ---------- Tier Classification ---------- */
-
-const performanceTier =
-  completionRate >= 85
-    ? "Elite"
-    : completionRate >= 70
-    ? "Gold"
-    : completionRate >= 50
-    ? "Silver"
-    : "Bronze";
-
-/* ---------- Sort History ---------- */
-
-const sortedHistory = [...safeHistory].sort(
-  (a, b) => new Date(a.date) - new Date(b.date)
-);
-
-const scores = sortedHistory.map((h) => h.disciplineScore);
-
-/* ---------- Intelligent Trend (3-day average vs previous 3-day average) ---------- */
-
-let difference = 0;
-
-if (scores.length >= 6) {
-  const recent = scores.slice(-3);
-  const previous = scores.slice(-6, -3);
-
-  const recentAvg =
-    recent.reduce((a, b) => a + b, 0) / recent.length;
-
-  const previousAvg =
-    previous.reduce((a, b) => a + b, 0) / previous.length;
-
-  difference = Math.round(recentAvg - previousAvg);
-} else if (scores.length >= 2) {
-  // fallback if not enough data
-  difference =
-    scores[scores.length - 1] - scores[scores.length - 2];
-}
-
-/* ---------- Trend Classification ---------- */
-
-let trend = "Stable";
-
-if (difference >= 5) {
-  trend = "Strong Improvement";
-} else if (difference > 0) {
-  trend = "Improving";
-} else if (difference <= -5) {
-  trend = "Strong Decline";
-} else if (difference < 0) {
-  trend = "Declining";
-}
-
-/* ---------- Real Volatility (Standard Deviation) ---------- */
-
-const average =
-  scores.length > 0
-    ? scores.reduce((a, b) => a + b, 0) / scores.length
-    : 0;
-
-const variance =
-  scores.length > 0
-    ? scores.reduce(
-        (sum, val) => sum + Math.pow(val - average, 2),
-        0
-      ) / scores.length
-    : 0;
-
-const volatility = Number(Math.sqrt(variance).toFixed(2));
-
-/* ---------- Risk Level ---------- */
-
-let riskLevel = "Low";
-
-if (volatility > 20) {
-  riskLevel = "High";
-} else if (volatility > 10) {
-  riskLevel = "Moderate";
-}
-
-/* ---------- Performance Intelligence Message ---------- */
-
-let performanceMessage = "";
-let performanceTone = "neutral";
-
-if (riskLevel === "High") {
-  performanceMessage =
-    "High behavioral instability detected. Prioritize consistency.";
-  performanceTone = "danger";
-} else if (riskLevel === "Moderate") {
-  performanceMessage =
-    "Moderate fluctuations. Stabilize daily execution.";
-  performanceTone = "warning";
-} else if (trend === "Strong Improvement") {
-  performanceMessage =
-    "Strong upward momentum. Maintain this execution pattern.";
-  performanceTone = "success";
-} else if (trend === "Strong Decline") {
-  performanceMessage =
-    "Performance declining sharply. Immediate correction needed.";
-  performanceTone = "danger";
-} else if (trend === "Improving") {
-  performanceMessage =
-    "Gradual improvement detected. Keep building consistency.";
-  performanceTone = "success";
-} else if (trend === "Declining") {
-  performanceMessage =
-    "Slight downward trend. Refocus and tighten execution.";
-  performanceTone = "warning";
-} else {
-  performanceMessage =
-    "Stable performance. Maintain structured discipline.";
-  performanceTone = "neutral";
-}
-
-const chartOptions = {
+/* ─── Chart options for dark theme ─── */
+const darkChartOptions = (label) => ({
   responsive: true,
   maintainAspectRatio: false,
   plugins: {
     legend: {
-      position: "top",
+      labels: { color: '#94a3b8', font: { family: 'DM Sans', size: 12 }, boxWidth: 12 }
     },
+    tooltip: {
+      backgroundColor: '#1a2338',
+      borderColor: 'rgba(99,102,241,0.3)',
+      borderWidth: 1,
+      titleColor: '#e2e8f0',
+      bodyColor: '#94a3b8',
+      padding: 12,
+    }
   },
+  scales: {
+    x: {
+      grid: { color: 'rgba(99,120,200,0.08)' },
+      ticks: { color: '#475569', font: { family: 'JetBrains Mono', size: 11 } }
+    },
+    y: {
+      grid: { color: 'rgba(99,120,200,0.08)' },
+      ticks: { color: '#475569', font: { family: 'JetBrains Mono', size: 11 } }
+    }
+  }
+});
+
+/* ─── Tier config ─── */
+const getTier = (rate) => {
+  if (rate >= 85) return { label: 'ELITE',  cls: 'tier-elite',  color: '#f59e0b' };
+  if (rate >= 70) return { label: 'GOLD',   cls: 'tier-gold',   color: '#f97316' };
+  if (rate >= 50) return { label: 'SILVER', cls: 'tier-silver', color: '#94a3b8' };
+  return              { label: 'BRONZE', cls: 'tier-bronze', color: '#a16207' };
 };
 
-const calendarValues = Array.isArray(data?.calendar)
-  ? data.calendar
-  : [];
-
-  const aiUserData = {
-  completedTasks: data?.today?.completed || 0,
-  totalTasks: data?.today?.totalTasks || 0,
-  studyHours: monthlyAggregate?.totalStudyHours || 0,
-  productivityScore: completionRate || 0,
-  recentActivities: weeklyStats.slice(-3).map(d => `${d.date}: ${d.completed}/${d.completed + d.missed} tasks`) || [],
-  weakAreas: volatility > 15 ? ['Consistency', 'Daily Execution'] : trend === 'Declining' ? ['Task Completion', 'Focus'] : []
+/* ─── Risk config ─── */
+const getRisk = (score) => {
+  if (score >= 60) return { label: 'HIGH',   color: '#f43f5e', dot: '#f43f5e' };
+  if (score >= 30) return { label: 'MEDIUM', color: '#f59e0b', dot: '#f59e0b' };
+  return              { label: 'LOW',    color: '#10d9a0', dot: '#10d9a0' };
 };
 
-const planUserData = {
-  currentProductivity: completionRate || 0,
-  availableHoursPerDay: 5,
-  subjects: ['DSA', 'Web Development', 'DBMS', 'System Design'],
-  examDates: []
-};
+export default function Dashboard() {
+  const {
+    data, weeklyStats, nextTask,
+    insights, history, longestStreak,
+    monthlyAggregate, loading, refreshDashboard,
+  } = useDashboardData();
 
-return (
-  <Layout>
-    <PageHeader
-      title="Dashboard"
-      subtitle="Track your discipline and performance"
-    />
+  const safeStats   = Array.isArray(weeklyStats) ? weeklyStats : [];
+  const safeHistory = Array.isArray(history) ? history : [];
 
-    <motion.div
-      className="dashboard-grid"
-      initial="hidden"
-      animate="visible"
-      variants={{
-        hidden: {},
-        visible: {
-          transition: {
-            staggerChildren: 0.08,
-          },
-        },
-      }}
-    >
-      {/* ===== Discipline ===== */}
-      <motion.div
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <div className="metric-card gradient-blue">
-          {loading ? (
-            <>
-              <Skeleton height="32px" width="80px" />
-              <Skeleton height="16px" width="120px" />
-            </>
-          ) : (
-            <>
-              <div className="metric-label">Discipline Score</div>
-              <ProgressRing 
-                percentage={completionRate} 
-                color="#ffffff"
-              />
-              <Badge variant={performanceTier.toLowerCase()}>
-                {performanceTier}
-              </Badge>
-              <p className="muted-text" style={{ marginTop: '1rem' }}>
-                Tasks: {data?.today?.completed ?? 0} / {data?.today?.totalTasks ?? 0}
-              </p>
-            </>
-          )}
+  /* ─── Metrics ─── */
+  const completionRate = data?.today?.completionRate ?? 0;
+  const currentStreak  = data?.currentStreak ?? 0;
+
+  const sortedHistory = [...safeHistory].sort((a, b) => new Date(a.date) - new Date(b.date));
+  const scores = sortedHistory.map(h => h.disciplineScore ?? 0);
+
+  const avgScore = scores.length ? scores.reduce((a,b) => a+b, 0) / scores.length : 0;
+  const variance = scores.length ? scores.reduce((s,v) => s + Math.pow(v - avgScore, 2), 0) / scores.length : 0;
+  const volatility = Math.round(Math.sqrt(variance));
+
+  let diff = 0;
+  if (scores.length >= 6) {
+    const r = scores.slice(-3), p = scores.slice(-6, -3);
+    diff = Math.round(r.reduce((a,b)=>a+b,0)/r.length - p.reduce((a,b)=>a+b,0)/p.length);
+  } else if (scores.length >= 2) {
+    diff = Math.round(scores.at(-1) - scores.at(-2));
+  }
+
+  const trend = diff >= 5 ? 'Strong Improvement' : diff > 0 ? 'Improving' :
+                diff <= -5 ? 'Strong Decline'     : diff < 0 ? 'Declining' : 'Stable';
+
+  const riskScore = Math.min(100,
+    (completionRate < 50 ? 25 : completionRate < 70 ? 15 : 0) +
+    (currentStreak < 3 ? 25 : 0) +
+    (volatility > 15 ? 20 : volatility > 10 ? 10 : 0) +
+    (diff <= -5 ? 30 : diff < 0 ? 15 : 0)
+  );
+
+  const tier  = getTier(completionRate);
+  const risk  = getRisk(riskScore);
+
+  /* ─── Chart data ─── */
+  const weeklyChartData = useMemo(() => ({
+    labels: safeStats.map(d => d.date?.slice(5) ?? ''),
+    datasets: [
+      {
+        label: 'Completed',
+        data: safeStats.map(d => d.completed ?? 0),
+        borderColor: '#10d9a0',
+        backgroundColor: 'rgba(16,217,160,0.08)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#10d9a0',
+        pointRadius: 4,
+      },
+      {
+        label: 'Missed',
+        data: safeStats.map(d => d.missed ?? 0),
+        borderColor: '#f43f5e',
+        backgroundColor: 'rgba(244,63,94,0.08)',
+        borderWidth: 2,
+        tension: 0.4,
+        fill: true,
+        pointBackgroundColor: '#f43f5e',
+        pointRadius: 4,
+      },
+    ],
+  }), [safeStats]);
+
+  const historyChartData = useMemo(() => ({
+    labels: sortedHistory.map(h => h.date ?? ''),
+    datasets: [{
+      label: 'Discipline Score',
+      data: scores,
+      borderColor: '#6366f1',
+      backgroundColor: 'rgba(99,102,241,0.08)',
+      borderWidth: 2,
+      tension: 0.4,
+      fill: true,
+      pointBackgroundColor: '#6366f1',
+      pointRadius: 3,
+    }],
+  }), [sortedHistory, scores]);
+
+  /* ─── Trend config ─── */
+  const trendCfg = {
+    'Strong Improvement': { color: '#10d9a0', icon: '↑↑', dir: 'up' },
+    'Improving':          { color: '#10d9a0', icon: '↑',  dir: 'up' },
+    'Stable':             { color: '#6366f1', icon: '→',  dir: 'flat' },
+    'Declining':          { color: '#f59e0b', icon: '↓',  dir: 'down' },
+    'Strong Decline':     { color: '#f43f5e', icon: '↓↓', dir: 'down' },
+  }[trend] ?? { color: '#6366f1', icon: '→', dir: 'flat' };
+
+  if (loading) {
+    return (
+      <div className="dashboard-container">
+        <div className="loading-state">
+          <div className="loading-spinner" />
+          <span className="loading-text">Loading dashboard...</span>
         </div>
-      </motion.div>
+      </div>
+    );
+  }
 
-     {/* ===== Trend ===== */}
-      <motion.div
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <div className="metric-card gradient-green">
-          <div className="metric-label">Performance Trend</div>
-          <div className="trend-icon">
-            {trend === "Improving" || trend === "Strong Improvement" ? "📈" : "📉"}
+  return (
+    <div className="dashboard-container">
+
+      {/* ── Header ── */}
+      <div className="dashboard-header">
+        <div>
+          <div className="dashboard-greeting">Good day, Kashish</div>
+          <h1 className="dashboard-title">Performance Dashboard</h1>
+          <div className="dashboard-date">
+            {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}
           </div>
-          <div className="metric-value" style={{ fontSize: '1.5rem' }}>
+        </div>
+        <div className="dashboard-actions">
+          <button className="btn btn-secondary btn-sm" onClick={refreshDashboard}>
+            ↻ Refresh
+          </button>
+        </div>
+      </div>
+
+      {/* ── Next Task Banner ── */}
+      {nextTask && (
+        <div className="next-task-card">
+          <div className="next-task-dot" />
+          <div>
+            <div className="next-task-label">Up Next</div>
+            <div className="next-task-title">{nextTask.title}</div>
+          </div>
+          {nextTask.startTime && (
+            <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {nextTask.startTime}
+            </div>
+          )}
+          <span style={{
+            padding: '2px 10px', borderRadius: 'var(--r-full)',
+            fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+            background: nextTask.priority === 'high' ? 'var(--rose-subtle)' : nextTask.priority === 'medium' ? 'var(--amber-subtle)' : 'var(--emerald-subtle)',
+            color: nextTask.priority === 'high' ? 'var(--rose)' : nextTask.priority === 'medium' ? 'var(--amber)' : 'var(--emerald)',
+          }}>
+            {nextTask.priority}
+          </span>
+        </div>
+      )}
+
+      {/* ── Primary Metrics ── */}
+      <div className="section-header">
+        <span className="section-title">Key Metrics</span>
+      </div>
+      <div className="metrics-grid">
+
+        {/* Discipline Score */}
+        <div className="metric-card c-indigo">
+          <div className="metric-header">
+            <div className="metric-icon c-indigo">◎</div>
+            <div className={`badge badge-indigo`}>{tier.label}</div>
+          </div>
+          <div className="metric-value">{completionRate}<span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>%</span></div>
+          <div className="metric-label">Discipline Score</div>
+          <div style={{ marginTop: 'var(--sp-4)', height: 4, background: 'var(--bg-elevated)', borderRadius: 'var(--r-full)', overflow: 'hidden' }}>
+            <div style={{ width: `${completionRate}%`, height: '100%', background: 'var(--indigo)', borderRadius: 'var(--r-full)', transition: 'width 1s ease' }} />
+          </div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: 'var(--sp-2)', fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+            <span>{data?.today?.completed ?? 0} done</span>
+            <span>{data?.today?.totalTasks ?? 0} total</span>
+          </div>
+        </div>
+
+        {/* Trend */}
+        <div className="metric-card c-emerald">
+          <div className="metric-header">
+            <div className="metric-icon c-emerald">↗</div>
+            <div className={`badge badge-${trendCfg.dir === 'up' ? 'emerald' : trendCfg.dir === 'down' ? 'rose' : 'indigo'}`}>
+              {trendCfg.icon}
+            </div>
+          </div>
+          <div className="metric-value" style={{ fontSize: '1.5rem', fontFamily: 'var(--font-display)', letterSpacing: '-0.01em' }}>
             {trend}
           </div>
-          <p className="muted-text">
-            Change: {difference > 0 ? "+" : ""}{difference} points
-          </p>
-        </div>
-      </motion.div>
-
-      {/* ===== Performance Insight ===== */}
-      <motion.div
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <div className={`metric-card ${
-          performanceTone === 'success' ? 'gradient-green' :
-          performanceTone === 'warning' ? 'gradient-orange' :
-          performanceTone === 'danger' ? 'gradient-pink' :
-          'gradient-purple'
-        }`}>
-          <div className="metric-label">Performance Intelligence</div>
-          <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>
-            {performanceTone === 'success' ? '✅' :
-             performanceTone === 'warning' ? '⚠️' :
-             performanceTone === 'danger' ? '🔴' : 'ℹ️'}
+          <div className="metric-label">Performance Trend</div>
+          <div className={`metric-trend ${trendCfg.dir}`} style={{ color: trendCfg.color }}>
+            {diff > 0 ? `+${diff}` : diff} pts vs previous period
           </div>
-          <p className="muted-text" style={{ fontSize: '1rem', lineHeight: '1.5' }}>
-            {performanceMessage}
-          </p>
         </div>
-      </motion.div>
-{/* ===== Upcoming Task ===== */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <div className="metric-card gradient-teal">
-          <div className="metric-label">Next Up</div>
-          {loading ? (
-            <Skeleton height="20px" />
-          ) : nextTask ? (
-            <>
-              <div style={{ fontSize: '1.5rem', fontWeight: '700', marginTop: '1rem', marginBottom: '0.5rem' }}>
-                {nextTask.title}
-              </div>
-              <p className="muted-text">
-                ⏰ {nextTask.startTime} – {nextTask.endTime}
-              </p>
-              <p className="muted-text">
-                Priority: <strong>{nextTask.priority}</strong>
-              </p>
-            </>
-          ) : (
-            <p className="muted-text" style={{ textAlign: 'center', padding: '2rem 0' }}>
-              No upcoming task
-            </p>
+
+        {/* Risk Level */}
+        <div className="metric-card c-amber">
+          <div className="metric-header">
+            <div className="metric-icon c-amber">⚠</div>
+            <div className="badge" style={{
+              background: `rgba(${risk.label === 'HIGH' ? '244,63,94' : risk.label === 'MEDIUM' ? '245,158,11' : '16,217,160'},0.1)`,
+              color: risk.color,
+              border: `1px solid ${risk.color}33`,
+            }}>
+              {risk.label} RISK
+            </div>
+          </div>
+          <div className="metric-value" style={{ color: risk.color }}>
+            {riskScore}<span style={{ fontSize: '1rem', color: 'var(--text-muted)' }}>/100</span>
+          </div>
+          <div className="metric-label">Risk Score</div>
+          <div style={{ marginTop: 'var(--sp-4)', height: 4, background: 'var(--bg-elevated)', borderRadius: 'var(--r-full)', overflow: 'hidden' }}>
+            <div style={{ width: `${riskScore}%`, height: '100%', background: risk.color, borderRadius: 'var(--r-full)', transition: 'width 1s ease' }} />
+          </div>
+        </div>
+
+        {/* Current Streak */}
+        <div className="metric-card c-cyan">
+          <div className="metric-header">
+            <div className="metric-icon c-cyan">◈</div>
+            <div className="badge badge-cyan">STREAK</div>
+          </div>
+          <div className="metric-value" style={{ color: '#f59e0b', fontFamily: 'var(--font-mono)' }}>
+            {currentStreak}
+          </div>
+          <div className="metric-label">Days in a Row</div>
+          {longestStreak?.longestStreak > 0 && (
+            <div className="metric-trend flat" style={{ marginTop: 'var(--sp-3)' }}>
+              Best: {longestStreak.longestStreak} days
+            </div>
           )}
         </div>
-      </motion.div>
 
-      {/* ===== 7-Day Performance ===== */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <Card title="7-Day Performance" className="wide glass-card">
-          {loading ? (
-            <Skeleton height="220px" />
-          ) : safeStats.length > 0 ? (
-            <div className="chart-container">
-              <Line data={chartData} options={chartOptions} />
+      </div>
+
+      {/* ── Charts ── */}
+      <div className="section-header">
+        <span className="section-title">Analytics</span>
+      </div>
+      <div className="charts-grid">
+        <div className="chart-card">
+          <div className="chart-title" style={{ '--c': '#10d9a0' }}>7-Day Task Performance</div>
+          {safeStats.length > 0 ? (
+            <div style={{ height: 220 }}>
+              <Line data={weeklyChartData} options={darkChartOptions('7-Day')} />
             </div>
           ) : (
-            <p className="center-text">No weekly data</p>
+            <div className="empty-state" style={{ padding: 'var(--sp-8)' }}>
+              <div className="empty-state-icon">◎</div>
+              <div className="empty-state-title">No weekly data yet</div>
+              <div className="empty-state-desc">Add tasks to see your performance chart</div>
+            </div>
           )}
-        </Card>
-      </motion.div>
+        </div>
 
-     {/* ===== Discipline History ===== */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <Card title="Discipline History" className="wide glass-card">
-          {loading ? (
-            <Skeleton height="220px" />
-          ) : safeHistory.length > 0 ? (
-            <div className="chart-container">
-              <Line data={historyChartData} options={chartOptions} />
+        <div className="chart-card">
+          <div className="chart-title">Discipline Score History</div>
+          {sortedHistory.length > 0 ? (
+            <div style={{ height: 220 }}>
+              <Line data={historyChartData} options={darkChartOptions('History')} />
             </div>
           ) : (
-            <p className="center-text">No history data</p>
+            <div className="empty-state" style={{ padding: 'var(--sp-8)' }}>
+              <div className="empty-state-icon">▦</div>
+              <div className="empty-state-title">No history yet</div>
+              <div className="empty-state-desc">Complete tasks to build your history</div>
+            </div>
           )}
-        </Card>
-      </motion.div>
-
-      {/* ===== Performance Intelligence ===== */}
-      {insights && (
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <div className="stat-card glass-card">
-            <div className="stat-card-label">TIER</div>
-            <div className="stat-card-value">{insights.tier?.tier}</div>
-            <div className="stat-card-label" style={{ marginTop: '1rem' }}>Monthly Completion</div>
-            <div className="stat-card-value" style={{ fontSize: '1.5rem' }}>
-              {insights.monthly?.completionRate ?? 0}%
-            </div>
-            <div className="stat-card-label" style={{ marginTop: '1rem' }}>Volatility</div>
-            <div className="stat-card-value" style={{ fontSize: '1.5rem' }}>
-              {insights.volatility?.stabilityLevel}
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-     {/* ===== Monthly Performance ===== */}
-      {monthlyAggregate && (
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <div className="stat-card glass-card">
-            <div className="stat-card-label">Monthly Average</div>
-            <ProgressRing 
-              percentage={monthlyAggregate.averageCompletionRate ?? 0}
-              size={100}
-              color="#667eea"
-            />
-            <div style={{ marginTop: '1rem', textAlign: 'center' }}>
-              <div className="stat-card-label">Dominant Tier</div>
-              <div className="stat-card-value" style={{ fontSize: '1.25rem' }}>
-                {monthlyAggregate.dominantTier}
-              </div>
-              <div className="stat-card-label" style={{ marginTop: '0.5rem' }}>
-                Days Tracked: {monthlyAggregate.daysTracked}
-              </div>
-            </div>
-          </div>
-        </motion.div>
-      )}
-
-      {/* ===== Longest Streak ===== */}
-      {longestStreak && (
-        <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-          <div className="metric-card gradient-pink">
-            <div className="metric-label">Longest Streak</div>
-            <div className="metric-value">
-              {longestStreak.longestStreak}
-              <span style={{ fontSize: '2rem', marginLeft: '0.5rem' }}>🏆</span>
-            </div>
-            {longestStreak.startDate && (
-              <p className="muted-text">
-                {new Date(longestStreak.startDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} → {new Date(longestStreak.endDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-              </p>
-            )}
-          </div>
-        </motion.div>
-      )}
-      
-      {/* ===== Current Streak ===== */}
-      <motion.div
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <div className="metric-card gradient-orange">
-          <div className="metric-label">Current Streak</div>
-          <div className="metric-value">
-            {data?.currentStreak ?? 0}
-            <span style={{ fontSize: '2rem', marginLeft: '0.5rem' }}>🔥</span>
-          </div>
-          <p className="muted-text">Days in a row</p>
         </div>
-      </motion.div>
+      </div>
 
-      {/* ===== Actions ===== */}
-     {/* ===== Actions ===== */}
-      <motion.div variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}>
-        <div className="stat-card glass-card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '150px' }}>
-          <Button 
-            variant="primary" 
-            onClick={refreshDashboard}
-            style={{
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              color: 'white',
-              padding: '1rem 2rem',
-              fontSize: '1rem',
-              fontWeight: '700',
-              border: 'none',
-              borderRadius: '0.75rem',
-              cursor: 'pointer',
-              boxShadow: '0 10px 25px rgba(102, 126, 234, 0.3)',
-              transition: 'all 0.3s ease'
-            }}
-          >
-            🔄 Refresh Dashboard
-          </Button>
+      {/* ── Stats Row ── */}
+      <div className="section-header">
+        <span className="section-title">Performance Overview</span>
+      </div>
+      <div className="stats-grid">
+
+        {/* Tier */}
+        <div className="stat-card" style={{ textAlign: 'center' }}>
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 'var(--sp-4)' }}>
+            Current Tier
+          </div>
+          <div className={`tier-badge ${tier.cls}`}>{tier.label}</div>
+          <div style={{ marginTop: 'var(--sp-3)', fontSize: '0.8125rem', color: 'var(--text-muted)' }}>
+            {completionRate >= 85 ? 'Top 5% performance' :
+             completionRate >= 70 ? 'Above average' :
+             completionRate >= 50 ? 'Building momentum' : 'Getting started'}
+          </div>
         </div>
-      </motion.div>
-      
-      {/* ===== Productivity Heatmap ===== */}
-      <motion.div className="calendar-card">
+
+        {/* Volatility */}
+        <div className="stat-card">
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 'var(--sp-4)' }}>
+            Consistency
+          </div>
+          <div className="stat-num" style={{ color: volatility > 20 ? 'var(--rose)' : volatility > 10 ? 'var(--amber)' : 'var(--emerald)', fontFamily: 'var(--font-mono)' }}>
+            {volatility}
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 'var(--sp-2)' }}>
+            Volatility score
+          </div>
+          <div style={{ fontSize: '0.75rem', marginTop: 'var(--sp-2)', color: volatility > 20 ? 'var(--rose)' : volatility > 10 ? 'var(--amber)' : 'var(--emerald)' }}>
+            {volatility > 20 ? 'High instability' : volatility > 10 ? 'Moderate fluctuation' : 'Stable pattern'}
+          </div>
+        </div>
+
+        {/* Monthly */}
+        <div className="stat-card">
+          <div style={{ fontSize: '0.7rem', color: 'var(--text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: 'var(--sp-4)' }}>
+            Monthly Average
+          </div>
+          <div className="stat-num" style={{ fontFamily: 'var(--font-mono)', color: 'var(--indigo-light)' }}>
+            {monthlyAggregate?.averageCompletionRate ?? 0}<span style={{ fontSize: '1rem' }}>%</span>
+          </div>
+          <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)', marginTop: 'var(--sp-2)' }}>
+            {monthlyAggregate?.daysTracked ?? 0} days tracked
+          </div>
+          {monthlyAggregate?.dominantTier && (
+            <div style={{ fontSize: '0.75rem', marginTop: 'var(--sp-2)', color: 'var(--text-muted)' }}>
+              Dominant tier: {monthlyAggregate.dominantTier}
+            </div>
+          )}
+        </div>
+
+      </div>
+
+      {/* ── Streak Cards ── */}
+      <div className="streaks-grid">
+        <div className="streak-card">
+          <div className="streak-icon">🔥</div>
+          <div>
+            <div className="streak-value" style={{ color: 'var(--amber)' }}>{currentStreak}</div>
+            <div className="streak-label">Current Streak (days)</div>
+          </div>
+        </div>
+        <div className="streak-card">
+          <div className="streak-icon">🏆</div>
+          <div>
+            <div className="streak-value" style={{ color: 'var(--cyan)' }}>{longestStreak?.longestStreak ?? 0}</div>
+            <div className="streak-label">Longest Streak (days)</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Heatmap ── */}
+      <div className="section-header">
+        <span className="section-title">Productivity Heatmap</span>
+      </div>
+      <div className="heatmap-card">
         <ProductivityCalendar />
-      </motion.div>
+      </div>
 
-       <motion.div
-        className="wide"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <AIRecommendationPanel userData={aiUserData} />
-      </motion.div>
-
-      {/* ===== AI Performance Explanation ===== */}
-      <motion.div
-        className="wide"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <Card title="Performance Analysis">
-          <div className="mb-4">
-            <p className="text-lg">
-              <strong>Current Productivity:</strong> {completionRate}%
-            </p>
-            <p className="text-sm text-gray-600">
-              <strong>Trend:</strong> {trend} | <strong>Volatility:</strong> {volatility}
-            </p>
-          </div>
-          <AIExplanationPanel
-            metric="Overall Productivity Performance"
-            currentValue={completionRate}
-            trend={trend}
-            context={`Completion rate: ${completionRate}%, Volatility: ${volatility}, Risk Level: ${riskLevel}, Current streak: ${data?.currentStreak || 0} days`}
-          />
-        </Card>
-      </motion.div>
-
-      {/* ===== AI 7-Day Improvement Plan ===== */}
-      <motion.div
-        className="wide"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <AI7DayPlan 
-          userData={planUserData} 
-          goals="Improve task completion consistency, maintain 85%+ productivity score, and build study discipline for Adobe internship preparation"
-        />
-      </motion.div>
-
-      {/* ===== AI Risk Predictor ===== */}
-      <motion.div
-        className="wide"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <RiskPredictor
-          weeklyStats={safeStats}
-          history={safeHistory}
-          currentStreak={data?.currentStreak || 0}
-          completionRate={completionRate}
-          volatility={volatility}
-        />
-      </motion.div>
-      {/* ===== Study Pattern Analyzer ===== */}
-      <motion.div
-        className="wide"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <StudyPatternAnalyzer tasks={data?.tasks || []} />
-      </motion.div>
-
-      {/* ===== Smart Task Prioritizer ===== */}
-      <motion.div
-        className="wide"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <SmartTaskPrioritizer tasks={data?.tasks || []} />
-      </motion.div>
-
-      {/* ===== Weekly AI Report ===== */}
-      <motion.div
-        className="wide"
-        variants={{
-          hidden: { opacity: 0, y: 20 },
-          visible: { opacity: 1, y: 0 },
-        }}
-      >
-        <WeeklyAIReport 
-          weeklyStats={safeStats}
-          history={safeHistory}
-          currentStreak={data?.currentStreak || 0}
-        />
-      </motion.div>
-    </motion.div>
-  </Layout>
-);
+    </div>
+  );
 }
