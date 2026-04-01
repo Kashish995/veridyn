@@ -1,97 +1,46 @@
-/* ==================== PRODUCTIVITY CALENDAR ==================== */
+/* ─── Calendar dark theme overrides ─── */
 
-.productivity-calendar {
-  background: white;
-  padding: 2rem;
-  border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-md);
+.productivity-calendar,
+.calendar-container,
+.react-calendar-heatmap {
+  background: transparent !important;
+  color: var(--text-secondary) !important;
 }
 
-.productivity-calendar h3 {
-  font-size: 1.25rem;
-  font-weight: 700;
-  color: var(--gray-900);
-  margin-bottom: 1.5rem;
+.react-calendar-heatmap text {
+  fill: var(--text-muted) !important;
+  font-family: var(--font-mono) !important;
+  font-size: 0.625rem !important;
 }
 
-.calendar-months {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 0.5rem;
-  padding-left: 20px;
+.react-calendar-heatmap .color-empty {
+  fill: var(--bg-elevated) !important;
 }
 
-.month-label {
-  font-size: 0.75rem;
-  color: var(--gray-600);
-  flex: 1;
-  text-align: left;
-}
-
-.calendar-grid {
-  display: flex;
-  gap: 4px;
-  overflow-x: auto;
-  padding-bottom: 1rem;
-}
-
-.calendar-week {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.calendar-day {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.calendar-day:hover {
-  transform: scale(1.5);
-  border: 2px solid var(--gray-700);
-}
-
-/* Color levels based on completion rate */
-.calendar-day.level-0 {
-  background: #ebedf0;
-}
-
-.calendar-day.level-1 {
-  background: #9be9a8;
-}
-
-.calendar-day.level-2 {
-  background: #40c463;
-}
-
-.calendar-day.level-3 {
-  background: #30a14e;
-}
-
-.calendar-day.level-4 {
-  background: #216e39;
-}
+.react-calendar-heatmap .color-scale-1 { fill: rgba(99,102,241,0.2) !important; }
+.react-calendar-heatmap .color-scale-2 { fill: rgba(99,102,241,0.4) !important; }
+.react-calendar-heatmap .color-scale-3 { fill: rgba(99,102,241,0.65) !important; }
+.react-calendar-heatmap .color-scale-4 { fill: rgba(99,102,241,0.9) !important; }
 
 .calendar-legend {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  margin-top: 1rem;
+  gap: var(--sp-3);
+  margin-top: var(--sp-4);
   font-size: 0.75rem;
-  color: var(--gray-600);
+  color: var(--text-muted);
 }
 
-.legend-box {
-  width: 12px;
-  height: 12px;
-  border-radius: 2px;
-}
+.calendar-legend-label { font-family: var(--font-mono); }
 
-.calendar-loading {
-  text-align: center;
-  padding: 2rem;
-  color: var(--gray-500);
+.heatmap-card .chart-title {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: var(--sp-5);
+  display: flex;
+  align-items: center;
+  gap: var(--sp-2);
 }
