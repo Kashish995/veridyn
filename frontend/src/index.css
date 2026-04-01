@@ -1,179 +1,24 @@
-/* ========== IMPORTS (MUST BE FIRST) ========== */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=DM+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&family=JetBrains+Mono:wght@400;500;600&display=swap');
 @import './styles/designSystem.css';
-@import './styles/dashboard.css';
 
-/* ========== EXISTING STYLES BELOW ========== */
+/* All color/theme variables are in designSystem.css */
+/* This file must NOT override --bg-card or any CSS variables */
 
-:root {
-  --primary: #4f46e5;
-  --bg-main: #f8fafc;
-  --bg-card: #ffffff;
-  --success: #22c55e;
-  --danger: #ef4444;
-
-  --text-main: #1f2937;
-  --text-muted: #6b7280;
-}
-
-/* Reset */
-* {
+*, *::before, *::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
 }
 
-/* Body */
-body {
-  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-    Roboto, Oxygen, Ubuntu, Cantarell, "Open Sans", "Helvetica Neue", sans-serif;
+html { scroll-behavior: smooth; }
 
-  background: radial-gradient(circle at top, #f5f7ff, #eef1ff 40%, #f9fafc);
-  color: var(--text-main);
+body {
+  font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+  background: #080c14;
+  color: #e2e8f0;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
 
-/* Page Container */
-.page-container {
-  max-width: 1200px;
-  margin: 80px auto 60px auto;
-  padding: 0 32px;
-}
-
-/* Links */
-a {
-  color: var(--primary);
-  text-decoration: none;
-  font-weight: 500;
-}
-
-a:hover {
-  opacity: 0.8;
-}
-
-/* Buttons */
-button {
-  border: none;
-  border-radius: 12px;
-  padding: 10px 16px;
-  cursor: pointer;
-  font-weight: 600;
-}
-
-/* Inputs */
-input,
-textarea {
-  color: #111827;
-  background-color: white;
-}
-
-input::placeholder,
-textarea::placeholder {
-  color: #9ca3af;
-}
-
-/* Page Header */
-.page-header {
-  margin-bottom: 40px;
-}
-
-.page-title {
-  font-size: 34px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--text-main);
-  margin-bottom: 6px;
-}
-
-.page-subtitle {
-  font-size: 16px;
-  color: var(--text-muted);
-}
-
-.form-input {
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 12px;
-  border: 1px solid #e5e7eb;
-  margin-bottom: 12px;
-  font-size: 14px;
-}
-
-/* Typography */
-.dashboard-title {
-  font-size: 32px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-}
-
-.card-title {
-  font-size: 18px;
-  font-weight: 600;
-}
-
-.muted-text {
-  color: #6b7280;
-  font-size: 14px;
-}
-
-.metric-value {
-  font-size: 40px;
-  font-weight: 700;
-  margin-bottom: 8px;
-}
-
-.trend-icon {
-  font-size: 28px;
-  font-weight: 700;
-}
-
-.trend-label {
-  margin-top: 8px;
-  font-weight: 600;
-}
-
-.trend-up {
-  color: #22c55e;
-}
-
-.trend-down {
-  color: #ef4444;
-}
-
-.chart-container {
-  height: 300px;
-  margin-top: 16px;
-}
-
-.tone-danger {
-  color: #ef4444;
-}
-
-.tone-warning {
-  color: #f59e0b;
-}
-
-.tone-success {
-  color: #22c55e;
-}
-
-.tone-neutral {
-  color: #6b7280;
-}
-
-/* Date input */
-input[type="date"] {
-  position: relative;
-  color: #1f2937;
-}
-
-input[type="date"]::-webkit-calendar-picker-indicator {
-  filter: invert(0.35);
-  opacity: 0.9;
-  cursor: pointer;
-}
-
-input[type="date"]:hover::-webkit-calendar-picker-indicator {
-  filter: invert(0.15);
-  opacity: 1;
-}
+#root { min-height: 100vh; }

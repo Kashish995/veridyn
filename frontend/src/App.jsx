@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import Insights from "./pages/Insights";
 import Login from "./pages/Login";
 import Register from "./pages/Signup";
@@ -6,62 +6,42 @@ import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./ui/ErrorBoundary";
-
 import Navbar from "./components/Navbar";
-import ProfileMenu from "./components/ProfileMenu";
 
-import "./App.css";
+const AUTH_PATHS = ["/login", "/signup"];
 
-function App() {
+function AppShell() {
+  const location = useLocation();
   const token = localStorage.getItem("token");
-  
-return (
-  <Router>
-    {token && <Navbar />}
+  const isAuthPage = AUTH_PATHS.includes(location.pathname);
+  const showSidebar = !!token && !isAuthPage;
 
-    <ErrorBoundary>
-      <div style={{ paddingTop: token ? '80px' : '0' }}>
-        <Routes>
-          <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
-          
-          <Route path="/login" element={<Login />} />
-          <Route path="/signup" element={<Register />} />
-
-          <Route
-            path="/dashboard"
-            element={
-              <ProtectedRoute>
-                <Dashboard />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/tasks"
-            element={
-              <ProtectedRoute>
-                <Tasks />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route
-            path="/insights"
-            element={
-              <ProtectedRoute>
-                <Insights />
-              </ProtectedRoute>
-            }
-          />
-
-          <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
-        </Routes>
-      </div>
-    </ErrorBoundary>
-
-    {token && <ProfileMenu />}
-  </Router>
-);
+  return (
+    <div style={{ display:'flex', minHeight:'100vh', background:'#080c14' }}>
+      {showSidebar && <Navbar />}
+      <main style={{
+        flex:1,
+        marginLeft: showSidebar ? '240px' : 0,
+        minHeight: '100vh',
+        background: '#080c14',
+        overflow: 'auto',
+      }}>
+        <ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+            <Route path="/login"  element={<Login />} />
+            <Route path="/signup" element={<Register />} />
+            <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+            <Route path="/tasks"     element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+            <Route path="/insights"  element={<ProtectedRoute><Insights /></ProtectedRoute>} />
+            <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+          </Routes>
+        </ErrorBoundary>
+      </main>
+    </div>
+  );
 }
 
-export default App;
+export default function App() {
+  return <Router><AppShell /></Router>;
+}
