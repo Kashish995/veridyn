@@ -14,7 +14,8 @@ export default function Navbar() {
 
   return (
     <aside className="sidebar">
-      {/* Brand */}
+
+      {/* ── Brand ── */}
       <div className="sidebar-brand">
         <div className="brand-mark">
           <span className="brand-mark-inner">V</span>
@@ -25,19 +26,23 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* Status */}
+      {/* ── AI Status ── */}
       <div className="sidebar-status">
         <span className="glow-dot" />
         <span className="status-text">AI Active</span>
       </div>
 
-      {/* Navigation */}
+      {/* ── Navigation links ── */}
       <nav className="sidebar-nav">
         <div className="nav-section-label">Navigation</div>
         {NAV_ITEMS.map(({ path, icon, label }) => {
           const active = location.pathname === path;
           return (
-            <Link key={path} to={path} className={`sidebar-link ${active ? 'active' : ''}`}>
+            <Link
+              key={path}
+              to={path}
+              className={`sidebar-link ${active ? 'active' : ''}`}
+            >
               <span className="sidebar-icon">{icon}</span>
               <span className="sidebar-label">{label}</span>
               {active && <span className="active-pip" />}
@@ -46,11 +51,12 @@ export default function Navbar() {
         })}
       </nav>
 
-      {/* Footer — Profile panel trigger replaces user row */}
+      {/* ── Footer: profile trigger opens right-side panel ── */}
       <div className="sidebar-footer">
         <div className="sidebar-divider" />
         <ProfilePanel />
       </div>
+
     </aside>
   );
 }
