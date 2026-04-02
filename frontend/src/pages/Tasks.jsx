@@ -1,224 +1,306 @@
-import { useEffect, useState } from "react";
-import api from "../api/api";
+import { useEffect, useState } from 'react';
+import api from '../api/api';
 import '../styles/tasks.css';
 
-const Tasks = () => {
-  const [tasks, setTasks] = useState([]);
-  const [title, setTitle] = useState("");
-  const [dueDate, setDueDate] = useState("");
-  const [startTime, setStartTime] = useState("");
-  const [endTime, setEndTime] = useState("");
-  const [priority, setPriority] = useState("medium");
+const PRIORITIES = ['low', 'medium', 'high'];
+const PRIORITY_COLORS = { high: 'rose', medium: 'amber', low: 'emerald' };
+
+const statusLabel = { completed: 'Completed', pending: 'Pending', missed: 'Missed', 'in-progress': 'In Progress' };
+
+export default function Tasks() {
+  const [tasks,     setTasks]     = useState([]);
+  const [loading,   setLoading]   = useState(true);
+  const [adding,    setAdding]    = useState(false);
+  const [filter,    setFilter]    = useState('all');
+  const [form, setForm] = useState({
+    title: '', dueDate: '', startTime: '', endTime: '', priority: 'medium', description: ''
+  });
 
   const fetchTasks = async () => {
     try {
-      const res = await api.get("/tasks");
-      if (res.data.success) {
-        setTasks(res.data.data || []);
-      } else {
-        setTasks([]);
-      }
-    } catch (error) {
-      console.error("Fetch tasks error:", error);
-      setTasks([]);
-    }
+      const res = await api.get('/tasks');
+      setTasks(res.data.success ? (res.data.data || []) : []);
+    } catch { setTasks([]); }
+    finally { setLoading(false); }
   };
+
+  useEffect(() => { fetchTasks(); }, []);
+
+  const handleChange = (k, v) => setForm(f => ({ ...f, [k]: v }));
 
   const addTask = async () => {
-    if (!title || !dueDate || !startTime || !endTime) {
-      return alert("Fill all fields");
+    if (!form.title || !form.dueDate || !form.startTime || !form.endTime) {
+      return;
     }
+    setAdding(true);
     try {
-      await api.post("/tasks", {
-        title,
-        dueDate,
-        startTime,
-        endTime,
-        priority,
-        estimatedTime: 30,
-      });
-      setTitle("");
-      setDueDate("");
-      setStartTime("");
-      setEndTime("");
-      setPriority("medium");
+      await api.post('/tasks', { ...form, estimatedTime: 30 });
+      setForm({ title: '', dueDate: '', startTime: '', endTime: '', priority: 'medium', description: '' });
       fetchTasks();
-    } catch (err) {
-      console.error("ADD TASK ERROR:", err.response?.data || err.message);
-      alert("Failed to add task");
-    }
+    } catch (e) {
+      console.error(e);
+    } finally { setAdding(false); }
   };
 
-  const markDone = async (id) => {
-    await api.patch(`/tasks/${id}`, { status: "completed" });
-    fetchTasks();
+  const markDone   = async (id) => { await api.patch(`/tasks/${id}`, { status: 'completed' }); fetchTasks(); };
+  const deleteTask = async (id) => { await api.delete(`/tasks/${id}`); fetchTasks(); };
+
+  const enrich = (t) => {
+    const now      = new Date();
+    const dateStr  = t.dueDate ? new Date(t.dueDate).toISOString().split('T')[0] : null;
+    const taskEnd  = dateStr && t.endTime ? new Date(`${dateStr}T${t.endTime}`) : null;
+    const isMissed = t.status === 'pending' && taskEnd && now > taskEnd;
+    return { ...t, displayStatus: isMissed ? 'missed' : t.status };
   };
 
-  const deleteTask = async (id) => {
-    await api.delete(`/tasks/${id}`);
-    fetchTasks();
-  };
+  const enriched = tasks.map(enrich);
 
-  useEffect(() => {
-    fetchTasks();
-  }, []);
+  const filtered = filter === 'all' ? enriched :
+    enriched.filter(t =>
+      filter === 'pending'   ? t.displayStatus === 'pending'   :
+      filter === 'completed' ? t.displayStatus === 'completed' :
+      t.displayStatus === 'missed'
+    );
 
-  const totalTasks = tasks.length;
-  const completedTasks = tasks.filter(t => t.status === "completed").length;
-  const pendingTasks = tasks.filter(t => t.status === "pending").length;
+  const total     = enriched.length;
+  const completed = enriched.filter(t => t.displayStatus === 'completed').length;
+  const pending   = enriched.filter(t => t.displayStatus === 'pending').length;
+  const missed    = enriched.filter(t => t.displayStatus === 'missed').length;
+
+  const pct = total > 0 ? Math.round((completed / total) * 100) : 0;
+
+  const today = new Date().toISOString().split('T')[0];
 
   return (
     <div className="tasks-page">
       <div className="tasks-container">
 
+        {/* ── Header ── */}
         <div className="tasks-header">
-          <h1>📝 My Tasks</h1>
-          <div className="tasks-stats-grid">
-            <div className="task-stat-card">
-              <div className="task-stat-value">{totalTasks}</div>
-              <div className="task-stat-label">Total</div>
-            </div>
-            <div className="task-stat-card">
-              <div className="task-stat-value">{completedTasks}</div>
-              <div className="task-stat-label">Completed</div>
-            </div>
-            <div className="task-stat-card">
-              <div className="task-stat-value">{pendingTasks}</div>
-              <div className="task-stat-label">Pending</div>
-            </div>
+          <div>
+            <h1 className="tasks-title">Task Manager</h1>
+            <p className="tasks-subtitle">
+              {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric' })}
+            </p>
           </div>
         </div>
 
-        <div className="task-form-card">
-          <h2 className="task-form-title">
-            <span>✨</span>
-            <span>Create New Task</span>
-          </h2>
+        {/* ── Stats row ── */}
+        <div className="tasks-stats-grid">
+          {[
+            { label: 'Total',     value: total,     color: 'indigo' },
+            { label: 'Completed', value: completed, color: 'emerald' },
+            { label: 'Pending',   value: pending,   color: 'amber' },
+            { label: 'Missed',    value: missed,     color: 'rose' },
+          ].map(s => (
+            <div key={s.label} className={`task-stat-card task-stat-${s.color}`}>
+              <div className="task-stat-value">{s.value}</div>
+              <div className="task-stat-label">{s.label}</div>
+            </div>
+          ))}
+        </div>
 
-          <div className="task-input-grid">
-            <div className="task-input-group">
-              <label className="task-input-label">Task Title</label>
+        {/* ── Progress bar ── */}
+        <div className="tasks-progress-bar">
+          <div className="tasks-progress-fill" style={{ width: `${pct}%` }} />
+          <span className="tasks-progress-label">{pct}% complete</span>
+        </div>
+
+        {/* ── Create Task Form ── */}
+        <div className="task-form-card">
+          <div className="task-form-header">
+            <div className="task-form-icon">+</div>
+            <div>
+              <div className="task-form-title">New Task</div>
+              <div className="task-form-subtitle">Add a task to your schedule</div>
+            </div>
+          </div>
+
+          {/* Title – full width */}
+          <div className="task-field">
+            <label className="task-field-label">Task Title <span className="required">*</span></label>
+            <input
+              className="task-field-input"
+              placeholder="e.g. Solve 5 LeetCode problems"
+              value={form.title}
+              onChange={e => handleChange('title', e.target.value)}
+              onKeyDown={e => e.key === 'Enter' && addTask()}
+            />
+          </div>
+
+          {/* Description */}
+          <div className="task-field">
+            <label className="task-field-label">Description <span className="optional">(optional)</span></label>
+            <input
+              className="task-field-input"
+              placeholder="Additional notes..."
+              value={form.description}
+              onChange={e => handleChange('description', e.target.value)}
+            />
+          </div>
+
+          {/* Date + Time row */}
+          <div className="task-fields-row">
+            <div className="task-field">
+              <label className="task-field-label">Date <span className="required">*</span></label>
               <input
-                className="task-input"
-                placeholder="What will you study?"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                className="task-field-input task-field-date"
+                type="date"
+                min={today}
+                value={form.dueDate}
+                onChange={e => handleChange('dueDate', e.target.value)}
               />
             </div>
+            <div className="task-field">
+              <label className="task-field-label">Start <span className="required">*</span></label>
+              <input
+                className="task-field-input"
+                type="time"
+                value={form.startTime}
+                onChange={e => handleChange('startTime', e.target.value)}
+              />
+            </div>
+            <div className="task-field">
+              <label className="task-field-label">End <span className="required">*</span></label>
+              <input
+                className="task-field-input"
+                type="time"
+                value={form.endTime}
+                onChange={e => handleChange('endTime', e.target.value)}
+              />
+            </div>
+          </div>
 
-            <div className="task-input-row">
-              <div className="task-input-group">
-                <label className="task-input-label">Due Date</label>
-                <input
-                  className="task-input"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </div>
-              <div className="task-input-group">
-                <label className="task-input-label">Start Time</label>
-                <input
-                  className="task-input"
-                  type="time"
-                  value={startTime}
-                  onChange={(e) => setStartTime(e.target.value)}
-                />
-              </div>
-              <div className="task-input-group">
-                <label className="task-input-label">End Time</label>
-                <input
-                  className="task-input"
-                  type="time"
-                  value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
-                />
-              </div>
-              <div className="task-input-group">
-                <label className="task-input-label">Priority</label>
-                <select
-                  className="task-priority-select"
-                  value={priority}
-                  onChange={(e) => setPriority(e.target.value)}
+          {/* Priority + Submit row */}
+          <div className="task-form-footer">
+            <div className="task-priority-pills">
+              <span className="task-field-label" style={{ marginRight: '8px' }}>Priority</span>
+              {PRIORITIES.map(p => (
+                <button
+                  key={p}
+                  className={`priority-pill priority-pill-${p} ${form.priority === p ? 'active' : ''}`}
+                  onClick={() => handleChange('priority', p)}
+                  type="button"
                 >
-                  <option value="low">Low</option>
-                  <option value="medium">Medium</option>
-                  <option value="high">High</option>
-                </select>
-              </div>
+                  {p}
+                </button>
+              ))}
             </div>
 
-            <button className="task-add-btn" onClick={addTask}>
-              ＋ Add Task
+            <button
+              className="task-submit-btn"
+              onClick={addTask}
+              disabled={adding || !form.title || !form.dueDate || !form.startTime || !form.endTime}
+            >
+              {adding ? (
+                <><span className="btn-spin" />Adding...</>
+              ) : (
+                <><span>+</span> Add Task</>
+              )}
             </button>
           </div>
         </div>
 
-        <div className="tasks-list-card">
-          <h2 className="tasks-list-title">📋 All Tasks</h2>
-
-          {tasks.length === 0 ? (
-            <div className="task-empty-state">
-              <div className="task-empty-state-icon">📭</div>
-              <p className="task-empty-state-text">No tasks yet. Create your first task above!</p>
-            </div>
-          ) : (
-            <div className="tasks-list">
-              {tasks.map((t) => {
-                const now = new Date();
-                const taskDate = t.dueDate ? new Date(t.dueDate).toISOString().split("T")[0] : null;
-                const taskEnd = taskDate && t.endTime ? new Date(`${taskDate}T${t.endTime}`) : null;
-                const isMissed = t.status === "pending" && taskEnd && now > taskEnd;
-                const displayStatus = isMissed ? "missed" : t.status;
-
-                return (
-                  <div key={t._id} className="task-item">
-                    <div className="task-item-left">
-                      <div className="task-item-header">
-                        <div className="task-item-title">{t.title}</div>
-                        <div className={`task-priority-badge task-priority-${t.priority}`}>
-                          {t.priority}
-                        </div>
-                      </div>
-                      <div className="task-item-time">
-                        🕒 {t.startTime || "--:--"} – {t.endTime || "--:--"}
-                      </div>
-                      <div className={`task-item-status task-status-${displayStatus}`}>
-                        {displayStatus === "completed" && "✓ COMPLETED"}
-                        {displayStatus === "pending" && "⏳ PENDING"}
-                        {displayStatus === "missed" && "❌ MISSED"}
-                      </div>
-                      {displayStatus === "missed" && (
-                        <div className="task-missed-warning">
-                          ⚠️ You broke your schedule. Discipline is greater than motivation.
-                        </div>
-                      )}
-                    </div>
-                    <div className="task-item-actions">
-                      {t.status === "pending" && (
-                        <button
-                          className="task-action-btn task-done-btn"
-                          onClick={() => markDone(t._id)}
-                        >
-                          ✔
-                        </button>
-                      )}
-                      <button
-                        className="task-action-btn task-delete-btn"
-                        onClick={() => deleteTask(t._id)}
-                      >
-                        🗑
-                      </button>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          )}
+        {/* ── Filter Tabs ── */}
+        <div className="tasks-filter-row">
+          {['all', 'pending', 'completed', 'missed'].map(f => (
+            <button
+              key={f}
+              className={`filter-tab ${filter === f ? 'active' : ''}`}
+              onClick={() => setFilter(f)}
+            >
+              {f === 'all' ? 'All Tasks' : f.charAt(0).toUpperCase() + f.slice(1)}
+              <span className="filter-count">
+                {f === 'all' ? total : f === 'completed' ? completed : f === 'pending' ? pending : missed}
+              </span>
+            </button>
+          ))}
         </div>
+
+        {/* ── Task List ── */}
+        {loading ? (
+          <div className="task-list-loading">
+            {[1,2,3].map(i => (
+              <div key={i} className="task-item-skeleton">
+                <div className="skeleton-title" />
+                <div className="skeleton-meta" />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="task-empty">
+            <div className="task-empty-icon">◈</div>
+            <div className="task-empty-title">
+              {filter === 'all' ? 'No tasks yet' : `No ${filter} tasks`}
+            </div>
+            <div className="task-empty-desc">
+              {filter === 'all' ? 'Create your first task above to start tracking.' : `You have no ${filter} tasks right now.`}
+            </div>
+          </div>
+        ) : (
+          <div className="tasks-list">
+            {filtered.map(t => {
+              const color   = PRIORITY_COLORS[t.priority] || 'indigo';
+              const s       = t.displayStatus;
+
+              return (
+                <div key={t._id} className={`task-item task-status-border-${s}`}>
+                  {/* Left: check circle */}
+                  <button
+                    className={`task-check ${s === 'completed' ? 'checked' : ''}`}
+                    onClick={() => s === 'pending' && markDone(t._id)}
+                    title={s === 'pending' ? 'Mark complete' : ''}
+                    disabled={s !== 'pending'}
+                  />
+
+                  {/* Middle: info */}
+                  <div className="task-info">
+                    <div className={`task-name ${s === 'completed' ? 'done' : ''}`}>
+                      {t.title}
+                    </div>
+                    {t.description && (
+                      <div className="task-desc">{t.description}</div>
+                    )}
+                    <div className="task-meta-row">
+                      <span className="task-time-chip">
+                        ⏱ {t.startTime || '--'} – {t.endTime || '--'}
+                      </span>
+                      <span className={`task-priority-chip task-priority-${t.priority}`}>
+                        {t.priority}
+                      </span>
+                      {t.dueDate && (
+                        <span className="task-date-chip">
+                          {new Date(t.dueDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                        </span>
+                      )}
+                    </div>
+                    {s === 'missed' && (
+                      <div className="task-missed-bar">
+                        ⚠ Discipline breaks here. Get back on track.
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Right: status + delete */}
+                  <div className="task-right">
+                    <span className={`task-status-pill status-${s}`}>
+                      {s === 'completed' ? '✓' : s === 'missed' ? '✗' : '◷'} {statusLabel[s]}
+                    </span>
+                    <button
+                      className="task-delete-btn"
+                      onClick={() => deleteTask(t._id)}
+                      title="Delete"
+                    >
+                      ×
+                    </button>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
       </div>
     </div>
   );
-};
-
-export default Tasks;
+}

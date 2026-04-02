@@ -1,5 +1,7 @@
-import { Link, useLocation, useNavigate } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
+import ProfilePanel from './ProfilePanel';
 import '../styles/navbar.css';
+import '../styles/profilePanel.css';
 
 const NAV_ITEMS = [
   { path: '/dashboard', icon: '▦', label: 'Dashboard' },
@@ -7,17 +9,8 @@ const NAV_ITEMS = [
   { path: '/insights',  icon: '◎', label: 'Insights'  },
 ];
 
-const Navbar = () => {
+export default function Navbar() {
   const location = useLocation();
-  const navigate = useNavigate();
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const initials = user?.email?.slice(0, 2).toUpperCase() || 'VD';
-
-  const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    navigate('/login');
-  };
 
   return (
     <aside className="sidebar">
@@ -32,9 +25,9 @@ const Navbar = () => {
         </div>
       </div>
 
-      {/* Status Indicator */}
+      {/* Status */}
       <div className="sidebar-status">
-        <span className="glow-dot"></span>
+        <span className="glow-dot" />
         <span className="status-text">AI Active</span>
       </div>
 
@@ -53,22 +46,11 @@ const Navbar = () => {
         })}
       </nav>
 
-      {/* Footer */}
+      {/* Footer — Profile panel trigger replaces user row */}
       <div className="sidebar-footer">
         <div className="sidebar-divider" />
-        <div className="user-row">
-          <div className="user-avatar">{initials}</div>
-          <div className="user-info">
-            <div className="user-email">{user?.email || 'User'}</div>
-            <div className="user-role">Student</div>
-          </div>
-        </div>
-        <button className="logout-btn" onClick={handleLogout}>
-          <span>↗</span> Sign out
-        </button>
+        <ProfilePanel />
       </div>
     </aside>
   );
-};
-
-export default Navbar;
+}

@@ -1,46 +1,168 @@
-/* ─── Calendar dark theme overrides ─── */
+/* ═══════════════════════════════════════════
+   PRODUCTIVITY HEATMAP CALENDAR
+   GitHub-style grid, dark theme
+═══════════════════════════════════════════ */
 
-.productivity-calendar,
-.calendar-container,
-.react-calendar-heatmap {
-  background: transparent !important;
-  color: var(--text-secondary) !important;
+.cal-wrap {
+  position: relative;
+  padding: var(--sp-2) 0;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  min-width: 0;
 }
 
-.react-calendar-heatmap text {
-  fill: var(--text-muted) !important;
-  font-family: var(--font-mono) !important;
-  font-size: 0.625rem !important;
+/* ── Month row ── */
+.cal-month-row {
+  display: flex;
+  align-items: flex-end;
+  margin-bottom: 4px;
 }
 
-.react-calendar-heatmap .color-empty {
-  fill: var(--bg-elevated) !important;
+.cal-months-inner {
+  position: relative;
+  flex: 1;
+  height: 18px;
 }
 
-.react-calendar-heatmap .color-scale-1 { fill: rgba(99,102,241,0.2) !important; }
-.react-calendar-heatmap .color-scale-2 { fill: rgba(99,102,241,0.4) !important; }
-.react-calendar-heatmap .color-scale-3 { fill: rgba(99,102,241,0.65) !important; }
-.react-calendar-heatmap .color-scale-4 { fill: rgba(99,102,241,0.9) !important; }
+.cal-month-label {
+  position: absolute;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+  white-space: nowrap;
+  top: 0;
+}
 
-.calendar-legend {
+/* ── Body: day labels + grid ── */
+.cal-body {
+  display: flex;
+  gap: 4px;
+}
+
+/* ── Day-of-week column ── */
+.cal-day-col {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  padding-top: 0;
+  flex-shrink: 0;
+  width: 12px;
+}
+
+.cal-day-label {
+  height: 11px;
+  font-family: var(--font-mono);
+  font-size: 0.5625rem;
+  color: var(--text-muted);
+  line-height: 11px;
+  text-align: right;
+}
+
+/* ── Grid ── */
+.cal-grid {
+  display: flex;
+  flex-direction: row;
+  gap: 3px;
+  flex-shrink: 0;
+}
+
+.cal-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* ── Cell ── */
+.cal-cell {
+  width: 11px;
+  height: 11px;
+  border-radius: 2px;
+  cursor: pointer;
+  transition: transform 0.12s ease, opacity 0.12s ease;
+  flex-shrink: 0;
+}
+
+.cal-cell:hover {
+  transform: scale(1.6);
+  z-index: 10;
+  position: relative;
+}
+
+/* ── Color levels ── */
+.cal-lv0 { background: var(--bg-elevated); }
+.cal-lv1 { background: rgba(99, 102, 241, 0.22); }
+.cal-lv2 { background: rgba(99, 102, 241, 0.45); }
+.cal-lv3 { background: rgba(99, 102, 241, 0.68); }
+.cal-lv4 { background: #6366f1; box-shadow: 0 0 6px rgba(99,102,241,0.4); }
+
+/* ── Skeleton loading ── */
+.cal-loading-grid {
+  display: flex;
+  gap: 3px;
+}
+.cal-loading-week {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.cal-skeleton {
+  background: linear-gradient(90deg,
+    var(--bg-elevated) 25%,
+    var(--bg-card-hover, #141d2e) 50%,
+    var(--bg-elevated) 75%
+  );
+  background-size: 200% 100%;
+  animation: shimmer 1.4s infinite;
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Legend ── */
+.cal-legend {
   display: flex;
   align-items: center;
-  gap: var(--sp-3);
-  margin-top: var(--sp-4);
-  font-size: 0.75rem;
+  gap: 4px;
+  margin-top: 10px;
+  font-family: var(--font-mono);
+  font-size: 0.625rem;
   color: var(--text-muted);
 }
 
-.calendar-legend-label { font-family: var(--font-mono); }
+.cal-legend .cal-cell {
+  cursor: default;
+}
+.cal-legend .cal-cell:hover {
+  transform: none;
+}
 
-.heatmap-card .chart-title {
-  font-size: 0.8125rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  margin-bottom: var(--sp-5);
+/* ── Tooltip ── */
+.cal-tooltip {
+  position: fixed;
+  z-index: 999;
+  background: var(--bg-elevated, #1a2338);
+  border: 1px solid var(--border, rgba(99,120,200,0.15));
+  border-radius: var(--r-md, 10px);
+  padding: 6px 10px;
+  font-size: 0.75rem;
+  pointer-events: none;
   display: flex;
-  align-items: center;
-  gap: var(--sp-2);
+  flex-direction: column;
+  gap: 2px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
+  white-space: nowrap;
+}
+
+.cal-tooltip strong {
+  font-family: var(--font-mono);
+  color: var(--text-primary, #e2e8f0);
+  font-size: 0.6875rem;
+}
+
+.cal-tooltip span {
+  color: var(--text-muted, #475569);
+  font-size: 0.6875rem;
 }
