@@ -1,84 +1,94 @@
 import { useState, useEffect, useRef } from 'react';
+import { useNavigate } from 'react-router-dom';
 import '../styles/profilePanel.css';
 
-const MENU_SECTIONS = [
+const SECTIONS = [
   {
     title: 'Account',
     items: [
-      { icon: '◎', label: 'My Profile',       desc: 'View and edit your profile',      id: 'profile'  },
-      { icon: '◈', label: 'Account Settings', desc: 'Email, password, security',        id: 'settings' },
-      { icon: '▦', label: 'Preferences',      desc: 'Timezone, language, display',      id: 'prefs'    },
+      { icon: '◎', label: 'My Profile',        desc: 'View and edit your profile',       id: 'profile'   },
+      { icon: '◈', label: 'Account Settings',  desc: 'Email, password, security',         id: 'settings'  },
+      { icon: '▦', label: 'Preferences',       desc: 'Timezone, language, display',       id: 'prefs'     },
     ]
   },
   {
-    title: 'Dashboard',
+    title: 'Navigate',
     items: [
-      { icon: '↗', label: 'Insights Hub',     desc: 'AI analytics and predictions',     id: 'insights', route: '/insights' },
-      { icon: '◷', label: 'Task History',     desc: 'View all past tasks',              id: 'history'  },
-      { icon: '▸', label: 'Weekly Goals',     desc: 'Set and track weekly objectives',  id: 'goals'    },
+      { icon: '↗', label: 'Dashboard',         desc: 'Performance overview',              id: 'nav-dash',  route: '/dashboard' },
+      { icon: '◷', label: 'Tasks',             desc: 'Manage your tasks',                 id: 'nav-tasks', route: '/tasks'     },
+      { icon: '✦', label: 'Insights Hub',      desc: 'AI analytics and predictions',      id: 'nav-ins',   route: '/insights'  },
     ]
   },
   {
     title: 'Support',
     items: [
-      { icon: '?', label: 'Help Center',      desc: 'Docs, guides, FAQs',               id: 'help'     },
-      { icon: '✦', label: 'What\'s New',      desc: 'Latest features and updates',      id: 'whats-new'},
-      { icon: '⌘', label: 'Keyboard Shortcuts', desc: 'Power-user shortcuts',           id: 'shortcuts'},
+      { icon: '?', label: 'Help Center',       desc: 'Docs, guides, FAQs',                id: 'help'      },
+      { icon: '★', label: "What's New",        desc: 'Latest features and updates',       id: 'whats-new' },
+      { icon: '⌘', label: 'Keyboard Shortcuts',desc: 'Power-user shortcuts',              id: 'shortcuts' },
     ]
   }
 ];
 
 const SHORTCUTS = [
-  { keys: ['G', 'D'], desc: 'Go to Dashboard'  },
-  { keys: ['G', 'T'], desc: 'Go to Tasks'       },
-  { keys: ['G', 'I'], desc: 'Go to Insights'    },
-  { keys: ['N'],      desc: 'New Task'           },
-  { keys: ['?'],      desc: 'Open this panel'    },
+  { keys: ['G','D'], desc: 'Go to Dashboard'   },
+  { keys: ['G','T'], desc: 'Go to Tasks'        },
+  { keys: ['G','I'], desc: 'Go to Insights'     },
+  { keys: ['?'],     desc: 'Toggle this panel'  },
+  { keys: ['Esc'],   desc: 'Close panel'        },
 ];
 
 export default function ProfilePanel() {
-  const [open,       setOpen]       = useState(false);
-  const [activeView, setActiveView] = useState(null); // null = main menu
+  const [open,    setOpen]    = useState(false);
+  const [subView, setSubView] = useState(null);
   const panelRef = useRef(null);
-  const user = JSON.parse(localStorage.getItem('user') || '{}');
-  const initials = user?.email?.slice(0,2).toUpperCase() || 'KA';
-  const joinDate = new Date().toLocaleDateString('en-US', { month: 'long', year: 'numeric' });
+  const navigate = useNavigate();
 
-  // Close on outside click
+  const user     = (() => { try { return JSON.parse(localStorage.getItem('user') || '{}'); } catch { return {}; } })();
+  const initials = (user?.email || 'KA').slice(0, 2).toUpperCase();
+  const email    = user?.email || 'user@veridyn.app';
+
+  /* ── Close on outside click ── */
   useEffect(() => {
+    if (!open) return;
     const handler = (e) => {
       if (panelRef.current && !panelRef.current.contains(e.target)) {
-        setOpen(false);
-        setActiveView(null);
+        closePanelFull();
       }
     };
-    if (open) document.addEventListener('mousedown', handler);
-    return () => document.removeEventListener('mousedown', handler);
+    // Small delay so the open-click doesn't immediately close
+    const timer = setTimeout(() => document.addEventListener('mousedown', handler), 100);
+    return () => { clearTimeout(timer); document.removeEventListener('mousedown', handler); };
   }, [open]);
 
-  // Keyboard shortcut to open
+  /* ── Keyboard shortcuts ── */
   useEffect(() => {
     const handler = (e) => {
-      if (e.key === '?' && !e.target.matches('input, textarea')) {
-        setOpen(o => !o);
+      if (e.key === 'Escape') { closePanelFull(); return; }
+      if (e.key === '?' && !['INPUT','TEXTAREA'].includes(e.target.tagName)) {
+        e.preventDefault();
+        setOpen(o => { if (!o) setSubView(null); return !o; });
       }
-      if (e.key === 'Escape') { setOpen(false); setActiveView(null); }
     };
     document.addEventListener('keydown', handler);
     return () => document.removeEventListener('keydown', handler);
   }, []);
 
+  const closePanelFull = () => {
+    setOpen(false);
+    setTimeout(() => setSubView(null), 280); // wait for animation
+  };
+
   const handleItem = (item) => {
     if (item.route) {
-      window.location.href = item.route;
-      setOpen(false);
+      navigate(item.route);
+      closePanelFull();
       return;
     }
-    if (item.id === 'shortcuts') { setActiveView('shortcuts'); return; }
-    if (item.id === 'whats-new') { setActiveView('whats-new'); return; }
-    if (item.id === 'help')      { setActiveView('help');      return; }
-    // Others: show coming-soon toast (just close for now)
-    setOpen(false);
+    if (['help','whats-new','shortcuts'].includes(item.id)) {
+      setSubView(item.id);
+      return;
+    }
+    closePanelFull();
   };
 
   const logout = () => {
@@ -89,144 +99,165 @@ export default function ProfilePanel() {
 
   return (
     <>
-      {/* Trigger — sitting in sidebar footer via CSS class */}
+      {/* ── Trigger: user row at bottom of sidebar ── */}
       <button
-        className="profile-trigger"
-        onClick={() => { setOpen(o => !o); setActiveView(null); }}
-        aria-label="Open profile panel"
+        className="pp-trigger"
+        onClick={() => { setOpen(o => { if (!o) setSubView(null); return !o; }); }}
+        aria-label="Open profile"
+        aria-expanded={open}
       >
-        <div className="profile-trigger-avatar">{initials}</div>
-        <div className="profile-trigger-info">
-          <span className="profile-trigger-name">{user?.email || 'User'}</span>
-          <span className="profile-trigger-role">Student</span>
+        <div className="pp-trigger-avatar">{initials}</div>
+        <div className="pp-trigger-info">
+          <span className="pp-trigger-email">{email}</span>
+          <span className="pp-trigger-role">Student</span>
         </div>
-        <span className="profile-trigger-caret">{open ? '▴' : '▾'}</span>
+        <span className="pp-trigger-caret" style={{ transform: open ? 'rotate(180deg)' : 'none' }}>
+          ⌃
+        </span>
       </button>
 
-      {/* Backdrop */}
-      {open && <div className="profile-backdrop" onClick={() => setOpen(false)} />}
+      {/* ── Backdrop ── */}
+      <div
+        className={`pp-backdrop ${open ? 'pp-backdrop--visible' : ''}`}
+        onClick={closePanelFull}
+        aria-hidden="true"
+      />
 
-      {/* Slide panel */}
-      <div ref={panelRef} className={`profile-panel ${open ? 'open' : ''}`}>
+      {/* ── Right-side panel ── */}
+      <div
+        ref={panelRef}
+        className={`pp-panel ${open ? 'pp-panel--open' : ''}`}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Profile panel"
+      >
 
-        {/* ── Inner: Main menu ── */}
-        <div className={`panel-view ${!activeView ? 'visible' : 'hidden'}`}>
+        {/* ══ Main view ══ */}
+        <div className={`pp-view ${!subView ? 'pp-view--active' : 'pp-view--hidden'}`}>
 
-          {/* User hero */}
-          <div className="panel-hero">
-            <div className="panel-hero-avatar">{initials}</div>
-            <div className="panel-hero-info">
-              <div className="panel-hero-name">{user?.email || 'User'}</div>
-              <div className="panel-hero-sub">Joined {joinDate}</div>
+          {/* Header */}
+          <div className="pp-header">
+            <div className="pp-header-user">
+              <div className="pp-header-avatar">{initials}</div>
+              <div>
+                <div className="pp-header-email">{email}</div>
+                <div className="pp-header-joined">Veridyn Intelligence</div>
+              </div>
             </div>
-            <button className="panel-close-btn" onClick={() => setOpen(false)}>×</button>
+            <button
+              className="pp-close-btn"
+              onClick={closePanelFull}
+              aria-label="Close panel"
+              type="button"
+            >
+              ✕
+            </button>
           </div>
 
-          {/* AI status chip */}
-          <div className="panel-ai-chip">
-            <span className="panel-ai-dot" />
-            <span>AI Intelligence Active</span>
-            <span className="panel-ai-version">v2.0</span>
+          {/* AI status */}
+          <div className="pp-ai-pill">
+            <span className="pp-ai-dot" />
+            AI Intelligence Active
+            <span className="pp-ai-ver">v2.0</span>
           </div>
 
-          {/* Sections */}
-          <div className="panel-sections">
-            {MENU_SECTIONS.map(section => (
-              <div key={section.title} className="panel-section">
-                <div className="panel-section-title">{section.title}</div>
+          {/* Menu sections */}
+          <nav className="pp-nav">
+            {SECTIONS.map(section => (
+              <div key={section.title} className="pp-section">
+                <div className="pp-section-label">{section.title}</div>
                 {section.items.map(item => (
                   <button
                     key={item.id}
-                    className="panel-item"
+                    className="pp-item"
                     onClick={() => handleItem(item)}
+                    type="button"
                   >
-                    <div className="panel-item-icon">{item.icon}</div>
-                    <div className="panel-item-text">
-                      <span className="panel-item-label">{item.label}</span>
-                      <span className="panel-item-desc">{item.desc}</span>
-                    </div>
-                    <span className="panel-item-arrow">›</span>
+                    <span className="pp-item-icon">{item.icon}</span>
+                    <span className="pp-item-body">
+                      <span className="pp-item-label">{item.label}</span>
+                      <span className="pp-item-desc">{item.desc}</span>
+                    </span>
+                    <span className="pp-item-arrow">›</span>
                   </button>
                 ))}
               </div>
             ))}
-          </div>
+          </nav>
 
           {/* Footer */}
-          <div className="panel-footer">
-            <div className="panel-footer-row">
-              <span className="panel-version">Veridyn v2.0</span>
-              <span className="panel-shortcut-hint">Press <kbd>?</kbd> anytime</span>
+          <div className="pp-footer">
+            <div className="pp-footer-meta">
+              <span className="pp-ver-tag">Veridyn v2.0</span>
+              <span className="pp-kbd-hint">Press <kbd>?</kbd> anytime</span>
             </div>
-            <button className="panel-logout-btn" onClick={logout}>
+            <button className="pp-logout-btn" onClick={logout} type="button">
               <span>↗</span> Sign out
             </button>
           </div>
+
         </div>
 
-        {/* ── Inner: Keyboard Shortcuts ── */}
-        <div className={`panel-view ${activeView === 'shortcuts' ? 'visible' : 'hidden'}`}>
-          <div className="panel-sub-header">
-            <button className="panel-back-btn" onClick={() => setActiveView(null)}>‹ Back</button>
-            <div className="panel-sub-title">Keyboard Shortcuts</div>
+        {/* ══ Sub-view: Shortcuts ══ */}
+        <div className={`pp-view ${subView === 'shortcuts' ? 'pp-view--active' : 'pp-view--hidden'}`}>
+          <div className="pp-subheader">
+            <button className="pp-back-btn" onClick={() => setSubView(null)} type="button">‹ Back</button>
+            <span className="pp-subheader-title">Keyboard Shortcuts</span>
           </div>
-          <div className="panel-shortcuts">
+          <div className="pp-shortcuts-list">
             {SHORTCUTS.map((s, i) => (
-              <div key={i} className="shortcut-row">
-                <div className="shortcut-keys">
-                  {s.keys.map((k, j) => <kbd key={j} className="shortcut-key">{k}</kbd>)}
+              <div key={i} className="pp-shortcut-row">
+                <div className="pp-shortcut-keys">
+                  {s.keys.map((k, j) => <kbd key={j} className="pp-kbd">{k}</kbd>)}
                 </div>
-                <span className="shortcut-desc">{s.desc}</span>
+                <span className="pp-shortcut-desc">{s.desc}</span>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Inner: What's New ── */}
-        <div className={`panel-view ${activeView === 'whats-new' ? 'visible' : 'hidden'}`}>
-          <div className="panel-sub-header">
-            <button className="panel-back-btn" onClick={() => setActiveView(null)}>‹ Back</button>
-            <div className="panel-sub-title">What's New</div>
+        {/* ══ Sub-view: What's New ══ */}
+        <div className={`pp-view ${subView === 'whats-new' ? 'pp-view--active' : 'pp-view--hidden'}`}>
+          <div className="pp-subheader">
+            <button className="pp-back-btn" onClick={() => setSubView(null)} type="button">‹ Back</button>
+            <span className="pp-subheader-title">What's New</span>
           </div>
-          <div className="panel-whats-new">
+          <div className="pp-changelog">
             {[
-              { version: 'v2.0', date: 'Apr 2026', tag: 'New',       title: 'Dark Intelligence UI', desc: 'Completely redesigned dark dashboard with sidebar navigation.' },
-              { version: 'v1.9', date: 'Mar 2026', tag: 'Feature',   title: 'AI Risk Predictor',    desc: 'Predicts productivity drops using behavioral pattern analysis.' },
-              { version: 'v1.8', date: 'Mar 2026', tag: 'Improved',  title: 'Study Pattern Analyzer', desc: 'Now detects your best and worst performance hours.' },
-              { version: 'v1.7', date: 'Feb 2026', tag: 'Feature',   title: 'AI Chat Coach',        desc: 'Real-time GPT-powered coach with your data context.' },
+              { tag: 'New',      date: 'Apr 2026', title: 'Dark Intelligence UI',       desc: 'Redesigned dark dashboard with sidebar and profile panel.' },
+              { tag: 'Feature',  date: 'Mar 2026', title: 'AI Risk Predictor',          desc: 'Predicts productivity drops using behavioral pattern analysis.' },
+              { tag: 'Improved', date: 'Mar 2026', title: 'Study Pattern Analyzer',    desc: 'Detects best and worst performance hours automatically.' },
+              { tag: 'Feature',  date: 'Feb 2026', title: 'AI Chat Coach',             desc: 'Groq-powered coach with your live data context. Free & fast.' },
             ].map((r, i) => (
-              <div key={i} className="release-row">
-                <div className="release-meta">
-                  <span className={`release-tag tag-${r.tag.toLowerCase()}`}>{r.tag}</span>
-                  <span className="release-date">{r.date}</span>
+              <div key={i} className="pp-release">
+                <div className="pp-release-meta">
+                  <span className={`pp-release-tag pp-tag-${r.tag.toLowerCase()}`}>{r.tag}</span>
+                  <span className="pp-release-date">{r.date}</span>
                 </div>
-                <div className="release-title">{r.title}</div>
-                <div className="release-desc">{r.desc}</div>
+                <div className="pp-release-title">{r.title}</div>
+                <div className="pp-release-desc">{r.desc}</div>
               </div>
             ))}
           </div>
         </div>
 
-        {/* ── Inner: Help Center ── */}
-        <div className={`panel-view ${activeView === 'help' ? 'visible' : 'hidden'}`}>
-          <div className="panel-sub-header">
-            <button className="panel-back-btn" onClick={() => setActiveView(null)}>‹ Back</button>
-            <div className="panel-sub-title">Help Center</div>
+        {/* ══ Sub-view: Help ══ */}
+        <div className={`pp-view ${subView === 'help' ? 'pp-view--active' : 'pp-view--hidden'}`}>
+          <div className="pp-subheader">
+            <button className="pp-back-btn" onClick={() => setSubView(null)} type="button">‹ Back</button>
+            <span className="pp-subheader-title">Help Center</span>
           </div>
-          <div className="panel-help">
+          <div className="pp-help-list">
             {[
-              { icon: '◎', q: 'How is my Discipline Score calculated?',  a: 'It\'s (completed tasks / total tasks) × 100. Complete more tasks each day to raise your score.' },
-              { icon: '◈', q: 'What do the Tiers mean?',                a: 'Elite (85%+), Gold (70–84%), Silver (50–69%), Bronze (<50%). Tier is based on your daily completion rate.' },
-              { icon: '▦', q: 'How does the Risk Predictor work?',      a: 'It analyzes your streak, completion rate, volatility, and trend to predict if your productivity will drop.' },
-              { icon: '◷', q: 'What is Volatility?',                    a: 'Standard deviation of your discipline scores. High volatility = inconsistent performance.' },
-              { icon: '↗', q: 'How do I improve my streak?',            a: 'Complete at least one task every day. Even 1 task/day keeps your streak alive.' },
+              { q: 'How is my Discipline Score calculated?',   a: '(Completed tasks ÷ Total tasks) × 100. Complete more tasks daily to raise it.' },
+              { q: 'What are the Performance Tiers?',          a: 'Elite 85%+, Gold 70–84%, Silver 50–69%, Bronze <50%. Based on your daily completion rate.' },
+              { q: 'How does the Risk Predictor work?',        a: 'Analyzes streak, completion rate, volatility, and trend to predict productivity drops.' },
+              { q: 'What is Volatility?',                      a: 'Standard deviation of your discipline scores. High = inconsistent. Low = stable patterns.' },
+              { q: 'How do I maintain my streak?',             a: 'Complete at least one task every day. Even 1 task/day keeps the streak alive.' },
             ].map((item, i) => (
-              <div key={i} className="help-item">
-                <div className="help-icon">{item.icon}</div>
-                <div>
-                  <div className="help-q">{item.q}</div>
-                  <div className="help-a">{item.a}</div>
-                </div>
+              <div key={i} className="pp-help-item">
+                <div className="pp-help-q">{item.q}</div>
+                <div className="pp-help-a">{item.a}</div>
               </div>
             ))}
           </div>
