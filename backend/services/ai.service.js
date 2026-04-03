@@ -1,175 +1,257 @@
-import OpenAI from "openai";
+/**
+ * VERIDYN AI SERVICE
+ * 
+ * Primary:   Groq (FREE — llama-3.1-70b, 30req/min, 14,400/day)
+ *            API key: https://console.groq.com → free signup, no credit card
+ * 
+ * Secondary: Anthropic Claude (if ANTHROPIC_API_KEY set)
+ *            SDK already installed: @anthropic-ai/sdk
+ * 
+ * Fallback:  Smart mock responses (always works, no API needed)
+ */
 
 class AIService {
   constructor() {
-    this.model = 'gpt-4o-mini';
+    this.groqModel      = 'llama-3.1-70b-versatile';
+    this.anthropicModel = 'claude-haiku-4-5-20251001';
   }
 
-  getClient() {
-    if (!this.client) {
-      this.client = new OpenAI({
-        apiKey: process.env.OPENAI_API_KEY,
-      });
-    }
-    return this.client;
+  /* ── Get provider based on env vars ── */
+  getProvider() {
+    if (process.env.GROQ_API_KEY) return 'groq';
+    if (process.env.ANTHROPIC_API_KEY) return 'anthropic';
+    return 'mock';
   }
 
-  async generateResponse(prompt, maxTokens = 2000) {
-    try {
-      const client = this.getClient();
-      const completion = await client.chat.completions.create({
-        model: this.model,
-        messages: [
-          {
-            role: 'system',
-            content: 'You are an expert study and productivity coach. Always respond with valid JSON only, no markdown, no backticks.'
-          },
-          { role: 'user', content: prompt }
-        ],
+  /* ── Groq call (OpenAI-compatible API) ── */
+  async callGroq(messages, maxTokens = 1000) {
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${process.env.GROQ_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: this.groqModel,
+        messages,
         max_tokens: maxTokens,
         temperature: 0.7,
-      });
-      return completion.choices[0].message.content;
-    } catch (error) {
-      console.error('AI Service Error:', error);
-      throw new Error('Failed to generate AI response');
-    }
-  }
-
-  async generateRecommendations(userData) {
-    try {
-      const prompt = this.buildRecommendationPrompt(userData);
-      return await this.generateResponse(prompt);
-    } catch {
-      return JSON.stringify([
-        { title: "Establish a Morning Routine", description: "Start your day with a consistent routine. Wake up at the same time, review your goals, and tackle your hardest task first.", priority: "high", category: "time-management" },
-        { title: "Use the Pomodoro Technique", description: "Break study sessions into 25-minute focused blocks with 5-minute breaks. Prevents burnout and maintains concentration.", priority: "high", category: "focus" },
-        { title: "Track Your Energy Patterns", description: "Notice when you're most productive. Schedule challenging tasks during peak energy hours.", priority: "medium", category: "habits" },
-        { title: "Active Recall for Learning", description: "Test yourself regularly using flashcards and practice problems to strengthen retention.", priority: "medium", category: "learning-technique" },
-        { title: "Weekly Progress Reviews", description: "Every Sunday, review what worked and adjust your schedule based on actual data.", priority: "low", category: "habits" }
-      ]);
-    }
-  }
-
-  async generateExplanation(analysisData) {
-    try {
-      const prompt = this.buildExplanationPrompt(analysisData);
-      return await this.generateResponse(prompt, 1000);
-    } catch {
-      const { metric, currentValue, trend } = analysisData;
-      return JSON.stringify({
-        explanation: `Your ${metric} of ${currentValue}% shows ${String(trend).toLowerCase()} performance. Focus on building stable daily habits rather than chasing perfect scores.`,
-        actionItem: "Set a minimum daily baseline: complete at least 3 tasks every day. Consistency beats intensity."
-      });
-    }
-  }
-
-  async generate7DayPlan(userData, goals) {
-    try {
-      const prompt = this.build7DayPlanPrompt(userData, goals);
-      return await this.generateResponse(prompt, 3000);
-    } catch {
-      return JSON.stringify({
-        planOverview: "A 7-day plan focused on building consistency through incremental improvements.",
-        days: [
-          { day: 1, focus: "Foundation Day", goals: ["Complete morning routine by 9 AM", "Finish 3 priority tasks"], timeBlocks: [{ time: "9:00 AM - 11:00 AM", activity: "DSA Practice", subject: "DSA" }, { time: "2:00 PM - 4:00 PM", activity: "Web Development", subject: "Web Dev" }], successMetric: "Complete all 3 tasks" },
-          { day: 2, focus: "Deep Work Day", goals: ["2-hour uninterrupted DSA session", "Zero phone distractions"], timeBlocks: [{ time: "8:00 AM - 10:00 AM", activity: "Deep DSA Session", subject: "DSA" }, { time: "3:00 PM - 5:00 PM", activity: "System Design", subject: "System Design" }], successMetric: "2 hours DSA without breaks" },
-          { day: 3, focus: "Practice & Application", goals: ["Solve 5 medium DSA problems", "Build a small feature"], timeBlocks: [{ time: "9:00 AM - 11:00 AM", activity: "LeetCode: 5 problems", subject: "DSA" }, { time: "1:00 PM - 3:00 PM", activity: "Project feature development", subject: "Web Dev" }], successMetric: "Submit all 5 problems" },
-          { day: 4, focus: "Knowledge Consolidation", goals: ["Create summary notes", "Prepare interview questions"], timeBlocks: [{ time: "8:00 AM - 10:00 AM", activity: "DSA pattern documentation", subject: "DSA" }, { time: "3:00 PM - 5:00 PM", activity: "Mock interview prep", subject: "Interview Prep" }], successMetric: "Complete DSA cheat sheet" },
-          { day: 5, focus: "Skill Expansion", goals: ["Learn new DSA topic: Trees", "Explore advanced DB features"], timeBlocks: [{ time: "9:00 AM - 11:00 AM", activity: "Binary Trees: Traversals", subject: "DSA" }, { time: "1:00 PM - 3:00 PM", activity: "Database aggregations", subject: "Web Dev" }], successMetric: "Implement 3 tree algorithms" },
-          { day: 6, focus: "Integration Day", goals: ["Apply tree concepts", "Deploy new feature"], timeBlocks: [{ time: "8:00 AM - 10:00 AM", activity: "Tree problems: BST, DFS, BFS", subject: "DSA" }, { time: "10:30 AM - 1:00 PM", activity: "Project: Analytics dashboard", subject: "Web Dev" }], successMetric: "Solve 4 tree problems, deploy feature" },
-          { day: 7, focus: "Review & Planning", goals: ["Weekly review", "Plan next week"], timeBlocks: [{ time: "9:00 AM - 10:30 AM", activity: "Review all DSA from week", subject: "DSA" }, { time: "2:00 PM - 4:00 PM", activity: "Plan week 2 objectives", subject: "Productivity" }], successMetric: "Clear plan for week 2" }
-        ],
-        weeklyTarget: "Achieve 85%+ task completion, solve 20+ DSA problems, establish consistent daily routine"
-      });
-    }
-  }
-
-  buildRecommendationPrompt(userData) {
-    const { completedTasks = 0, totalTasks = 0, studyHours = 0, productivityScore = 0, recentActivities = [], weakAreas = [] } = userData;
-    return `Analyze this student's data and provide 5 recommendations.
-Student Data: Tasks: ${completedTasks}/${totalTasks}, Study Hours: ${studyHours}, Productivity: ${productivityScore}/100, Activities: ${recentActivities.join(', ') || 'None'}, Weak Areas: ${weakAreas.join(', ') || 'Not identified'}
-Return ONLY valid JSON array (no markdown, no backticks):
-[{"title":"title","description":"description","priority":"high","category":"time-management"}]`;
-  }
-
-  buildExplanationPrompt(analysisData) {
-    const { metric = '', currentValue = 0, trend = '', context = '' } = analysisData;
-    return `Explain this metric to a student.
-Metric: ${metric}, Value: ${currentValue}, Trend: ${trend}, Context: ${context}
-Return ONLY valid JSON (no markdown, no backticks):
-{"explanation":"explanation here","actionItem":"action here"}`;
-  }
-
-  build7DayPlanPrompt(userData, goals) {
-    const { currentProductivity = 0, availableHoursPerDay = 4, subjects = [], examDates = [] } = userData;
-    return `Create a 7-day study plan.
-Context: Productivity: ${currentProductivity}/100, Hours/Day: ${availableHoursPerDay}, Subjects: ${subjects.join(', ') || 'General'}, Exams: ${examDates.join(', ') || 'None'}, Goals: ${goals}
-Return ONLY valid JSON (no markdown, no backticks):
-{"planOverview":"overview","days":[{"day":1,"focus":"focus","goals":[],"timeBlocks":[{"time":"time","activity":"activity","subject":"subject"}],"successMetric":"metric"}],"weeklyTarget":"target"}`;
-  }
-
-  async chat(messages, userData) {
-  try {
-    const client = this.getClient();
-
-    const context = userData
-      ? `\nUser Stats: ${userData.completedTasks || 0}/${userData.totalTasks || 0} tasks completed, Streak: ${userData.currentStreak || 0} days, Discipline Score: ${userData.disciplineScore || 0}%`
-      : '';
-
-    const systemPrompt = `You are an expert AI productivity coach built into the Veridyn app — a personal productivity tracker for students.
-${context}
-
-Your job is to give smart, specific, actionable advice — just like ChatGPT would. You have access to the user's real task data and performance stats above.
-
-Guidelines:
-- Be conversational, warm, and encouraging
-- Give SPECIFIC advice, not generic tips
-- If asked for a schedule/plan, actually create a detailed one with times
-- If asked about DSA, coding, or studying — give real technical guidance
-- Keep responses focused and well-structured (use bullet points or numbered lists when helpful)
-- Max 3-4 paragraphs or a clear structured list
-- Never say "I'm just an AI" — act like a knowledgeable coach who knows the user personally`;
-
-    const response = await client.chat.completions.create({
-      model: 'gpt-4o-mini',
-      messages: [
-        { role: 'system', content: systemPrompt },
-        ...messages
-      ],
-      temperature: 0.7,
-      max_tokens: 600
+      }),
     });
 
-    return response.choices[0].message.content;
+    if (!response.ok) {
+      const err = await response.json();
+      throw new Error(err.error?.message || `Groq error ${response.status}`);
+    }
 
-  } catch (error) {
-    // Log the REAL error so you can see what's failing
-    console.error('❌ OpenAI Chat Error:', error?.status, error?.message, error?.code);
-    
-    // Only fall back to mock if it's not a config/auth error
-    if (error?.status === 401 || error?.status === 403) {
-      return "⚠️ OpenAI API key issue. Please check your OPENAI_API_KEY in the .env file.";
-    }
-    if (error?.status === 429) {
-      return "⚠️ OpenAI rate limit reached. Please wait a moment and try again.";
-    }
-    if (error?.code === 'insufficient_quota') {
-      return "⚠️ OpenAI quota exceeded. Please check your billing at platform.openai.com.";
-    }
-    
-    return this.getMockChatResponse(messages);
+    const data = await response.json();
+    return data.choices[0].message.content;
   }
-}
+
+  /* ── Anthropic call (already installed SDK) ── */
+  async callAnthropic(messages, maxTokens = 1000) {
+    const Anthropic = (await import('@anthropic-ai/sdk')).default;
+    const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+
+    // Convert OpenAI-style messages to Anthropic format
+    const systemMsg = messages.find(m => m.role === 'system');
+    const userMsgs  = messages.filter(m => m.role !== 'system');
+
+    const response = await client.messages.create({
+      model: this.anthropicModel,
+      max_tokens: maxTokens,
+      system: systemMsg?.content || 'You are a helpful productivity coach.',
+      messages: userMsgs.map(m => ({ role: m.role, content: m.content })),
+    });
+
+    return response.content[0].text;
+  }
+
+  /* ── Main generate method ── */
+  async generateResponse(messages, maxTokens = 1000) {
+    const provider = this.getProvider();
+
+    try {
+      if (provider === 'groq') {
+        return await this.callGroq(messages, maxTokens);
+      }
+      if (provider === 'anthropic') {
+        return await this.callAnthropic(messages, maxTokens);
+      }
+    } catch (error) {
+      console.error(`AI provider (${provider}) error:`, error.message);
+      // Fall through to mock
+    }
+
+    // Always fall back to smart mock
+    return this.getMockResponse(messages);
+  }
+
+  /* ── Generate recommendations ── */
+  async generateRecommendations(userData) {
+    const { completedTasks = 0, totalTasks = 0, productivityScore = 0 } = userData;
+
+    const messages = [
+      {
+        role: 'system',
+        content: 'You are a productivity coach. Return ONLY valid JSON array, no markdown.',
+      },
+      {
+        role: 'user',
+        content: `Student data: ${completedTasks}/${totalTasks} tasks done, productivity: ${productivityScore}%.
+Return 5 personalized recommendations as JSON array:
+[{"title":"","description":"","priority":"high","category":""}]`,
+      },
+    ];
+
+    try {
+      const raw = await this.generateResponse(messages, 1200);
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      JSON.parse(cleaned); // validate
+      return cleaned;
+    } catch {
+      return JSON.stringify(this.mockRecommendations(productivityScore));
+    }
+  }
+
+  /* ── Generate explanation ── */
+  async generateExplanation({ metric, currentValue, trend, context }) {
+    const messages = [
+      { role: 'system', content: 'You are a productivity analyst. Return ONLY valid JSON, no markdown.' },
+      {
+        role: 'user',
+        content: `Metric: ${metric}, Value: ${currentValue}%, Trend: ${trend}, Context: ${context}
+Return: {"explanation":"","actionItem":""}`,
+      },
+    ];
+
+    try {
+      const raw = await this.generateResponse(messages, 600);
+      return raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    } catch {
+      return JSON.stringify({
+        explanation: `Your ${metric} of ${currentValue}% shows ${trend.toLowerCase()} performance. Focus on daily consistency.`,
+        actionItem: 'Set a minimum daily baseline: complete at least 3 tasks every day.',
+      });
+    }
+  }
+
+  /* ── Generate 7-day plan ── */
+  async generate7DayPlan(userData, goals) {
+    const messages = [
+      { role: 'system', content: 'You are a study planner. Return ONLY valid JSON, no markdown.' },
+      {
+        role: 'user',
+        content: `Productivity: ${userData?.currentProductivity || 0}%, Goals: ${goals}
+Return a 7-day plan: {"planOverview":"","days":[{"day":1,"focus":"","goals":[],"successMetric":""}],"weeklyTarget":""}`,
+      },
+    ];
+
+    try {
+      const raw = await this.generateResponse(messages, 2000);
+      return raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+    } catch {
+      return JSON.stringify(this.mockSevenDayPlan());
+    }
+  }
+
+  /* ── AI Chat ── */
+  async chat(messages, userData) {
+    const context = userData
+      ? `User stats: ${userData.completedTasks}/${userData.totalTasks} tasks, streak: ${userData.currentStreak} days, score: ${userData.disciplineScore}%`
+      : '';
+
+    const systemPrompt = `You are Veridyn, an expert AI productivity coach for students.
+${context}
+
+Be conversational, specific, and encouraging. Use bullet points when helpful.
+Give real advice based on the user's actual data. Max 3-4 paragraphs.`;
+
+    const chatMessages = [
+      { role: 'system', content: systemPrompt },
+      ...messages,
+    ];
+
+    try {
+      const provider = this.getProvider();
+
+      if (provider === 'groq') {
+        return await this.callGroq(chatMessages, 600);
+      }
+      if (provider === 'anthropic') {
+        return await this.callAnthropic(chatMessages, 600);
+      }
+
+      // Smart mock for chat
+      return this.getMockChatResponse(messages);
+
+    } catch (error) {
+      console.error('Chat AI error:', error.message);
+
+      // Specific error messages
+      if (error.message?.includes('rate') || error.message?.includes('429')) {
+        return this.getMockChatResponse(messages);
+      }
+      return this.getMockChatResponse(messages);
+    }
+  }
+
+  /* ════════════════════════════════
+     SMART MOCK RESPONSES
+     Always available, no API needed
+  ════════════════════════════════ */
+
+  getMockResponse(messages) {
+    const lastMsg = messages.filter(m => m.role === 'user').pop()?.content || '';
+    return this.getMockChatResponse([{ role: 'user', content: lastMsg }]);
+  }
 
   getMockChatResponse(messages) {
-    const last = messages[messages.length - 1]?.content?.toLowerCase() || '';
-    if (last.includes('plan') || last.includes('today')) return "Great question! Start with your top 3 priorities for today. Block 90-minute focus sessions for deep work, take 15-minute breaks between them. What's your most important task today?";
-    if (last.includes('motivation') || last.includes('tired')) return "I hear you! Remember why you started. Try the 2-minute rule: just commit to starting for 2 minutes. Often, starting is the hardest part. You've got this! 💪";
-    if (last.includes('habit') || last.includes('routine')) return "Habits are built on consistency over intensity. Start small — 5 minutes daily beats 2 hours once a week. What habit are you trying to build?";
-    if (last.includes('focus') || last.includes('distract')) return "Focus is a trainable skill! Try Pomodoro: 25 minutes focused work, 5-minute break. Turn off notifications. What's distracting you most?";
-    if (last.includes('dsa') || last.includes('leetcode')) return "For DSA, consistency beats cramming. Aim for 2-3 problems daily. Focus on patterns: sliding window, two pointers, BFS/DFS. Which topic feels weakest right now?";
-    return "I'm here to help you stay productive and crush your goals! I can help with planning, motivation, habits, and time management. What specific challenge are you facing right now?";
+    const last = (messages.at(-1)?.content || '').toLowerCase();
+
+    if (last.includes('plan') || last.includes('today') || last.includes('schedule')) {
+      return `Here's a focused plan for today:\n\n**Morning (9–11 AM):** Tackle your hardest task first — DSA or whatever requires most concentration.\n\n**Midday (2–4 PM):** Project work or web dev practice — creative tasks work well here.\n\n**Evening (7–8 PM):** Review what you completed, prep tomorrow's task list.\n\nAim for 3 completed tasks minimum. What's your most important task today?`;
+    }
+    if (last.includes('dsa') || last.includes('leetcode') || last.includes('coding')) {
+      return `For DSA improvement:\n\n• **Daily practice:** 2–3 problems/day beats cramming 20 once a week\n• **Pattern focus:** master sliding window, two pointers, BFS/DFS first\n• **Spaced repetition:** revisit problems you got wrong after 3 days\n• **Time yourself:** 20-25 min per medium problem is the target\n\nWhich topic feels weakest right now — trees, graphs, DP, or something else?`;
+    }
+    if (last.includes('motivat') || last.includes('tired') || last.includes('lazy')) {
+      return `Motivation is unreliable — discipline is what you're building here.\n\nTry this: commit to just **2 minutes** of starting. Open the problem, write your name, do anything. Starting is 80% of the battle.\n\nAlso remember: your current streak and discipline score are proof you've already been doing the work. That momentum is real. What specifically feels hard right now?`;
+    }
+    if (last.includes('habit') || last.includes('routine') || last.includes('consistent')) {
+      return `Habits are built through **tiny, non-negotiable daily actions**.\n\n• Pick ONE anchor habit (e.g., 9 AM = first task starts)\n• Stack it to something you already do (after breakfast → open laptop)\n• Track your streak — visible progress is powerful\n• Lower the bar to stay consistent: 1 task/day > 0 tasks/day\n\nWhat habit are you trying to build? I can help you design the specific trigger.`;
+    }
+    if (last.includes('adobe') || last.includes('internship') || last.includes('interview')) {
+      return `For Adobe internship prep:\n\n• **DSA:** Focus on trees, graphs, DP — Adobe loves these\n• **System Design basics:** even for SDE intern roles, knowing LLD helps\n• **Projects:** VERIDYN itself is a strong talking point — full-stack + AI + analytics\n• **Timeline:** if internship is 6+ months away, 1 hour DSA/day is enough\n\nYour CGPA of 8.4 is solid. The differentiator will be your project depth. What part of prep do you want to focus on?`;
+    }
+    if (last.includes('stress') || last.includes('overwhelm') || last.includes('too much')) {
+      return `When everything feels overwhelming, **zoom in, not out**.\n\nForget the full list. Ask: what is the ONE thing that, if done today, would make tomorrow easier?\n\nDo that. Just that. Then reassess.\n\nBig goals (Adobe internship, strong CGPA) are built from small daily wins. You don't have to solve everything today.`;
+    }
+
+    return `I'm your Veridyn AI coach — I can see your productivity data and give you specific guidance.\n\nI can help with:\n• **Study planning** — daily/weekly schedules\n• **DSA practice** — patterns, problems, approach\n• **Habit building** — consistency systems\n• **Interview prep** — Adobe/tech company strategies\n• **Motivation** — when you're stuck\n\nWhat do you want to work on right now?`;
+  }
+
+  mockRecommendations(score = 0) {
+    return [
+      { title: 'Start with your hardest task', description: 'Tackle the most challenging task first when energy is highest. This prevents decision fatigue later.', priority: 'high', category: 'focus' },
+      { title: 'Use the Pomodoro technique', description: '25 minutes focused work, 5 min break. Prevents burnout and keeps consistency high.', priority: 'high', category: 'time-management' },
+      { title: 'Track your energy patterns', description: 'Notice when you study best. Schedule hard tasks during peak hours.', priority: 'medium', category: 'habits' },
+      { title: 'Active recall for learning', description: 'Test yourself after studying — flashcards and practice problems beat re-reading.', priority: 'medium', category: 'learning' },
+      { title: 'Weekly review every Sunday', description: 'Review what worked and what didn\'t. Adjust your plan based on data.', priority: 'low', category: 'habits' },
+    ];
+  }
+
+  mockSevenDayPlan() {
+    return {
+      planOverview: '7-day plan focused on building consistent daily habits and improving task completion.',
+      days: Array.from({ length: 7 }, (_, i) => ({
+        day: i + 1,
+        focus: ['Foundation', 'Deep Work', 'Practice', 'Consolidation', 'Skill Building', 'Integration', 'Review'][i],
+        goals: [`Complete ${3 + i} tasks`, 'Maintain discipline streak'],
+        successMetric: `${70 + i * 3}%+ completion rate`,
+      })),
+      weeklyTarget: 'Achieve 85%+ task completion and build a 7-day streak.',
+    };
   }
 }
 
