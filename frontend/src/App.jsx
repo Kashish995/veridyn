@@ -7,6 +7,7 @@ import Tasks from "./pages/Tasks";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./ui/ErrorBoundary";
 import Navbar from "./components/Navbar";
+import StreakCelebration from "./components/StreakCelebration";
 
 const AUTH_PATHS = ["/login", "/signup"];
 
@@ -17,24 +18,24 @@ function AppShell() {
   const showSidebar = !!token && !isAuthPage;
 
   return (
-    <div style={{ display:'flex', minHeight:'100vh', background:'#080c14' }}>
+    <div style={{ display: "flex", minHeight: "100vh", background: "#080c14" }}>
       {showSidebar && <Navbar />}
       <main style={{
-        flex:1,
-        marginLeft: showSidebar ? '240px' : 0,
-        minHeight: '100vh',
-        background: '#080c14',
-        overflow: 'auto',
+        flex: 1,
+        marginLeft: showSidebar ? "240px" : 0,
+        minHeight: "100vh",
+        background: "#080c14",
+        overflow: "auto",
       }}>
         <ErrorBoundary>
           <Routes>
-            <Route path="/" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
-            <Route path="/login"  element={<Login />} />
-            <Route path="/signup" element={<Register />} />
+            <Route path="/"          element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+            <Route path="/login"     element={<Login />} />
+            <Route path="/signup"    element={<Register />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/tasks"     element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
             <Route path="/insights"  element={<ProtectedRoute><Insights /></ProtectedRoute>} />
-            <Route path="*" element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
+            <Route path="*"          element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
           </Routes>
         </ErrorBoundary>
       </main>
@@ -43,5 +44,10 @@ function AppShell() {
 }
 
 export default function App() {
-  return <Router><AppShell /></Router>;
+  return (
+    <Router>
+      <StreakCelebration />
+      <AppShell />
+    </Router>
+  );
 }

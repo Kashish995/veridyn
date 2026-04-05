@@ -20,7 +20,7 @@ export default function useDashboardData() {
 
   const fetchWeeklyStats = async () => {
     const res = await api.get("/stats/weekly");
-    setWeeklyStats(res.data?.success ? res.data.data || [] : []);
+    setWeeklyStats(Array.isArray(res.data) ? res.data : []);
   };
 
   const fetchNextTask = async () => {

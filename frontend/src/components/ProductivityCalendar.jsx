@@ -26,7 +26,7 @@ export default function ProductivityCalendar() {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(r => r.json())
-      .then(d => { if (d.calendar) setCalendarData(d.calendar); })
+      .then(d => { setDataMap(d); })
       .catch(() => {})
       .finally(() => setLoading(false));
   }, []);

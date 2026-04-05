@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import api from '../api/api';
 import '../styles/tasks.css';
+import StudyTimer from '../components/StudyTimer'; // ← ADD at top
 
 const PRIORITIES = ['low', 'medium', 'high'];
 const PRIORITY_COLORS = { high: 'rose', medium: 'amber', low: 'emerald' };
@@ -299,8 +300,10 @@ export default function Tasks() {
             })}
           </div>
         )}
-
+      <StudyTimer />
+      
       </div>
     </div>
+    
   );
 }
