@@ -84,7 +84,7 @@ app.use("/api/goals",       authMiddleware, goalRoutes);
 app.use("/api/insights",    authMiddleware, insightsRoutes);
 app.use("/api/suggestions", authMiddleware, suggestionRoutes);
 // app.use("/api/health",      authMiddleware, healthRoutes);
-// app.use("/api/stats",       authMiddleware, statsRoutes);
+app.use("/api/stats", statsRoutes);
 // app.use("/api/ai",          authMiddleware, aiRoutes);
 
 app.get("/",     (req, res) => res.send("VERIDYN API RUNNING ✅"));
