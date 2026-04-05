@@ -9,6 +9,17 @@
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   min-width: 0;
+  /* Hide scrollbar but keep functionality */
+  scrollbar-width: thin;
+  scrollbar-color: rgba(99,102,241,0.2) transparent;
+}
+.cal-wrap::-webkit-scrollbar        { height: 4px; }
+.cal-wrap::-webkit-scrollbar-track  { background: transparent; }
+.cal-wrap::-webkit-scrollbar-thumb  { background: rgba(99,102,241,0.2); border-radius: 2px; }
+
+/* Minimum width so it always scrolls correctly on small screens */
+.cal-inner {
+  min-width: 680px;
 }
 
 /* ── Month row ── */
@@ -89,11 +100,11 @@
   position: relative;
 }
 
-/* ── Color levels ── */
+/* ── Color levels (completionRate 0→1+) ── */
 .cal-lv0 { background: var(--bg-elevated); }
-.cal-lv1 { background: rgba(99, 102, 241, 0.22); }
-.cal-lv2 { background: rgba(99, 102, 241, 0.45); }
-.cal-lv3 { background: rgba(99, 102, 241, 0.68); }
+.cal-lv1 { background: rgba(99,102,241,0.22); }
+.cal-lv2 { background: rgba(99,102,241,0.45); }
+.cal-lv3 { background: rgba(99,102,241,0.68); }
 .cal-lv4 { background: #6366f1; box-shadow: 0 0 6px rgba(99,102,241,0.4); }
 
 /* ── Skeleton loading ── */
@@ -115,7 +126,6 @@
   background-size: 200% 100%;
   animation: shimmer 1.4s infinite;
 }
-
 @keyframes shimmer {
   0%   { background-position: -200% 0; }
   100% { background-position:  200% 0; }
@@ -131,13 +141,8 @@
   font-size: 0.625rem;
   color: var(--text-muted);
 }
-
-.cal-legend .cal-cell {
-  cursor: default;
-}
-.cal-legend .cal-cell:hover {
-  transform: none;
-}
+.cal-legend .cal-cell { cursor: default; }
+.cal-legend .cal-cell:hover { transform: none; }
 
 /* ── Tooltip ── */
 .cal-tooltip {
@@ -155,14 +160,49 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.4);
   white-space: nowrap;
 }
+.cal-tooltip strong { font-family: var(--font-mono); color: var(--text-primary, #e2e8f0); font-size: 0.6875rem; }
+.cal-tooltip span   { color: var(--text-muted, #475569); font-size: 0.6875rem; }
 
-.cal-tooltip strong {
-  font-family: var(--font-mono);
-  color: var(--text-primary, #e2e8f0);
-  font-size: 0.6875rem;
+/* ════════════════════════════════════════
+   RESPONSIVE
+════════════════════════════════════════ */
+
+@media (max-width: 768px) {
+  /* On mobile show a hint that it scrolls */
+  .cal-wrap::after {
+    content: '';
+    position: absolute;
+    top: 0; right: 0;
+    width: 32px;
+    height: 100%;
+    background: linear-gradient(to right, transparent, var(--bg-card, #111827));
+    pointer-events: none;
+    border-radius: 0 var(--r-xl) var(--r-xl) 0;
+  }
+
+  /* Slightly bigger cells on mobile for easier tapping */
+  .cal-cell {
+    width: 13px;
+    height: 13px;
+  }
+
+  .cal-day-label { height: 13px; line-height: 13px; }
+
+  .cal-week  { gap: 3px; }
+  .cal-grid  { gap: 3px; }
+  .cal-day-col { gap: 3px; }
 }
 
-.cal-tooltip span {
-  color: var(--text-muted, #475569);
-  font-size: 0.6875rem;
+@media (max-width: 480px) {
+  /* Even bigger cells on small phones */
+  .cal-cell {
+    width: 14px;
+    height: 14px;
+  }
+
+  .cal-day-label  { height: 14px; line-height: 14px; }
+  .cal-month-label { font-size: 0.5625rem; }
+
+  /* Tooltip disabled on very small screens — too cramped */
+  .cal-tooltip { display: none; }
 }

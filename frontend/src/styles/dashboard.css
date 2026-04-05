@@ -7,6 +7,8 @@
   margin: 0 auto;
   padding: var(--sp-8) var(--sp-8);
   animation: fadeUp 0.4s var(--ease-slow) both;
+  /* Bottom padding so content isn't hidden behind mobile bottom nav */
+  padding-bottom: calc(var(--sp-8) + env(safe-area-inset-bottom));
 }
 
 /* ── Page header ── */
@@ -116,10 +118,10 @@
   display: flex; align-items: center; justify-content: center;
   font-size: 1rem;
 }
-.metric-icon.c-indigo  { background: var(--indigo-subtle); border: 1px solid rgba(99,102,241,0.2); }
+.metric-icon.c-indigo  { background: var(--indigo-subtle);  border: 1px solid rgba(99,102,241,0.2); }
 .metric-icon.c-emerald { background: var(--emerald-subtle); border: 1px solid rgba(16,217,160,0.2); }
-.metric-icon.c-amber   { background: var(--amber-subtle); border: 1px solid rgba(245,158,11,0.2); }
-.metric-icon.c-cyan    { background: var(--cyan-subtle); border: 1px solid rgba(6,182,212,0.2); }
+.metric-icon.c-amber   { background: var(--amber-subtle);   border: 1px solid rgba(245,158,11,0.2); }
+.metric-icon.c-cyan    { background: var(--cyan-subtle);    border: 1px solid rgba(6,182,212,0.2);  }
 
 .metric-value {
   font-family: var(--font-mono);
@@ -215,19 +217,6 @@
 }
 
 /* ── Tier badge ── */
-.tier-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
-  padding: var(--sp-6);
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  text-align: center;
-  gap: var(--sp-3);
-}
-
 .tier-badge {
   font-family: var(--font-display);
   font-size: 1.75rem;
@@ -253,6 +242,7 @@
   gap: var(--sp-4);
   margin-bottom: var(--sp-8);
   transition: border-color var(--ease-fast);
+  flex-wrap: wrap;
 }
 
 .next-task-card:hover { border-color: rgba(99,102,241,0.4); }
@@ -286,6 +276,8 @@
   border-radius: var(--r-xl);
   padding: var(--sp-6);
   margin-bottom: var(--sp-8);
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ── Streak cards ── */
@@ -306,10 +298,7 @@
   gap: var(--sp-4);
 }
 
-.streak-icon {
-  font-size: 2rem;
-  flex-shrink: 0;
-}
+.streak-icon  { font-size: 2rem; flex-shrink: 0; }
 
 .streak-value {
   font-family: var(--font-mono);
@@ -325,69 +314,16 @@
   margin-top: var(--sp-1);
 }
 
-/* ── Monthly card ── */
-.monthly-card {
-  background: var(--bg-card);
-  border: 1px solid var(--border);
-  border-radius: var(--r-xl);
-  padding: var(--sp-6);
-  margin-bottom: var(--sp-8);
-}
-
-.monthly-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--sp-4);
-  margin-top: var(--sp-5);
-}
-
-.monthly-stat {
-  text-align: center;
-  padding: var(--sp-4);
-  background: var(--bg-surface);
-  border: 1px solid var(--border);
-  border-radius: var(--r-lg);
-}
-
-.monthly-stat-value {
-  font-family: var(--font-mono);
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: var(--text-primary);
-}
-
-.monthly-stat-label {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  margin-top: var(--sp-1);
-}
-
-/* ── Empty state ── */
+/* ── Empty / Loading ── */
 .empty-state {
   text-align: center;
   padding: var(--sp-12);
   color: var(--text-muted);
 }
+.empty-state-icon  { font-size: 3rem; margin-bottom: var(--sp-4); opacity: 0.5; }
+.empty-state-title { font-size: 1.125rem; font-weight: 600; color: var(--text-secondary); margin-bottom: var(--sp-2); }
+.empty-state-desc  { font-size: 0.875rem; color: var(--text-muted); }
 
-.empty-state-icon {
-  font-size: 3rem;
-  margin-bottom: var(--sp-4);
-  opacity: 0.5;
-}
-
-.empty-state-title {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: var(--text-secondary);
-  margin-bottom: var(--sp-2);
-}
-
-.empty-state-desc {
-  font-size: 0.875rem;
-  color: var(--text-muted);
-}
-
-/* ── Loading state ── */
 .loading-state {
   display: flex;
   flex-direction: column;
@@ -411,23 +347,62 @@
   font-family: var(--font-mono);
 }
 
-/* ── Responsive ── */
+/* ════════════════════════════════════════
+   RESPONSIVE BREAKPOINTS
+════════════════════════════════════════ */
+
+/* Tablet */
 @media (max-width: 1100px) {
   .metrics-grid { grid-template-columns: repeat(2, 1fr); }
   .charts-grid  { grid-template-columns: 1fr; }
-  .monthly-grid { grid-template-columns: repeat(2, 1fr); }
 }
 
+/* Mobile landscape + large phones */
 @media (max-width: 768px) {
-  .dashboard-container { padding: var(--sp-5) var(--sp-4); }
-  .metrics-grid  { grid-template-columns: 1fr 1fr; }
-  .stats-grid    { grid-template-columns: 1fr; }
-  .streaks-grid  { grid-template-columns: 1fr; }
-  .monthly-grid  { grid-template-columns: repeat(2, 1fr); }
-  .dashboard-header { flex-direction: column; }
+  .dashboard-container {
+    padding: var(--sp-5) var(--sp-4);
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
+
+  .dashboard-header {
+    flex-direction: column;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-5);
+    padding-bottom: var(--sp-5);
+  }
+
   .dashboard-title { font-size: 1.5rem; }
+
+  .metrics-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: var(--sp-3);
+    margin-bottom: var(--sp-5);
+  }
+
+  .metric-card    { padding: var(--sp-4); }
+  .metric-value   { font-size: 1.6rem; }
+  .metric-label   { font-size: 0.75rem; }
+
+  .charts-grid    { grid-template-columns: 1fr; gap: var(--sp-4); }
+  .stats-grid     { grid-template-columns: 1fr; gap: var(--sp-3); }
+  .streaks-grid   { grid-template-columns: 1fr 1fr; gap: var(--sp-3); }
+
+  .streak-value   { font-size: 2rem; }
+  .streak-card    { padding: var(--sp-4); }
+
+  .heatmap-card   { padding: var(--sp-4); }
+
+  .next-task-card { padding: var(--sp-4); gap: var(--sp-3); }
 }
 
+/* Small phones */
 @media (max-width: 480px) {
-  .metrics-grid { grid-template-columns: 1fr; }
+  .dashboard-container { padding: var(--sp-4) var(--sp-3); padding-bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .metrics-grid        { grid-template-columns: 1fr 1fr; gap: var(--sp-2); }
+  .metric-card         { padding: var(--sp-3); }
+  .metric-value        { font-size: 1.4rem; }
+  .streaks-grid        { grid-template-columns: 1fr; }
+  .stat-card .stat-num { font-size: 2rem; }
+  .tier-badge          { font-size: 1.4rem; padding: var(--sp-2) var(--sp-6); }
+  .dashboard-title     { font-size: 1.25rem; }
 }
