@@ -15,7 +15,7 @@ export default function Navbar() {
   return (
     <aside className="sidebar">
 
-      {/* ── Brand ── */}
+      {/* ── Brand (desktop only) ── */}
       <div className="sidebar-brand">
         <div className="brand-mark">
           <span className="brand-mark-inner">V</span>
@@ -26,7 +26,7 @@ export default function Navbar() {
         </div>
       </div>
 
-      {/* ── AI Status ── */}
+      {/* ── AI Status (desktop only) ── */}
       <div className="sidebar-status">
         <span className="glow-dot" />
         <span className="status-text">AI Active</span>
@@ -35,6 +35,7 @@ export default function Navbar() {
       {/* ── Navigation links ── */}
       <nav className="sidebar-nav">
         <div className="nav-section-label">Navigation</div>
+
         {NAV_ITEMS.map(({ path, icon, label }) => {
           const active = location.pathname === path;
           return (
@@ -49,9 +50,14 @@ export default function Navbar() {
             </Link>
           );
         })}
+
+        {/* ── Profile button — mobile bottom bar only ── */}
+        <div className="sidebar-profile-mobile">
+          <ProfilePanel />
+        </div>
       </nav>
 
-      {/* ── Footer: profile trigger opens right-side panel ── */}
+      {/* ── Footer: profile trigger — desktop only ── */}
       <div className="sidebar-footer">
         <div className="sidebar-divider" />
         <ProfilePanel />

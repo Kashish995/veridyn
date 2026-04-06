@@ -75,11 +75,21 @@
   gap: var(--sp-2);
   padding: var(--sp-2) var(--sp-3);
   background: var(--emerald-subtle);
-  border: 1px solid rgba(16, 217, 160, 0.15);
+  border: 1px solid rgba(16,217,160,0.15);
   border-radius: var(--r-full);
   margin-bottom: var(--sp-8);
   width: fit-content;
 }
+
+.glow-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  background: var(--emerald);
+  box-shadow: 0 0 6px rgba(16,217,160,0.6);
+  flex-shrink: 0;
+  animation: dotPulse 2s ease-in-out infinite;
+}
+@keyframes dotPulse { 0%,100%{opacity:1} 50%{opacity:0.4} }
 
 .status-text {
   font-size: 0.6875rem;
@@ -131,7 +141,7 @@
 .sidebar-link.active {
   background: var(--indigo-subtle);
   color: var(--indigo-light);
-  border-color: rgba(99, 102, 241, 0.2);
+  border-color: rgba(99,102,241,0.2);
   font-weight: 600;
 }
 
@@ -144,7 +154,6 @@
 }
 
 .sidebar-link.active .sidebar-icon { opacity: 1; }
-
 .sidebar-label { flex: 1; }
 
 .active-pip {
@@ -166,106 +175,170 @@
   margin-bottom: var(--sp-4);
 }
 
-.user-row {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-3);
-  margin-bottom: var(--sp-3);
-}
-
-.user-avatar {
-  width: 34px; height: 34px;
-  border-radius: var(--r-md);
-  background: var(--indigo-subtle);
-  border: 1px solid rgba(99,102,241,0.25);
-  display: flex; align-items: center; justify-content: center;
-  font-family: var(--font-display);
-  font-size: 0.75rem;
-  font-weight: 700;
-  color: var(--indigo-light);
-  flex-shrink: 0;
-}
-
-.user-info { flex: 1; min-width: 0; }
-
-.user-email {
-  font-size: 0.75rem;
-  font-weight: 600;
-  color: var(--text-primary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.user-role {
-  font-size: 0.625rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  margin-top: 1px;
-}
-
-.logout-btn {
-  width: 100%;
-  display: flex;
-  align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-2) var(--sp-3);
-  background: transparent;
-  border: 1px solid transparent;
-  border-radius: var(--r-md);
-  color: var(--text-muted);
-  font-family: var(--font-body);
-  font-size: 0.8125rem;
-  font-weight: 500;
-  cursor: pointer;
-  transition: all var(--ease-fast);
-  text-align: left;
-}
-
-.logout-btn:hover {
-  background: var(--rose-subtle);
-  color: var(--rose);
-  border-color: rgba(244,63,94,0.2);
-}
-
-/* ── Mobile Bottom Bar ── */
+/* ════════════════════════════════════════
+   MOBILE — Bottom tab bar
+════════════════════════════════════════ */
 @media (max-width: 768px) {
+
   .sidebar {
-    top: auto; bottom: 0; left: 0; right: 0;
-    width: 100%; height: auto;
+    top: auto;
+    bottom: 0; left: 0; right: 0;
+    width: 100%;
+    height: auto;
+    /* iOS safe area */
+    padding-bottom: calc(var(--sp-2) + env(safe-area-inset-bottom));
     flex-direction: row;
     align-items: center;
-    padding: var(--sp-3) var(--sp-4);
+    justify-content: center;
+    padding-top: var(--sp-2);
+    padding-left: var(--sp-4);
+    padding-right: var(--sp-4);
     border-right: none;
     border-top: 1px solid var(--border);
-    gap: var(--sp-2);
+    backdrop-filter: blur(12px);
+    background: rgba(13, 17, 33, 0.92);
+    z-index: 200;
   }
 
+  /* Hide desktop-only elements */
   .sidebar-brand,
   .sidebar-status,
   .nav-section-label,
   .sidebar-footer,
-  .sidebar-label {
+  .sidebar-divider {
     display: none;
   }
 
   .sidebar-nav {
     flex-direction: row;
     flex: 1;
-    justify-content: center;
-    gap: var(--sp-2);
+    justify-content: space-around;
+    gap: 0;
+    align-items: center;
+    max-width: 360px;
   }
 
   .sidebar-link {
     flex-direction: column;
-    gap: 2px;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
     padding: var(--sp-2) var(--sp-4);
-    font-size: 0.625rem;
-    border-radius: var(--r-md);
+    border-radius: var(--r-lg);
+    border: none;
+    flex: 1;
+    min-height: 52px;
   }
 
-  .sidebar-label { display: block; font-size: 0.625rem; }
-  .active-pip { display: none; }
-  .sidebar-icon { font-size: 1.25rem; width: auto; }
+  .sidebar-link:hover {
+    background: rgba(99,102,241,0.08);
+    border: none;
+  }
+
+  .sidebar-link.active {
+    background: rgba(99,102,241,0.1);
+    border: none;
+  }
+
+  /* Show label on mobile */
+  .sidebar-label {
+    display: block;
+    font-size: 0.625rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+    flex: none;
+  }
+
+  .sidebar-link.active .sidebar-label {
+    color: var(--indigo-light);
+  }
+
+  .sidebar-icon {
+    font-size: 1.2rem;
+    width: auto;
+    opacity: 0.6;
+  }
+
+  .sidebar-link.active .sidebar-icon {
+    opacity: 1;
+  }
+
+  /* Replace pip with underline dot */
+  .active-pip {
+    display: block;
+    width: 4px; height: 4px;
+    margin-top: 2px;
+    border-radius: 50%;
+    background: var(--indigo);
+    box-shadow: 0 0 6px var(--indigo-glow);
+  }
+}
+
+/* ── Mobile profile button in bottom bar ── */
+.sidebar-profile-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-profile-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex: 1;
+  }
+
+  /* Override pp-trigger to look like a tab button */
+  .sidebar-profile-mobile .pp-trigger {
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+    padding: var(--sp-2) var(--sp-4);
+    border-radius: var(--r-lg);
+    border: none;
+    min-height: 52px;
+    background: transparent;
+    width: 100%;
+  }
+
+  .sidebar-profile-mobile .pp-trigger-avatar {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    font-size: 0.6rem;
+    border: none;
+    background: rgba(99,102,241,0.15);
+  }
+
+  .sidebar-profile-mobile .pp-trigger-info {
+    display: none;
+  }
+
+  .sidebar-profile-mobile .pp-trigger-caret {
+    display: none;
+  }
+
+  /* Add a "You" label below avatar */
+  .sidebar-profile-mobile .pp-trigger::after {
+    content: 'Profile';
+    font-size: 0.625rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    letter-spacing: 0.04em;
+  }
+}
+
+/* Very small phones */
+@media (max-width: 380px) {
+  .sidebar-link {
+    padding: var(--sp-2) var(--sp-2);
+  }
+
+  .sidebar-label {
+    font-size: 0.5625rem;
+  }
+
+  .sidebar-icon {
+    font-size: 1.1rem;
+  }
 }
