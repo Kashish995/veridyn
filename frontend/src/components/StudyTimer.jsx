@@ -1,8 +1,6 @@
 // frontend/src/components/StudyTimer.jsx
 import { useState, useEffect, useRef } from 'react';
-import axios from 'axios';
-
-const API = import.meta.env.VITE_API_URL || 'http://localhost:5000';
+import api from '../api/api';
 
 const formatTime = (seconds) => {
   const h = Math.floor(seconds / 3600);
@@ -29,10 +27,7 @@ export default function StudyTimer() {
     const goal = (prefs.goalHours || 2) * 60;
     setGoalMins(goal);
 
-    const token = localStorage.getItem('token');
-    axios.get(`${API}/api/study-logs/today`, {
-      headers: { Authorization: `Bearer ${token}` }
-    })
+    api.get(`/study-logs/today`)
       .then(res => setTodayTotal(res.data.loggedMinutes || 0))
       .catch(() => {});
   }, []);
@@ -79,37 +74,29 @@ export default function StudyTimer() {
 
     setSaving(true);
     try {
-      const token = localStorage.getItem('token');
-      const res = await axios.post(
-        `${API}/api/study-logs/session`,
-        { durationMinutes, goalMinutes: goalMins },
-        { headers: { Authorization: `Bearer ${token}` } }
+      const res = await api.post(
+        `/study-logs/session`,
+        { durationMinutes, goalMinutes: goalMins }
       );
 
       const updatedLog = res.data.log;
       setTodayTotal(updatedLog.loggedMinutes);
       setSaved(true);
 
-      // ── Fire streak popup if goal was JUST hit this session ──
       const nowOverGoal = updatedLog.completionRate >= 1.0;
       if (nowOverGoal && wasUnderGoal) {
         try {
-          const streakRes = await axios.get(
-            `${API}/api/stats/longest-streak`,
-            { headers: { Authorization: `Bearer ${token}` } }
-          );
+          const streakRes = await api.get(`/stats/longest-streak`);
           const currentStreak = streakRes.data.currentStreak || 1;
           window.dispatchEvent(new CustomEvent('streak-achieved', {
             detail: { streak: currentStreak }
           }));
         } catch {
-          // Fallback popup without streak count
           window.dispatchEvent(new CustomEvent('streak-achieved', {
             detail: { streak: 1 }
           }));
         }
       }
-      // ─────────────────────────────────────────────────────────
 
     } catch (err) {
       console.error('Failed to save study session:', err);
