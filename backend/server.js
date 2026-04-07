@@ -74,7 +74,7 @@ app.use("/api/subjects",    authMiddleware, subjectRoutes);
 app.use("/api/planning",    authMiddleware, planningRoutes);
 app.use("/api/auto-task",   authMiddleware, autoTaskRoutes);
 app.use("/api/progress",    authMiddleware, progressRoutes);
-app.use("/api/studyLog",    authMiddleware, studyLogRoutes);
+app.use("/api/study-logs", authMiddleware, studyLogRoutes);
 app.use("/api/completion",  authMiddleware, completionRoutes);
 app.use("/api/streak",      authMiddleware, streakRoutes);
 app.use("/api/summary",     authMiddleware, summaryRoutes);
@@ -85,7 +85,7 @@ app.use("/api/insights",    authMiddleware, insightsRoutes);
 app.use("/api/suggestions", authMiddleware, suggestionRoutes);
 // app.use("/api/health",      authMiddleware, healthRoutes);
 app.use("/api/stats", statsRoutes);
-// app.use("/api/ai",          authMiddleware, aiRoutes);
+app.use("/api/ai", authMiddleware, aiRoutes);
 
 app.get("/",     (req, res) => res.send("VERIDYN API RUNNING ✅"));
 app.get("/test", (req, res) => res.json({ message: "API working", status: "ok" }));
