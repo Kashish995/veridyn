@@ -97,8 +97,7 @@ const BACKEND_URL = process.env.RENDER_EXTERNAL_URL
   || 'https://veridyn.onrender.com';
 
 setInterval(() => {
-  fetch(`${BACKEND_URL}/test`)
-    .then(() => console.log('🏓 Alive ping'))
+  fetch('https://veridyn.onrender.com/test')
     .catch(() => {});
 }, 14 * 60 * 1000);
 
