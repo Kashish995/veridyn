@@ -92,7 +92,16 @@ app.use(errorHandler);
  
 /* ── DB + SERVER ─────────────────────────────────────── */
 const PORT = process.env.PORT || 5000;
- 
+ // Keep Render free tier awake
+const BACKEND_URL = process.env.RENDER_EXTERNAL_URL 
+  || 'https://veridyn.onrender.com';
+
+setInterval(() => {
+  fetch(`${BACKEND_URL}/test`)
+    .then(() => console.log('🏓 Alive ping'))
+    .catch(() => {});
+}, 14 * 60 * 1000);
+
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => {
