@@ -4,12 +4,9 @@ import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
  
-/* Middleware */
 import authMiddleware from "./middleware/auth.middleware.js";
 import errorHandler from "./middleware/errorHandler.js";
-import { apiLimiter, authLimiter, aiLimiter } from './middleware/rateLimiter.js';
- 
-/* Routes */
+
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
 import profileRoutes from "./routes/profile.routes.js";
@@ -30,7 +27,6 @@ import insightsRoutes from "./routes/insightsRoutes.js";
 import suggestionRoutes from "./routes/suggestion.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
- 
 const app = express();
  
 /* ── CORS ───────────────────────────────────────────── */
