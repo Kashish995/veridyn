@@ -37,7 +37,7 @@ const app = express();
 app.use(cors({
   origin: [
     'http://localhost:5173',
-    'https://veridyn-five.vercel.app',
+    process.env.CLIENT_URL,
     /https:\/\/veridyn-.*\.vercel\.app$/
   ],
   credentials: true
@@ -93,12 +93,11 @@ app.use(errorHandler);
 /* ── DB + SERVER ─────────────────────────────────────── */
 const PORT = process.env.PORT || 5000;
  // Keep Render free tier awake
-const BACKEND_URL = process.env.RENDER_EXTERNAL_URL 
-  || 'https://veridyn.onrender.com';
+const BACKEND_URL =
+  process.env.RENDER_EXTERNAL_URL || "https://veridyn.onrender.com";
 
 setInterval(() => {
-  fetch('https://veridyn.onrender.com/test')
-    .catch(() => {});
+  fetch(`${BACKEND_URL}/test`).catch(() => {});
 }, 14 * 60 * 1000);
 
 mongoose
