@@ -6,6 +6,7 @@ import cors from "cors";
  
 import authMiddleware from "./middleware/auth.middleware.js";
 import errorHandler from "./middleware/errorHandler.js";
+import { apiLimiter, authLimiter, aiLimiter } from './middleware/rateLimiter.js';
 
 import authRoutes from "./routes/auth.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -27,6 +28,7 @@ import insightsRoutes from "./routes/insightsRoutes.js";
 import suggestionRoutes from "./routes/suggestion.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
+
 const app = express();
  
 /* ── CORS ───────────────────────────────────────────── */
