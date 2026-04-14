@@ -500,6 +500,17 @@ export default function ProfilePanel() {
               </div>
             ))}
           </nav>
+            {/* ── Mobile-visible logout ── */}
+<div style={{ padding: '0 0.75rem 1rem', display: 'block' }}>
+  <button
+    className="pp-logout-btn"
+    onClick={logout}
+    type="button"
+    style={{ marginTop: '8px' }}
+  >
+    <span>↗</span> Sign out
+  </button>
+</div>
 
           <div className="pp-footer">
             <div className="pp-footer-meta">

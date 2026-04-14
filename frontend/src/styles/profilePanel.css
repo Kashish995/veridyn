@@ -404,3 +404,32 @@
     padding: 12px 10px;
   }
 }
+@media (max-width: 768px) {
+  .pp-panel {
+    width: 100%;
+    max-width: 100%;
+    border-left: none;
+    border-top: 1px solid rgba(99,120,200,0.12);
+    /* Fix for mobile browsers hiding footer */
+    height: 100%;
+    height: -webkit-fill-available;
+    max-height: 100dvh;
+  }
+
+  .pp-footer {
+    padding-bottom: calc(1.25rem + env(safe-area-inset-bottom, 16px));
+    position: sticky;
+    bottom: 0;
+    background: #0d1322;
+    z-index: 1;
+  }
+
+  .pp-logout-btn {
+    background: rgba(244,63,94,0.07);
+    border-color: rgba(244,63,94,0.15);
+    color: #f43f5e;
+    font-size: 1rem;
+    padding: 14px 12px;
+    min-height: 52px;
+  }
+}
