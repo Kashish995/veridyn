@@ -17,15 +17,20 @@ function AppShell() {
   const isAuthPage = AUTH_PATHS.includes(location.pathname);
   const showSidebar = !!token && !isAuthPage;
 
+  // detect mobile
+  const isMobile = window.innerWidth < 768;
+
   return (
     <div style={{ display: "flex", minHeight: "100vh", background: "#080c14" }}>
       {showSidebar && <Navbar />}
       <main style={{
         flex: 1,
-        marginLeft: showSidebar ? "240px" : 0,
+        marginLeft: showSidebar && !isMobile ? "240px" : 0,
         minHeight: "100vh",
         background: "#080c14",
         overflow: "auto",
+        // extra bottom padding on mobile so content isn't hidden behind bottom tab bar
+        paddingBottom: showSidebar && isMobile ? "70px" : 0,
       }}>
         <ErrorBoundary>
           <Routes>
