@@ -99,6 +99,16 @@ export default function Dashboard() {
   const tier  = getTier(completionRate);
   const risk  = getRisk(riskScore);
 
+  const token = localStorage.getItem("token");
+const userName = (() => {
+  try {
+    const payload = JSON.parse(atob(token.split(".")[1]));
+    return payload.name || payload.username || "there";
+  } catch {
+    return "there";
+  }
+})();
+
   /* ─── Chart data ─── */
   const weeklyChartData = useMemo(() => ({
     labels: safeStats.map(d => d.date?.slice(5) ?? ''),
@@ -169,7 +179,7 @@ export default function Dashboard() {
       {/* ── Header ── */}
       <div className="dashboard-header">
         <div>
-          <div className="dashboard-greeting">Good day, Kashish</div>
+          <div className="dashboard-greeting">Good day, {userName}</div>
           <h1 className="dashboard-title">Performance Dashboard</h1>
           <div className="dashboard-date">
             {new Date().toLocaleDateString('en-US', { weekday:'long', month:'long', day:'numeric', year:'numeric' })}
