@@ -96,6 +96,18 @@ mongoose
   .then(() => {
     console.log("✅ MongoDB connected");
     app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
+
+    // ── Keep Render free tier alive ──────────────────────────
+    import('https').then(({ default: https }) => {
+      setInterval(() => {
+        https.get('https://veridyn.onrender.com/test', (res) => {
+          console.log(`Keep-alive ping: ${res.statusCode}`);
+        }).on('error', (err) => {
+          console.error('Keep-alive failed:', err.message);
+        });
+      }, 14 * 60 * 1000);
+    });
+
   })
   .catch((err) => {
     console.error("❌ MongoDB connection error:", err.message);
