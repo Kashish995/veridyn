@@ -278,7 +278,7 @@ completionRate 0.75+     → level 4 (full glow)
 
 ## What I Learned Building This
 
-- Designing a full REST API from scratch with Express + MongoDB
+- Built a complete RESTful API from scratch using Express.js and MongoDB.
 - JWT authentication flow with protected routes
 - Real-time data aggregation — building analytics from raw logs
 - Integrating LLM APIs (Groq / Anthropic) with user context injection
