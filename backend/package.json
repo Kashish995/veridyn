@@ -21,6 +21,7 @@
     "jsonwebtoken": "^9.0.3",
     "mongodb": "^7.0.0",
     "mongoose": "^8.21.0",
-    "openai": "^6.29.0"
+    "openai": "^6.29.0",
+    "pdf-parse": "^2.4.5"
   }
 }
