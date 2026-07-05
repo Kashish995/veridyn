@@ -78,19 +78,7 @@ router.post("/upload-syllabus", authMiddleware, upload.single("syllabus"), async
     res.status(500).json({ message: "Failed to process PDF" });
   }
 });
-Note: upload.single("syllabus") means the frontend must send the file under the field name "syllabus" — I'll match that in Step 5.
 
-Step 4: Understand the two-step flow this creates
-Instead of one action, uploading now happens in two calls from the frontend:
-
-POST /api/ai/upload-syllabus (with the PDF file) → returns extracted syllabusText
-POST /api/ai/parse-syllabus (with that syllabusText + subjectId) → returns structured topics
-This separation is actually useful — it lets you show the student the extracted text first ("does this look right?") before running the more expensive AI parsing step.
-
-Step 5: Frontend — sending the file
-Since files can't be sent as JSON, you use FormData:
-
-javascript
 async function uploadSyllabus(file) {
   const formData = new FormData();
   formData.append("syllabus", file); // "syllabus" must match upload.single("syllabus")
@@ -108,10 +96,6 @@ async function uploadSyllabus(file) {
   const data = await res.json();
   return data.syllabusText;
 }
-Then feed that syllabusText into your existing parse-syllabus call from before.
-
-Quick check before you wire this up: how does your frontend currently store the JWT after login — localStorage, a cookie, or context/state? I want to match your actual auth pattern in that fetch call instead of guessing.
-
 
 
 
