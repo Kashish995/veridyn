@@ -78,26 +78,6 @@ router.post("/upload-syllabus", authMiddleware, upload.single("syllabus"), async
     res.status(500).json({ message: "Failed to process PDF" });
   }
 });
-
-async function uploadSyllabus(file) {
-  const formData = new FormData();
-  formData.append("syllabus", file); // "syllabus" must match upload.single("syllabus")
-
-  const res = await fetch(`${import.meta.env.VITE_API_URL}/api/ai/upload-syllabus`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`, // however you store your JWT
-      // NOTE: do NOT set Content-Type here — the browser sets it
-      // automatically with the correct multipart boundary
-    },
-    body: formData,
-  });
-
-  const data = await res.json();
-  return data.syllabusText;
-}
-
-
-
+ 
 
 export default router;
