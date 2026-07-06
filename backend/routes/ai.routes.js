@@ -2,7 +2,9 @@ import express from "express";
 import AIService from "../services/ai.service.js";
 import authMiddleware from "../middleware/auth.middleware.js";
 import upload from "../middleware/upload.middleware.js";
-import pdfParse from "pdf-parse";
+import { createRequire } from "module";
+const require = createRequire(import.meta.url);
+const pdfParse = require("pdf-parse");
 
 const router = express.Router();
 
