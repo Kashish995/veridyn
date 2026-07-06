@@ -1,0 +1,76 @@
+/* frontend/src/styles/SyllabusUpload.css */
+.syllabus-upload {
+  background: #12141c;
+  border: 1px solid #262b3a;
+  border-radius: 12px;
+  padding: 24px;
+  max-width: 480px;
+}
+
+.syllabus-upload__title {
+  color: #e8e9ee;
+  font-size: 18px;
+  margin: 0 0 4px;
+}
+
+.syllabus-upload__subtitle {
+  color: #7d8296;
+  font-size: 13px;
+  margin: 0 0 20px;
+}
+
+.syllabus-upload__dropzone {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100px;
+  border: 1px dashed #383e52;
+  border-radius: 8px;
+  color: #7d8296;
+  cursor: pointer;
+  margin-bottom: 12px;
+  transition: border-color 0.15s ease;
+}
+
+.syllabus-upload__dropzone:hover {
+  border-color: #6366f1;
+}
+
+.syllabus-upload__filename {
+  color: #e8e9ee;
+}
+
+.syllabus-upload__time-input {
+  width: 100%;
+  box-sizing: border-box;
+  background: #1a1d29;
+  border: 1px solid #262b3a;
+  border-radius: 8px;
+  padding: 10px 12px;
+  color: #e8e9ee;
+  font-size: 14px;
+  margin-bottom: 12px;
+}
+
+.syllabus-upload__error {
+  color: #f87171;
+  font-size: 13px;
+  margin: 0 0 12px;
+}
+
+.syllabus-upload__submit {
+  width: 100%;
+  background: #6366f1;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.syllabus-upload__submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
