@@ -10,6 +10,8 @@ import useDashboardData from "../hooks/useDashboardData";
 import ProductivityCalendar from '../components/ProductivityCalendar';
 import "../styles/dashboard.css";
 import "../styles/calendar.css";
+import { useDueTopics } from "../hooks/useDueTopics";
+
 
 ChartJS.register(CategoryScale, LinearScale, PointElement, LineElement, Title, Tooltip, Legend, Filler);
 
@@ -64,6 +66,7 @@ export default function Dashboard() {
     monthlyAggregate, loading, refreshDashboard,
   } = useDashboardData();
 
+  const { dueToday, atRisk } = useDueTopics(); 
   const safeStats   = Array.isArray(weeklyStats) ? weeklyStats : [];
   const safeHistory = Array.isArray(history) ? history : [];
 
@@ -215,6 +218,70 @@ const userName = (() => {
           </span>
         </div>
       )}
+
+      {/* ── Next Task Banner ── */}
+      {nextTask && (
+        <div className="next-task-card">
+          <div className="next-task-dot" />
+          <div>
+            <div className="next-task-label">Up Next</div>
+            <div className="next-task-title">{nextTask.title}</div>
+          </div>
+          {nextTask.startTime && (
+            <div style={{ marginLeft: 'auto', fontFamily: 'var(--font-mono)', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+              {nextTask.startTime}
+            </div>
+          )}
+          <span style={{
+            padding: '2px 10px', borderRadius: 'var(--r-full)',
+            fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+            background: nextTask.priority === 'high' ? 'var(--rose-subtle)' : nextTask.priority === 'medium' ? 'var(--amber-subtle)' : 'var(--emerald-subtle)',
+            color: nextTask.priority === 'high' ? 'var(--rose)' : nextTask.priority === 'medium' ? 'var(--amber)' : 'var(--emerald)',
+          }}>
+            {nextTask.priority}
+          </span>
+        </div>
+      )}
+
+      {/* ── Study Topic Reminders ── */}
+      {dueToday.length > 0 && (
+        <div className="next-task-card" style={{ borderLeft: '3px solid var(--indigo)' }}>
+          <div className="next-task-dot" style={{ background: 'var(--indigo)' }} />
+          <div>
+            <div className="next-task-label">Due Today</div>
+            <div className="next-task-title">
+              {dueToday.map(t => t.name).join(', ')}
+            </div>
+          </div>
+          <span style={{
+            padding: '2px 10px', borderRadius: 'var(--r-full)',
+            fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+            background: 'var(--indigo-subtle)', color: 'var(--indigo)',
+          }}>
+            {dueToday.length} topic{dueToday.length > 1 ? 's' : ''}
+          </span>
+        </div>
+      )}
+
+      {atRisk.length > 0 && (
+        <div className="next-task-card" style={{ borderLeft: '3px solid var(--rose)' }}>
+          <div className="next-task-dot" style={{ background: 'var(--rose)' }} />
+          <div>
+            <div className="next-task-label">Falling Behind</div>
+            <div className="next-task-title">
+              {atRisk.map(t => t.name).join(', ')}
+            </div>
+          </div>
+          <span style={{
+            padding: '2px 10px', borderRadius: 'var(--r-full)',
+            fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
+            background: 'var(--rose-subtle)', color: 'var(--rose)',
+          }}>
+            {atRisk.length} topic{atRisk.length > 1 ? 's' : ''} at risk
+          </span>
+        </div>
+      )}
+
 
       {/* ── Primary Metrics ── */}
       <div className="section-header">
