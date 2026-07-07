@@ -1,9 +1,12 @@
 import dotenv from "dotenv";
 dotenv.config();
+
+import dns from 'dns';
+dns.setServers(['8.8.8.8', '8.8.4.4']);
+
 import express from "express";
 import mongoose from "mongoose";
 import cors from "cors";
- 
 import authMiddleware from "./middleware/auth.middleware.js";
 import errorHandler from "./middleware/errorHandler.js";
 import { apiLimiter, authLimiter, aiLimiter } from './middleware/rateLimiter.js';
@@ -28,6 +31,7 @@ import insightsRoutes from "./routes/insightsRoutes.js";
 import suggestionRoutes from "./routes/suggestion.routes.js";
 import statsRoutes from "./routes/stats.routes.js";
 import aiRoutes from "./routes/ai.routes.js";
+import topicRoutes from "./routes/topic.routes.js";
 
 const app = express();
  
@@ -80,6 +84,7 @@ app.use("/api/insights",    authMiddleware, insightsRoutes);
 app.use("/api/suggestions", authMiddleware, suggestionRoutes);
 app.use("/api/stats",       authMiddleware, statsRoutes);
 app.use("/api/ai",          authMiddleware, aiRoutes);
+app.use("/api/topics",      authMiddleware, topicRoutes);
 // app.use("/api/health",   authMiddleware, healthRoutes); ← broken, kept off
  
 app.get("/",     (req, res) => res.send("VERIDYN API RUNNING ✅"));

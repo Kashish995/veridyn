@@ -1,4 +1,3 @@
-// In a new or existing topic.routes.js
 import express from "express";
 import Topic from "../models/Topic.js";
 import authMiddleware from "../middleware/auth.middleware.js";
@@ -10,14 +9,12 @@ router.get("/due", authMiddleware, async (req, res) => {
     const now = new Date();
     const threeDaysAgo = new Date(now.getTime() - 3 * 24 * 60 * 60 * 1000);
 
-    // Due today: scheduled for today or earlier, not done
     const dueToday = await Topic.find({
       userId: req.user.id,
       status: { $ne: "done" },
       scheduledDate: { $lte: now },
     }).sort("scheduledDate");
 
-    // At risk: in_progress but not touched in 3+ days
     const atRisk = await Topic.find({
       userId: req.user.id,
       status: "in_progress",

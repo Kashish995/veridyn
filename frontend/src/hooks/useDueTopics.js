@@ -1,4 +1,3 @@
-// frontend/src/hooks/useDueTopics.js
 import { useState, useEffect } from "react";
 
 export function useDueTopics() {
