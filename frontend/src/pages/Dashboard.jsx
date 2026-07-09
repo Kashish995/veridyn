@@ -212,7 +212,7 @@ const userName = (() => {
             padding: '2px 10px', borderRadius: 'var(--r-full)',
             fontSize: '0.7rem', fontWeight: 700, textTransform: 'uppercase',
             background: nextTask.priority === 'high' ? 'var(--rose-subtle)' : nextTask.priority === 'medium' ? 'var(--amber-subtle)' : 'var(--emerald-subtle)',
-            color: nextTask.priority === 'high' ? 'var(--rose)' : nextTask.priority === 'medium' ? 'var(--amber)' : 'var(--emerald)',
+            color: Task.priority === 'high' ? 'var(--rose)' : nextTask.priority === 'medium' ? 'var(--amber)' : 'var(--emerald)',
           }}>
             {nextTask.priority}
           </span>
