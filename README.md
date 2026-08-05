@@ -307,7 +307,9 @@ completionRate 0.75+     → level 4 (full glow)
 [![LinkedIn](https://img.shields.io/badge/LinkedIn-Connect-0A66C2?style=flat&logo=linkedin)](https://linkedin.com/in/YOUR_PROFILE)
 
 ---
+## License
 
+MIT License — feel free to fork and build on this.
 
 ---
 
