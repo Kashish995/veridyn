@@ -308,9 +308,6 @@ completionRate 0.75+     → level 4 (full glow)
 
 ---
 
-## License
-
-MIT License — feel free to fork and build on this.
 
 ---
 
