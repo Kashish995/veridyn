@@ -4,6 +4,7 @@ import Login from "./pages/Login";
 import Register from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import Tasks from "./pages/Tasks";
+import StudyPlanner from "./pages/StudyPlanner";
 import ProtectedRoute from "./components/ProtectedRoute";
 import ErrorBoundary from "./ui/ErrorBoundary";
 import Navbar from "./components/Navbar";
@@ -39,6 +40,7 @@ function AppShell() {
             <Route path="/signup"    element={<Register />} />
             <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
             <Route path="/tasks"     element={<ProtectedRoute><Tasks /></ProtectedRoute>} />
+            <Route path="/planner"   element={<ProtectedRoute><StudyPlanner /></ProtectedRoute>} />
             <Route path="/insights"  element={<ProtectedRoute><Insights /></ProtectedRoute>} />
             <Route path="*"          element={<Navigate to={token ? "/dashboard" : "/login"} replace />} />
           </Routes>

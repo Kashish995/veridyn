@@ -6,6 +6,7 @@ import '../styles/profilePanel.css';
 const NAV_ITEMS = [
   { path: '/dashboard', icon: '▦', label: 'Dashboard' },
   { path: '/tasks',     icon: '◈', label: 'Tasks'     },
+  { path: '/planner',   icon: '📅', label: 'Planner'   },
   { path: '/insights',  icon: '◎', label: 'Insights'  },
 ];
 

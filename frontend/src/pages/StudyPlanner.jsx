@@ -6,15 +6,11 @@ import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
 import "./calendar.css";
 
+const getToday = () => new Date().toISOString().split("T")[0];
 
 const StudyPlanner = () => {
-  // 🔴 TEMP FIX: use real MongoDB userId
-  const userId = "696a051e43eec933581d318b";
-
   const [tasks, setTasks] = useState([]);
-  const [selectedDate, setSelectedDate] = useState(
-    getToday()
-  );
+  const [selectedDate, setSelectedDate] = useState(getToday());
   const [calendarDate, setCalendarDate] = useState(new Date());
 
   const [title, setTitle] = useState("");
@@ -22,7 +18,12 @@ const StudyPlanner = () => {
   const [priority, setPriority] = useState("medium");
   const [estimatedTime, setEstimatedTime] = useState(60);
 
-  const BASE_URL = "http://localhost:5000/api/tasks";
+  // AI Plan states
+  const [subjectName, setSubjectName] = useState("");
+  const [targetDate, setTargetDate] = useState("");
+  const [dailyHours, setDailyHours] = useState(2);
+  const [syllabusText, setSyllabusText] = useState("");
+  const [isGenerating, setIsGenerating] = useState(false);
 
   // ✅ calendar change handler
   const handleCalendarChange = (date) => {
@@ -31,74 +32,91 @@ const StudyPlanner = () => {
   };
 
 
-  // ✅ FETCH TASKS BY DATE
+  useEffect(() => {
+    setCalendarDate(new Date(selectedDate));
+  }, [selectedDate]);
+
+  const fetchTasks = async () => {
+    try {
+      const res = await api.get(`/tasks/${selectedDate}`);
+      // Tasks are nested in res.data.data according to standard response wrapper
+      setTasks(res.data.data || []);
+    } catch (err) {
+      console.error("Fetch tasks error:", err);
+    }
+  };
 
   useEffect(() => {
-  setCalendarDate(new Date(selectedDate));
-}, [selectedDate]);
-
-  useEffect(() => {
-    const fetchTasks = async () => {
-      try {
-        const res = await axios.get(
-          `${BASE_URL}/user/${userId}/${selectedDate}`
-        );
-        setTasks(res.data);
-      } catch (err) {
-        console.error("Fetch tasks error:", err);
-      }
-    };
-
     fetchTasks();
-  }, [userId, selectedDate]);
+  }, [selectedDate]);
 
   // ✅ CREATE TASK
   const handleAddTask = async () => {
     if (!title || !estimatedTime) return alert("Fill all fields");
 
     try {
-      await axios.post(BASE_URL, {
+      await api.post("/tasks", {
         title,
         description,
         priority,
         estimatedTime,
         dueDate: selectedDate,
-        userId
+        startTime: "09:00", // Required fields from Task model
+        endTime: "10:00"
       });
 
       setTitle("");
       setDescription("");
       setEstimatedTime(60);
-
-      const res = await axios.get(
-        `${BASE_URL}/user/${userId}/${selectedDate}`
-      );
-      setTasks(res.data);
+      fetchTasks();
     } catch (err) {
       console.error("Create task error:", err);
+      alert("Failed to create task");
+    }
+  };
+
+  // ✅ GENERATE STUDY PLAN (AI)
+  const handleGeneratePlan = async () => {
+    if (!subjectName || !targetDate || !syllabusText) {
+      return alert("Please fill Subject Name, Target Date, and Syllabus");
+    }
+    setIsGenerating(true);
+    try {
+      await api.post("/ai/generate-study-plan", {
+        subjectName,
+        targetDate,
+        dailyStudyHours: dailyHours,
+        syllabusText
+      });
+      alert("Study plan generated successfully!");
+      fetchTasks();
+    } catch (err) {
+      console.error("Generate plan error:", err);
+      alert("Failed to generate plan");
+    } finally {
+      setIsGenerating(false);
     }
   };
 
   // ✅ UPDATE STATUS
   const toggleStatus = async (taskId, status) => {
     const newStatus = status === "completed" ? "pending" : "completed";
-
-    await axios.patch(`${BASE_URL}/${taskId}`, { status: newStatus });
-
-    const res = await axios.get(
-      `${BASE_URL}/user/${userId}/${selectedDate}`
-    );
-    setTasks(res.data);
+    try {
+      await api.patch(`/tasks/${taskId}`, { status: newStatus });
+      fetchTasks();
+    } catch (err) {
+      console.error("Update task error", err);
+    }
   };
 
   // ✅ DELETE TASK
   const deleteTask = async (taskId) => {
-    await axios.delete(`${BASE_URL}/${taskId}`);
-
-    const res = await axios.get(
-      `${BASE_URL}/user/${userId}/${selectedDate}`
-    );
-    setTasks(res.data);
+    try {
+      await api.delete(`/tasks/${taskId}`);
+      fetchTasks();
+    } catch (err) {
+      console.error("Delete task error", err);
+    }
   };
 
   // 🧮 Total workload
@@ -119,16 +137,13 @@ const StudyPlanner = () => {
     }
 
     for (let task of suggestedTasks) {
-      await axios.patch(`${BASE_URL}/${task._id}`, {
+      await api.patch(`/tasks/${task._id}`, {
         dueDate: tomorrowStr,
         suggestedForTomorrow: false
       });
     }
 
-    const res = await axios.get(
-      `${BASE_URL}/user/${userId}/${selectedDate}`
-    );
-    setTasks(res.data);
+    fetchTasks();
   };
 
   // 📊 weekly workload
@@ -160,11 +175,61 @@ const StudyPlanner = () => {
   };
 
   return (
-    <div style={{ marginBottom: "20px" }}>
-  <Calendar
-    onChange={handleCalendarChange}
-    value={calendarDate}
-  />
+    <div style={{ marginBottom: "20px", padding: "20px", color: "white" }}>
+      <div style={{ background: "#1a1a2e", padding: "20px", borderRadius: "8px", marginBottom: "30px" }}>
+        <h2>🤖 AI Syllabus Planner</h2>
+        <p>Paste your syllabus and let AI schedule your study sessions until the target date.</p>
+        
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginTop: "15px" }}>
+          <input
+            type="text"
+            placeholder="Subject Name (e.g., Data Structures)"
+            value={subjectName}
+            onChange={(e) => setSubjectName(e.target.value)}
+            style={{ padding: "10px", borderRadius: "4px" }}
+          />
+          
+          <input
+            type="date"
+            placeholder="Target Completion Date"
+            value={targetDate}
+            onChange={(e) => setTargetDate(e.target.value)}
+            style={{ padding: "10px", borderRadius: "4px" }}
+          />
+          
+          <input
+            type="number"
+            placeholder="Daily Study Hours (e.g., 2)"
+            value={dailyHours}
+            onChange={(e) => setDailyHours(Number(e.target.value))}
+            style={{ padding: "10px", borderRadius: "4px" }}
+          />
+          
+          <textarea
+            placeholder="Paste syllabus topics here..."
+            value={syllabusText}
+            onChange={(e) => setSyllabusText(e.target.value)}
+            rows={5}
+            style={{ padding: "10px", borderRadius: "4px" }}
+          />
+          
+          <button 
+            onClick={handleGeneratePlan} 
+            disabled={isGenerating}
+            style={{ padding: "10px 20px", background: "#00ffcc", color: "black", border: "none", borderRadius: "4px", cursor: "pointer", fontWeight: "bold" }}
+          >
+            {isGenerating ? "Generating Plan..." : "Generate AI Study Plan"}
+          </button>
+        </div>
+      </div>
+
+      <hr style={{ borderColor: "#333", margin: "30px 0" }} />
+
+      <h3>📅 Study Calendar</h3>
+      <Calendar
+        onChange={handleCalendarChange}
+        value={calendarDate}
+      />
 
 
       <p>Selected Date: {selectedDate}</p>

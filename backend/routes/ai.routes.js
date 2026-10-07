@@ -80,6 +80,71 @@ router.post("/upload-syllabus", authMiddleware, upload.single("syllabus"), async
     res.status(500).json({ message: "Failed to process PDF" });
   }
 });
+
+// ── POST /api/ai/generate-study-plan ──────────────────────
+router.post("/generate-study-plan", authMiddleware, async (req, res) => {
+  try {
+    const { subjectName, syllabusText, targetDate, dailyStudyHours } = req.body;
+    const userId = req.userId; // Provided by authMiddleware
+
+    if (!subjectName || !syllabusText || !targetDate) {
+      return res.status(400).json({ message: "Missing required fields" });
+    }
+
+    const planJsonStr = await AIService.generateStudyPlan({
+      subjectName,
+      syllabusText,
+      targetDate,
+      dailyStudyHours: dailyStudyHours || 2
+    });
+
+    const topics = JSON.parse(planJsonStr);
+
+    // Save Subject to DB
+    const Subject = (await import("../models/Subject.js")).default;
+    const newSubject = new Subject({
+      name: subjectName,
+      examDate: new Date(targetDate),
+      totalChapters: topics.length,
+      userId
+    });
+    await newSubject.save();
+
+    // Map topics to Tasks
+    const Task = (await import("../models/Task.js")).default;
+    let currentDate = new Date();
+    const endDate = new Date(targetDate);
+    
+    // Distribute tasks evenly from now to targetDate
+    const diffTime = Math.abs(endDate - currentDate);
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    const daysPerTopic = Math.max(1, Math.floor(diffDays / topics.length));
+
+    const tasksToCreate = topics.map((topic, index) => {
+      let taskDate = new Date();
+      taskDate.setDate(taskDate.getDate() + (index * daysPerTopic));
+      if (taskDate > endDate) taskDate = endDate; // Cap at end date
+
+      return {
+        title: `[${subjectName}] ${topic.title}`,
+        description: topic.description,
+        status: "pending",
+        priority: topic.priority || "medium",
+        estimatedTime: topic.estimatedTime || 60,
+        dueDate: taskDate,
+        userId,
+        subjectId: newSubject._id
+      };
+    });
+
+    await Task.insertMany(tasksToCreate);
+
+    res.json({ message: "Study plan generated successfully", tasks: tasksToCreate });
+  } catch (err) {
+    console.error("Generate study plan error:", err.message);
+    res.status(500).json({ message: "Failed to generate study plan" });
+  }
+});
  
 
 export default router;

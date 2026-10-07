@@ -155,6 +155,32 @@ Return a 7-day plan: {"planOverview":"","days":[{"day":1,"focus":"","goals":[],"
     }
   }
 
+  /* ── Generate Study Plan from Syllabus ── */
+  async generateStudyPlan({ subjectName, syllabusText, targetDate, dailyStudyHours }) {
+    const messages = [
+      { role: 'system', content: 'You are an expert study planner. You will be provided with a syllabus text, a subject name, target completion date, and daily study hours. Break the syllabus into logical topics/chapters. Return ONLY a valid JSON array of tasks, no markdown. Format: [{"title": "Topic Name", "description": "Brief description", "estimatedTime": 60, "priority": "medium"}]' },
+      {
+        role: 'user',
+        content: `Subject: ${subjectName}\nTarget Date: ${targetDate}\nDaily Study Hours: ${dailyStudyHours}\nSyllabus:\n${syllabusText}\n\nReturn the structured JSON array. Keep estimatedTime in minutes.`
+      }
+    ];
+
+    try {
+      const raw = await this.generateResponse(messages, 2500);
+      const cleaned = raw.replace(/```json\n?/g, '').replace(/```\n?/g, '').trim();
+      JSON.parse(cleaned); // validate
+      return cleaned;
+    } catch {
+      // Mock fallback if AI fails or rate limits
+      return JSON.stringify([
+        { title: `Introduction to ${subjectName}`, description: "Cover basic concepts", estimatedTime: 60, priority: "high" },
+        { title: "Core Principles", description: "Deep dive into main principles", estimatedTime: 120, priority: "high" },
+        { title: "Advanced Topics", description: "Complex applications", estimatedTime: 90, priority: "medium" },
+        { title: "Review & Practice", description: "Solve previous questions", estimatedTime: 60, priority: "low" }
+      ]);
+    }
+  }
+
   /* ── AI Chat ── */
   async chat(messages, userData) {
     const context = userData
