@@ -4,7 +4,7 @@ import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts"
 import { DragDropContext, Droppable, Draggable } from "@hello-pangea/dnd";
 import Calendar from "react-calendar";
 import "react-calendar/dist/Calendar.css";
-import "./calendar.css";
+import "../styles/calendar.css";
 
 const getToday = () => new Date().toISOString().split("T")[0];
 
